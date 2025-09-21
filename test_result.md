@@ -116,6 +116,9 @@ backend:
         - working: true
           agent: "main"
           comment: "Implémenté système complet avec JWT, 4 rôles (cadet, cadet_responsible, cadet_admin, encadrement), hashage bcrypt, tokens d'invitation"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTÉ COMPLET - 16/16 tests réussis: Login admin/cadet fonctionnel, tokens JWT valides, permissions par rôle correctes, gestion erreurs 401/403 appropriée. Admin: admin@escadron.fr, Cadet: cadet.test@escadron.fr"
           
   - task: "API d'invitation par email et définition mot de passe"
     implemented: true  
@@ -128,6 +131,9 @@ backend:
         - working: true
           agent: "main"
           comment: "Admin peut créer invitations, tokens sécurisés 7 jours, utilisateurs définissent mot de passe"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTÉ COMPLET - Système d'invitation fonctionnel: Admin peut créer invitations, tokens JWT sécurisés 7 jours, définition mot de passe réussie, connexion nouveau compte validée. Permissions correctes (cadet ne peut pas inviter)"
           
   - task: "Gestion des utilisateurs et sections"
     implemented: true
@@ -140,6 +146,9 @@ backend:
         - working: true
           agent: "main"
           comment: "CRUD utilisateurs avec permissions basées sur rôles, gestion sections"
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTÉ COMPLET - Gestion utilisateurs/sections fonctionnelle: Admin peut lister utilisateurs (4 trouvés), créer sections, permissions correctes (cadet ne peut pas accéder liste utilisateurs). Toutes les routes protégées fonctionnent"
 
 frontend:
   - task: "Interface d'authentification française"
