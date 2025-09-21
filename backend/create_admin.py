@@ -52,7 +52,7 @@ async def create_admin_user():
     print("🔐 Mot de passe: admin123")
     print("⚠️  Changez ce mot de passe en production!")
     
-    await client.close()
+    client.close()
 
 if __name__ == "__main__":
     asyncio.run(create_admin_user())
