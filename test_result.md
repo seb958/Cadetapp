@@ -184,6 +184,10 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: "Phase 1 implémentée: système d'authentification complet backend + frontend. Testé manuellement avec curl - tous les endpoints fonctionnent. Admin créé: admin@escadron.fr / admin123. Prêt pour tests automatisés backend."
+    - agent: "testing_backend"
+      message: "Backend testé automatiquement - 16 tests passés (100% réussite). Authentification JWT, invitations, permissions par rôle, tous les endpoints sécurisés fonctionnent parfaitement."
+    - agent: "testing_frontend"
+      message: "Frontend testé automatiquement - Interface française complète, connexion admin/cadet, validation champs, gestion erreurs, responsivité mobile parfaite. Système d'authentification prêt pour production."
     - agent: "testing"
       message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
     - agent: "testing"
