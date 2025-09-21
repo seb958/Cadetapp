@@ -42,7 +42,7 @@ async def create_admin_user():
     existing_admin = await db.users.find_one({"email": "admin@escadron.fr"})
     if existing_admin:
         print("❌ L'utilisateur admin existe déjà!")
-        await client.close()
+        client.close()
         return
     
     # Créer l'admin
@@ -52,7 +52,7 @@ async def create_admin_user():
     print("🔐 Mot de passe: admin123")
     print("⚠️  Changez ce mot de passe en production!")
     
-    await client.close()
+    client.close()
 
 if __name__ == "__main__":
     asyncio.run(create_admin_user())
