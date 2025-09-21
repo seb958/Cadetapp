@@ -1,0 +1,14 @@
+diff --git a/backend/create_admin.py b/backend/create_admin.py
+index 48573d1..227de5e 100644
+--- a/backend/create_admin.py
++++ b/backend/create_admin.py
+@@ -52,7 +52,7 @@ async def create_admin_user():
+     print("🔐 Mot de passe: admin123")
+     print("⚠️  Changez ce mot de passe en production!")
+     
+-    client.close()
++    await client.close()
+ 
+ if __name__ == "__main__":
+     asyncio.run(create_admin_user())
+\ No newline at end of file
