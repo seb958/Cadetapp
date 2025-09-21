@@ -469,7 +469,7 @@ class AuthenticationTester:
         print()
         
         # Résumé des résultats
-        self.print_summary()
+        return self.print_summary()
     
     def print_summary(self):
         """Affiche le résumé des tests"""
