@@ -1339,17 +1339,10 @@ export default function Admin() {
                 <TouchableOpacity
                   style={styles.dangerButton}
                   onPress={() => {
-                    Alert.alert(
+                    showConfirmation(
                       'Supprimer définitivement',
                       `Êtes-vous sûr de vouloir supprimer définitivement "${editingUser.prenom} ${editingUser.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nToutes les données associées (présences, inspections, etc.) seront perdues.`,
-                      [
-                        { text: 'Annuler', style: 'cancel' },
-                        {
-                          text: 'Supprimer définitivement',
-                          style: 'destructive',
-                          onPress: () => deleteUser(editingUser)
-                        }
-                      ]
+                      () => deleteUser(editingUser)
                     );
                   }}
                 >
