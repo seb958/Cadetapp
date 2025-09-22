@@ -79,9 +79,9 @@ class PresenceTestSuite:
         """Test création de présence individuelle"""
         print("\n=== TEST CRÉATION PRÉSENCE INDIVIDUELLE ===")
         
-        # Test avec cadet_admin (doit réussir) - utiliser une date future pour éviter les conflits
+        # Test avec cadet_admin (doit réussir) - utiliser une date future unique
         cadet_id = self.users["cadet1"]["id"]
-        future_date = date.today() + timedelta(days=10)
+        future_date = date(2025, 12, 15)  # Date fixe dans le futur
         presence_data = {
             "cadet_id": cadet_id,
             "presence_date": future_date.isoformat(),
