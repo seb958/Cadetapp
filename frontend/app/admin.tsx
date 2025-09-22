@@ -528,6 +528,98 @@ export default function Admin() {
     }
   };
 
+  // Fonctions pour les sections
+  const openSectionModal = (section: Section | null = null) => {
+    if (section) {
+      setEditingSection(section);
+      setSectionForm({
+        nom: section.nom,
+        description: section.description || '',
+        responsable_id: section.responsable_id || ''
+      });
+    } else {
+      setEditingSection(null);
+      setSectionForm({
+        nom: '',
+        description: '',
+        responsable_id: ''
+      });
+    }
+    setShowSectionModal(true);
+  };
+
+  const saveSection = async () => {
+    if (!sectionForm.nom.trim()) {
+      Alert.alert('Erreur', 'Le nom de la section est requis');
+      return;
+    }
+
+    setSavingSection(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      const payload = {
+        nom: sectionForm.nom.trim(),
+        description: sectionForm.description.trim() || null,
+        responsable_id: sectionForm.responsable_id || null
+      };
+
+      const url = editingSection 
+        ? `${EXPO_PUBLIC_BACKEND_URL}/api/sections/${editingSection.id}`
+        : `${EXPO_PUBLIC_BACKEND_URL}/api/sections`;
+      
+      const method = editingSection ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        Alert.alert(
+          'Succès', 
+          editingSection ? 'Section modifiée avec succès' : 'Section créée avec succès'
+        );
+        setShowSectionModal(false);
+        await loadSections();
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      Alert.alert('Erreur', 'Impossible de sauvegarder la section');
+    } finally {
+      setSavingSection(false);
+    }
+  };
+
+  const deleteSection = async (section: Section) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      `Êtes-vous sûr de vouloir supprimer la section "${section.nom}" ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            Alert.alert('Information', 'La suppression de sections sera disponible prochainement');
+          }
+        }
+      ]
+    );
+  };
+
+  const getResponsableName = (responsableId: string) => {
+    const responsable = users.find(u => u.id === responsableId);
+    return responsable ? `${responsable.prenom} ${responsable.nom}` : 'Aucun responsable';
+  };
+
   const toggleCadetSelection = (cadetId: string) => {
     setActivityForm(prev => ({
       ...prev,
