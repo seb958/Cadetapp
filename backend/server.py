@@ -744,6 +744,172 @@ async def get_presence_stats(
         taux_presence=round(taux_presence, 2)
     )
 
+# Routes pour les activités pré-définies
+@api_router.post("/activities", response_model=Activity)
+async def create_activity(
+    activity: ActivityCreate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que tous les cadets existent
+    for cadet_id in activity.cadet_ids:
+        cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+        if not cadet:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cadet {cadet_id} non trouvé"
+            )
+    
+    # Créer l'activité
+    activity_data = Activity(
+        nom=activity.nom,
+        description=activity.description,
+        type=activity.type,
+        cadet_ids=activity.cadet_ids,
+        recurrence_interval=activity.recurrence_interval,
+        recurrence_unit=activity.recurrence_unit,
+        next_date=activity.next_date,
+        planned_date=activity.planned_date,
+        created_by=current_user.id
+    )
+    
+    await db.activities.insert_one(activity_data.dict())
+    return activity_data
+
+@api_router.get("/activities", response_model=List[ActivityResponse])
+async def get_activities(
+    active_only: bool = True,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    filter_dict = {}
+    if active_only:
+        filter_dict["active"] = True
+    
+    activities = await db.activities.find(filter_dict).to_list(1000)
+    
+    # Enrichir avec les noms des cadets
+    enriched_activities = []
+    for activity in activities:
+        # Récupérer les noms des cadets
+        cadet_names = []
+        for cadet_id in activity["cadet_ids"]:
+            cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+            if cadet:
+                cadet_names.append(f"{cadet['prenom']} {cadet['nom']}")
+        
+        enriched_activity = ActivityResponse(
+            id=activity["id"],
+            nom=activity["nom"],
+            description=activity.get("description"),
+            type=ActivityType(activity["type"]),
+            cadet_ids=activity["cadet_ids"],
+            cadet_names=cadet_names,
+            recurrence_interval=activity.get("recurrence_interval"),
+            recurrence_unit=activity.get("recurrence_unit"),
+            next_date=datetime.fromisoformat(activity["next_date"]).date() if activity.get("next_date") else None,
+            planned_date=datetime.fromisoformat(activity["planned_date"]).date() if activity.get("planned_date") else None,
+            created_by=activity["created_by"],
+            created_at=datetime.fromisoformat(activity["created_at"]),
+            active=activity["active"]
+        )
+        enriched_activities.append(enriched_activity)
+    
+    return enriched_activities
+
+@api_router.get("/activities/{activity_id}", response_model=ActivityResponse)
+async def get_activity(
+    activity_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    activity = await db.activities.find_one({"id": activity_id})
+    if not activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activité non trouvée"
+        )
+    
+    # Récupérer les noms des cadets
+    cadet_names = []
+    for cadet_id in activity["cadet_ids"]:
+        cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+        if cadet:
+            cadet_names.append(f"{cadet['prenom']} {cadet['nom']}")
+    
+    return ActivityResponse(
+        id=activity["id"],
+        nom=activity["nom"],
+        description=activity.get("description"),
+        type=ActivityType(activity["type"]),
+        cadet_ids=activity["cadet_ids"],
+        cadet_names=cadet_names,
+        recurrence_interval=activity.get("recurrence_interval"),
+        recurrence_unit=activity.get("recurrence_unit"),
+        next_date=datetime.fromisoformat(activity["next_date"]).date() if activity.get("next_date") else None,
+        planned_date=datetime.fromisoformat(activity["planned_date"]).date() if activity.get("planned_date") else None,
+        created_by=activity["created_by"],
+        created_at=datetime.fromisoformat(activity["created_at"]),
+        active=activity["active"]
+    )
+
+@api_router.put("/activities/{activity_id}")
+async def update_activity(
+    activity_id: str,
+    activity_update: ActivityCreate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que l'activité existe
+    existing_activity = await db.activities.find_one({"id": activity_id})
+    if not existing_activity:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activité non trouvée"
+        )
+    
+    # Vérifier que tous les cadets existent
+    for cadet_id in activity_update.cadet_ids:
+        cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+        if not cadet:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Cadet {cadet_id} non trouvé"
+            )
+    
+    # Mettre à jour
+    update_data = {
+        "nom": activity_update.nom,
+        "description": activity_update.description,
+        "type": activity_update.type.value,
+        "cadet_ids": activity_update.cadet_ids,
+        "recurrence_interval": activity_update.recurrence_interval,
+        "recurrence_unit": activity_update.recurrence_unit,
+        "next_date": activity_update.next_date.isoformat() if activity_update.next_date else None,
+        "planned_date": activity_update.planned_date.isoformat() if activity_update.planned_date else None
+    }
+    
+    await db.activities.update_one(
+        {"id": activity_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Activité mise à jour avec succès"}
+
+@api_router.delete("/activities/{activity_id}")
+async def delete_activity(
+    activity_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    result = await db.activities.update_one(
+        {"id": activity_id},
+        {"$set": {"active": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Activité non trouvée"
+        )
+    
+    return {"message": "Activité désactivée avec succès"}
+
 # Route de test
 @api_router.get("/")
 async def root():
