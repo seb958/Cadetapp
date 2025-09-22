@@ -1203,43 +1203,6 @@ export default function Admin() {
         </SafeAreaView>
       </Modal>
 
-      {/* DatePickers pour les dates d'activité */}
-      <DatePicker
-        modal
-        open={showPlannedDatePicker}
-        date={activityForm.planned_date ? new Date(activityForm.planned_date) : new Date()}
-        mode="date"
-        onConfirm={(date) => {
-          setShowPlannedDatePicker(false);
-          const dateString = date.toISOString().split('T')[0]; // Format YYYY-MM-DD
-          setActivityForm(prev => ({...prev, planned_date: dateString}));
-        }}
-        onCancel={() => {
-          setShowPlannedDatePicker(false);
-        }}
-        title="Sélectionner la date prévue"
-        confirmText="Confirmer"
-        cancelText="Annuler"
-      />
-
-      <DatePicker
-        modal
-        open={showNextDatePicker}
-        date={activityForm.next_date ? new Date(activityForm.next_date) : new Date()}
-        mode="date"
-        onConfirm={(date) => {
-          setShowNextDatePicker(false);
-          const dateString = date.toISOString().split('T')[0]; // Format YYYY-MM-DD
-          setActivityForm(prev => ({...prev, next_date: dateString}));
-        }}
-        onCancel={() => {
-          setShowNextDatePicker(false);
-        }}
-        title="Sélectionner la prochaine occurrence"
-        confirmText="Confirmer"
-        cancelText="Annuler"
-      />
-
       {/* Modal pour créer/modifier un utilisateur */}
       <Modal
         visible={showUserModal}
