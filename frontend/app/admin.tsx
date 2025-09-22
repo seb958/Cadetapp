@@ -27,7 +27,42 @@ interface User {
   role: string;
   section_id?: string;
   actif: boolean;
+  created_at: string;
 }
+
+interface Section {
+  id: string;
+  nom: string;
+  description?: string;
+  responsable_id?: string;
+  created_at: string;
+}
+
+interface UserFormData {
+  nom: string;
+  prenom: string;
+  email: string;
+  grade: string;
+  role: string;
+  section_id: string;
+}
+
+const GRADES = [
+  { value: 'cadet', label: 'Cadet' },
+  { value: 'caporal', label: 'Caporal' },
+  { value: 'sergent', label: 'Sergent' },
+  { value: 'adjudant', label: 'Adjudant' },
+  { value: 'lieutenant', label: 'Lieutenant' },
+  { value: 'capitaine', label: 'Capitaine' },
+  { value: 'commandant', label: 'Commandant' }
+];
+
+const ROLES = [
+  { value: 'cadet', label: 'Cadet' },
+  { value: 'cadet_responsible', label: 'Cadet Responsable' },
+  { value: 'cadet_admin', label: 'Cadet Administrateur' },
+  { value: 'encadrement', label: 'Encadrement' }
+];
 
 interface Activity {
   id: string;
