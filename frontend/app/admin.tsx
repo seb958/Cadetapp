@@ -1079,9 +1079,9 @@ export default function Admin() {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.resetButton}
-                    onPress={forceCompleteReset}
+                    onPress={forcePurgeAndReload}
                   >
-                    <Text style={styles.resetButtonText}>⚠️ Reset</Text>
+                    <Text style={styles.resetButtonText}>🔥 PURGE</Text>
                   </TouchableOpacity>
                 </View>
               </View>
