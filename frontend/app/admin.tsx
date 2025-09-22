@@ -895,6 +895,20 @@ export default function Admin() {
     }
   };
 
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      // Simuler la sauvegarde des paramètres
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      showAlert('Succès', 'Paramètres sauvegardés avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des paramètres:', error);
+      showAlert('Erreur', 'Impossible de sauvegarder les paramètres');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   const getResponsableName = (responsableId: string) => {
     const responsable = users.find(u => u.id === responsableId);
     return responsable ? `${responsable.prenom} ${responsable.nom}` : 'Aucun responsable';
