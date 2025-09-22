@@ -356,12 +356,12 @@ export default function Admin() {
 
   const saveActivity = async () => {
     if (!activityForm.nom.trim()) {
-      Alert.alert('Erreur', 'Le nom de l\'activité est requis');
+      showAlert('Erreur', 'Le nom de l\'activité est requis');
       return;
     }
 
     if (activityForm.cadet_ids.length === 0) {
-      Alert.alert('Erreur', 'Veuillez sélectionner au moins un cadet');
+      showAlert('Erreur', 'Veuillez sélectionner au moins un cadet');
       return;
     }
 
@@ -396,19 +396,31 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Alert.alert(
+        showAlert(
           'Succès', 
           editingActivity ? 'Activité modifiée avec succès' : 'Activité créée avec succès'
         );
         setShowActivityModal(false);
+        setEditingActivity(null);
+        // Réinitialiser le formulaire
+        setActivityForm({
+          nom: '',
+          description: '',
+          type: 'unique',
+          cadet_ids: [],
+          recurrence_interval: '7',
+          recurrence_unit: 'days',
+          next_date: '',
+          planned_date: ''
+        });
         await loadActivities();
       } else {
         const errorData = await response.json();
-        Alert.alert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+        showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      Alert.alert('Erreur', 'Impossible de sauvegarder l\'activité');
+      showAlert('Erreur', 'Impossible de sauvegarder l\'activité');
     } finally {
       setSavingActivity(false);
     }
