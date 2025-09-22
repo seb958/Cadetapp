@@ -619,6 +619,73 @@ async def get_sections(current_user: User = Depends(get_current_user)):
     sections = await db.sections.find().to_list(1000)
     return [Section(**section) for section in sections]
 
+@api_router.put("/sections/{section_id}")
+async def update_section(
+    section_id: str,
+    section_update: SectionCreate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que la section existe
+    existing_section = await db.sections.find_one({"id": section_id})
+    if not existing_section:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section non trouvée"
+        )
+    
+    # Préparer les données de mise à jour
+    update_data = {
+        "nom": section_update.nom,
+        "description": section_update.description,
+        "responsable_id": section_update.responsable_id if section_update.responsable_id else None
+    }
+    
+    # Mettre à jour la section
+    await db.sections.update_one(
+        {"id": section_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Section mise à jour avec succès"}
+
+@api_router.delete("/sections/{section_id}")
+async def delete_section(
+    section_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que la section existe
+    existing_section = await db.sections.find_one({"id": section_id})
+    if not existing_section:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section non trouvée"
+        )
+    
+    # Supprimer définitivement la section et mettre à jour les utilisateurs
+    try:
+        # Retirer l'affectation de section de tous les utilisateurs
+        await db.users.update_many(
+            {"section_id": section_id},
+            {"$unset": {"section_id": ""}}
+        )
+        
+        # Supprimer la section
+        result = await db.sections.delete_one({"id": section_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Section non trouvée"
+            )
+        
+        return {"message": f"Section {existing_section['nom']} supprimée définitivement"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression: {str(e)}"
+        )
+
 # Routes pour les présences
 @api_router.post("/presences", response_model=Presence)
 async def create_presence(
