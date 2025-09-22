@@ -456,7 +456,8 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 # Routes pour la gestion des utilisateurs
 @api_router.get("/users", response_model=List[User])
 async def get_users(current_user: User = Depends(require_admin_or_encadrement)):
-    users = await db.users.find({"actif": True}).to_list(1000)
+    # Récupérer tous les utilisateurs (actifs et en attente)
+    users = await db.users.find({}).to_list(1000)
     return [User(**user) for user in users]
 
 @api_router.get("/users/{user_id}", response_model=User)
