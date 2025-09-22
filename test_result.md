@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Développer une application mobile/web pour gérer présences et inspections d'uniformes dans un escadron de cadets avec 4 rôles utilisateur et système d'authentification complet"
+user_problem_statement: "Développer une application mobile/web pour gérer présences et inspections d'uniformes dans un escadron de cadets avec 4 rôles utilisateur et système d'authentification complet + gestion des présences"
 
 backend:
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
