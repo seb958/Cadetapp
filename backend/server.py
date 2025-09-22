@@ -1144,8 +1144,8 @@ async def update_activity(
         "cadet_ids": activity_update.cadet_ids,
         "recurrence_interval": activity_update.recurrence_interval,
         "recurrence_unit": activity_update.recurrence_unit,
-        "next_date": activity_update.next_date.isoformat() if activity_update.next_date else None,
-        "planned_date": activity_update.planned_date.isoformat() if activity_update.planned_date else None
+        "next_date": activity_update.next_date if activity_update.next_date else None,
+        "planned_date": activity_update.planned_date if activity_update.planned_date else None
     }
     
     await db.activities.update_one(
