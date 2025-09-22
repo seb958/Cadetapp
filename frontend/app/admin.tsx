@@ -1009,6 +1009,37 @@ export default function Admin() {
     }
   };
 
+  const addNewTenue = () => {
+    if (!newTenueName.trim()) {
+      showAlert('Erreur', 'Veuillez saisir un nom pour la nouvelle tenue');
+      return;
+    }
+
+    const newCriteria = {...settings.inspectionCriteria};
+    if (newCriteria[newTenueName.trim()]) {
+      showAlert('Erreur', 'Une tenue avec ce nom existe déjà');
+      return;
+    }
+
+    newCriteria[newTenueName.trim()] = [''];
+    setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+    setNewTenueName('');
+    showAlert('Succès', `Tenue "${newTenueName.trim()}" ajoutée avec succès`);
+  };
+
+  const removeTenue = (tenueType) => {
+    showConfirmation(
+      'Supprimer la tenue',
+      `Êtes-vous sûr de vouloir supprimer la tenue "${tenueType}" et tous ses critères ?`,
+      () => {
+        const newCriteria = {...settings.inspectionCriteria};
+        delete newCriteria[tenueType];
+        setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+        showAlert('Succès', `Tenue "${tenueType}" supprimée avec succès`);
+      }
+    );
+  };
+
   const getResponsableName = (responsableId: string) => {
     const responsable = users.find(u => u.id === responsableId);
     return responsable ? `${responsable.prenom} ${responsable.nom}` : 'Aucun responsable';
