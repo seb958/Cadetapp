@@ -2177,14 +2177,32 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 15,
   },
+  refreshButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   refreshButton: {
     backgroundColor: '#059669',
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flex: 1,
   },
   refreshButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  resetButton: {
+    backgroundColor: '#dc2626',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flex: 1,
+  },
+  resetButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
