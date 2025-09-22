@@ -120,6 +120,7 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None
     section_id: Optional[str] = None
     actif: Optional[bool] = None
+    has_admin_privileges: Optional[bool] = None
 
 class LoginRequest(BaseModel):
     email: EmailStr
