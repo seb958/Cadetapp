@@ -2098,4 +2098,10 @@ const styles = StyleSheet.create({
     color: '#374151',
     flex: 1,
   },
+  helperText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 15,
+    fontStyle: 'italic',
+  },
 });
