@@ -60,7 +60,8 @@ const GRADES = [
   { value: 'eleve_officier', label: 'Élève-officier' },
   { value: 'sous_lieutenant', label: 'Sous-Lieutenant' },
   { value: 'lieutenant', label: 'Lieutenant' },
-  { value: 'capitaine', label: 'Capitaine' }
+  { value: 'capitaine', label: 'Capitaine' },
+  { value: 'commandant', label: 'Commandant' } // Compatibilité données existantes
 ];
 
 const ROLES = [
