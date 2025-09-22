@@ -2146,4 +2146,23 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontStyle: 'italic',
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 15,
+  },
+  refreshButton: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexShrink: 1,
+  },
+  refreshButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
