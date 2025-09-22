@@ -650,10 +650,75 @@ export default function Admin() {
           </View>
         )}
 
-        {/* Autres tabs (à implémenter) */}
+        {/* Gestion des Utilisateurs */}
         {activeTab === 'users' && (
           <View style={styles.tabContent}>
-            <Text style={styles.comingSoon}>Gestion des Utilisateurs - Prochainement</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Gestion des Utilisateurs</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => openUserModal()}
+              >
+                <Text style={styles.addButtonText}>+ Inviter Utilisateur</Text>
+              </TouchableOpacity>
+            </View>
+
+            {users.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>Aucun utilisateur trouvé</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Invitez votre premier utilisateur pour commencer
+                </Text>
+              </View>
+            ) : (
+              users.map((user) => (
+                <View key={user.id} style={styles.userCard}>
+                  <View style={styles.userHeader}>
+                    <View style={styles.userInfo}>
+                      <Text style={styles.userName}>{user.prenom} {user.nom}</Text>
+                      <Text style={styles.userEmail}>{user.email}</Text>
+                    </View>
+                    <View style={styles.userBadges}>
+                      <View style={[
+                        styles.roleBadge,
+                        { backgroundColor: getRoleBadgeColor(user.role) }
+                      ]}>
+                        <Text style={styles.roleBadgeText}>
+                          {getRoleDisplayName(user.role)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.userDetails}>
+                    <Text style={styles.userDetail}>
+                      Grade: {getGradeDisplayName(user.grade)}
+                    </Text>
+                    <Text style={styles.userDetail}>
+                      Section: {user.section_id ? getSectionName(user.section_id) : 'Aucune'}
+                    </Text>
+                    <Text style={styles.userDetail}>
+                      Créé le: {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                    </Text>
+                  </View>
+
+                  <View style={styles.userActions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => openUserModal(user)}
+                    >
+                      <Text style={styles.editButtonText}>Modifier</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => deleteUser(user)}
+                    >
+                      <Text style={styles.deleteButtonText}>Supprimer</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         )}
 
