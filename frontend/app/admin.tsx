@@ -1148,6 +1148,28 @@ export default function Admin() {
               ))}
             </View>
 
+            {/* Zone de suppression dangereuse - seulement en mode édition */}
+            {editingActivity && (
+              <View style={styles.dangerZone}>
+                <Text style={styles.dangerZoneTitle}>🚨 Zone dangereuse</Text>
+                <Text style={styles.dangerZoneText}>
+                  La suppression d'une activité est définitive et irréversible.
+                </Text>
+                <TouchableOpacity
+                  style={styles.dangerButton}
+                  onPress={() => {
+                    showConfirmation(
+                      'Supprimer définitivement',
+                      `Êtes-vous sûr de vouloir supprimer définitivement l'activité "${editingActivity.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets assignés perdront cette activité de leur liste.`,
+                      () => deleteActivity(editingActivity)
+                    );
+                  }}
+                >
+                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cette activité</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Bouton de sauvegarde */}
             <TouchableOpacity
               style={[styles.saveButton, savingActivity && styles.saveButtonDisabled]}
