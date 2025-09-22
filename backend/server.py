@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from passlib.context import CryptContext
 import jwt
 from enum import Enum
@@ -54,6 +54,12 @@ class Grade(str, Enum):
     LIEUTENANT = "lieutenant"
     CAPITAINE = "capitaine"
     COMMANDANT = "commandant"
+
+class PresenceStatus(str, Enum):
+    PRESENT = "present"
+    ABSENT = "absent"
+    ABSENT_EXCUSE = "absent_excuse"
+    RETARD = "retard"
 
 # Models
 class UserBase(BaseModel):
@@ -114,6 +120,56 @@ class SectionCreate(BaseModel):
     description: Optional[str] = None
     responsable_id: Optional[str] = None
 
+# Modèles pour les présences
+class Presence(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cadet_id: str
+    date: date
+    status: PresenceStatus
+    commentaire: Optional[str] = None
+    enregistre_par: str  # ID de l'utilisateur qui a enregistré
+    heure_enregistrement: datetime = Field(default_factory=datetime.utcnow)
+    section_id: Optional[str] = None
+    activite: Optional[str] = None  # Description de l'activité
+
+class PresenceCreate(BaseModel):
+    cadet_id: str
+    date: date
+    status: PresenceStatus
+    commentaire: Optional[str] = None
+    activite: Optional[str] = None
+
+class PresenceUpdate(BaseModel):
+    status: Optional[PresenceStatus] = None
+    commentaire: Optional[str] = None
+
+class PresenceBulkCreate(BaseModel):
+    date: date
+    activite: Optional[str] = None
+    presences: List[PresenceCreate]
+
+class PresenceResponse(BaseModel):
+    id: str
+    cadet_id: str
+    cadet_nom: str
+    cadet_prenom: str
+    date: date
+    status: PresenceStatus
+    commentaire: Optional[str]
+    enregistre_par: str
+    heure_enregistrement: datetime
+    section_id: Optional[str]
+    section_nom: Optional[str]
+    activite: Optional[str]
+
+class PresenceStats(BaseModel):
+    total_seances: int
+    presences: int
+    absences: int
+    absences_excusees: int
+    retards: int
+    taux_presence: float
+
 # Password utilities
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -163,6 +219,15 @@ async def require_admin_or_encadrement(current_user: User = Depends(get_current_
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Accès refusé. Permissions administrateur requises."
+        )
+    return current_user
+
+async def require_presence_permissions(current_user: User = Depends(get_current_user)):
+    """Vérifie les permissions pour la gestion des présences"""
+    if current_user.role not in [UserRole.CADET_RESPONSIBLE, UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Accès refusé. Permissions pour gestion des présences requises."
         )
     return current_user
 
@@ -352,6 +417,273 @@ async def create_section(
 async def get_sections(current_user: User = Depends(get_current_user)):
     sections = await db.sections.find().to_list(1000)
     return [Section(**section) for section in sections]
+
+# Routes pour les présences
+@api_router.post("/presences", response_model=Presence)
+async def create_presence(
+    presence: PresenceCreate,
+    current_user: User = Depends(require_presence_permissions)
+):
+    # Vérifier que le cadet existe
+    cadet = await db.users.find_one({"id": presence.cadet_id, "actif": True})
+    if not cadet:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cadet non trouvé"
+        )
+    
+    # Vérifier les permissions selon le rôle
+    if current_user.role == UserRole.CADET_RESPONSIBLE:
+        # Un cadet responsable ne peut enregistrer que pour sa section
+        if cadet.get("section_id") != current_user.section_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous ne pouvez enregistrer les présences que pour votre section"
+            )
+    
+    # Vérifier si une présence existe déjà pour ce cadet à cette date
+    existing_presence = await db.presences.find_one({
+        "cadet_id": presence.cadet_id,
+        "date": presence.date.isoformat()
+    })
+    
+    if existing_presence:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Une présence existe déjà pour ce cadet à cette date"
+        )
+    
+    # Créer la présence
+    presence_data = Presence(
+        cadet_id=presence.cadet_id,
+        date=presence.date,
+        status=presence.status,
+        commentaire=presence.commentaire,
+        enregistre_par=current_user.id,
+        section_id=cadet.get("section_id"),
+        activite=presence.activite
+    )
+    
+    await db.presences.insert_one(presence_data.dict())
+    return presence_data
+
+@api_router.post("/presences/bulk")
+async def create_bulk_presences(
+    bulk_data: PresenceBulkCreate,
+    current_user: User = Depends(require_presence_permissions)
+):
+    created_presences = []
+    errors = []
+    
+    for presence_create in bulk_data.presences:
+        try:
+            # Vérifier que le cadet existe
+            cadet = await db.users.find_one({"id": presence_create.cadet_id, "actif": True})
+            if not cadet:
+                errors.append(f"Cadet {presence_create.cadet_id} non trouvé")
+                continue
+            
+            # Vérifier les permissions selon le rôle
+            if current_user.role == UserRole.CADET_RESPONSIBLE:
+                if cadet.get("section_id") != current_user.section_id:
+                    errors.append(f"Permission refusée pour le cadet {cadet['prenom']} {cadet['nom']}")
+                    continue
+            
+            # Vérifier si une présence existe déjà
+            existing_presence = await db.presences.find_one({
+                "cadet_id": presence_create.cadet_id,
+                "date": bulk_data.date.isoformat()
+            })
+            
+            if existing_presence:
+                # Mettre à jour la présence existante
+                await db.presences.update_one(
+                    {"id": existing_presence["id"]},
+                    {"$set": {
+                        "status": presence_create.status.value,
+                        "commentaire": presence_create.commentaire,
+                        "enregistre_par": current_user.id,
+                        "heure_enregistrement": datetime.utcnow().isoformat(),
+                        "activite": bulk_data.activite
+                    }}
+                )
+                created_presences.append(existing_presence["id"])
+            else:
+                # Créer nouvelle présence
+                presence_data = Presence(
+                    cadet_id=presence_create.cadet_id,
+                    date=bulk_data.date,
+                    status=presence_create.status,
+                    commentaire=presence_create.commentaire,
+                    enregistre_par=current_user.id,
+                    section_id=cadet.get("section_id"),
+                    activite=bulk_data.activite
+                )
+                
+                await db.presences.insert_one(presence_data.dict())
+                created_presences.append(presence_data.id)
+                
+        except Exception as e:
+            errors.append(f"Erreur pour cadet {presence_create.cadet_id}: {str(e)}")
+    
+    return {
+        "created_count": len(created_presences),
+        "created_ids": created_presences,
+        "errors": errors
+    }
+
+@api_router.get("/presences", response_model=List[PresenceResponse])
+async def get_presences(
+    date: Optional[date] = None,
+    cadet_id: Optional[str] = None,
+    section_id: Optional[str] = None,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user)
+):
+    # Construire le filtre selon les permissions
+    filter_dict = {}
+    
+    if current_user.role == UserRole.CADET:
+        # Un cadet ne peut voir que ses propres présences
+        filter_dict["cadet_id"] = current_user.id
+    elif current_user.role == UserRole.CADET_RESPONSIBLE:
+        # Un cadet responsable ne peut voir que sa section
+        if current_user.section_id:
+            filter_dict["section_id"] = current_user.section_id
+        else:
+            # Si pas de section assignée, ne peut rien voir
+            return []
+    # CADET_ADMIN et ENCADREMENT peuvent tout voir
+    
+    # Appliquer les filtres additionnels
+    if date:
+        filter_dict["date"] = date.isoformat()
+    if cadet_id and current_user.role in [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        filter_dict["cadet_id"] = cadet_id
+    if section_id and current_user.role in [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        filter_dict["section_id"] = section_id
+    
+    # Récupérer les présences
+    presences_cursor = db.presences.find(filter_dict).limit(limit).sort("date", -1)
+    presences = await presences_cursor.to_list(limit)
+    
+    # Enrichir avec les informations des cadets et sections
+    enriched_presences = []
+    for presence in presences:
+        # Récupérer les infos du cadet
+        cadet = await db.users.find_one({"id": presence["cadet_id"]})
+        if not cadet:
+            continue
+            
+        # Récupérer les infos de la section si applicable
+        section_nom = None
+        if presence.get("section_id"):
+            section = await db.sections.find_one({"id": presence["section_id"]})
+            if section:
+                section_nom = section["nom"]
+        
+        enriched_presence = PresenceResponse(
+            id=presence["id"],
+            cadet_id=presence["cadet_id"],
+            cadet_nom=cadet["nom"],
+            cadet_prenom=cadet["prenom"],
+            date=datetime.fromisoformat(presence["date"]).date(),
+            status=PresenceStatus(presence["status"]),
+            commentaire=presence.get("commentaire"),
+            enregistre_par=presence["enregistre_par"],
+            heure_enregistrement=datetime.fromisoformat(presence["heure_enregistrement"]),
+            section_id=presence.get("section_id"),
+            section_nom=section_nom,
+            activite=presence.get("activite")
+        )
+        enriched_presences.append(enriched_presence)
+    
+    return enriched_presences
+
+@api_router.put("/presences/{presence_id}")
+async def update_presence(
+    presence_id: str,
+    updates: PresenceUpdate,
+    current_user: User = Depends(require_presence_permissions)
+):
+    # Vérifier que la présence existe
+    presence = await db.presences.find_one({"id": presence_id})
+    if not presence:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Présence non trouvée"
+        )
+    
+    # Vérifier les permissions
+    if current_user.role == UserRole.CADET_RESPONSIBLE:
+        if presence.get("section_id") != current_user.section_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous ne pouvez modifier que les présences de votre section"
+            )
+    
+    # Préparer les mises à jour
+    update_data = {}
+    if updates.status is not None:
+        update_data["status"] = updates.status.value
+    if updates.commentaire is not None:
+        update_data["commentaire"] = updates.commentaire
+    
+    update_data["enregistre_par"] = current_user.id
+    update_data["heure_enregistrement"] = datetime.utcnow().isoformat()
+    
+    # Mettre à jour
+    await db.presences.update_one(
+        {"id": presence_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Présence mise à jour avec succès"}
+
+@api_router.get("/presences/stats/{cadet_id}", response_model=PresenceStats)
+async def get_presence_stats(
+    cadet_id: str,
+    date_debut: Optional[date] = None,
+    date_fin: Optional[date] = None,
+    current_user: User = Depends(get_current_user)
+):
+    # Vérifier les permissions
+    if current_user.role == UserRole.CADET and current_user.id != cadet_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous ne pouvez consulter que vos propres statistiques"
+        )
+    
+    # Construire le filtre
+    filter_dict = {"cadet_id": cadet_id}
+    if date_debut:
+        filter_dict["date"] = {"$gte": date_debut.isoformat()}
+    if date_fin:
+        if "date" in filter_dict:
+            filter_dict["date"]["$lte"] = date_fin.isoformat()
+        else:
+            filter_dict["date"] = {"$lte": date_fin.isoformat()}
+    
+    # Récupérer toutes les présences
+    presences = await db.presences.find(filter_dict).to_list(1000)
+    
+    # Calculer les statistiques
+    total_seances = len(presences)
+    presences_count = len([p for p in presences if p["status"] == "present"])
+    absences = len([p for p in presences if p["status"] == "absent"])
+    absences_excusees = len([p for p in presences if p["status"] == "absent_excuse"])
+    retards = len([p for p in presences if p["status"] == "retard"])
+    
+    taux_presence = (presences_count / total_seances * 100) if total_seances > 0 else 0
+    
+    return PresenceStats(
+        total_seances=total_seances,
+        presences=presences_count,
+        absences=absences,
+        absences_excusees=absences_excusees,
+        retards=retards,
+        taux_presence=round(taux_presence, 2)
+    )
 
 # Route de test
 @api_router.get("/")

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -143,6 +144,31 @@ export default function Index() {
     return grades[grade] || grade;
   };
 
+  // Navigation vers les fonctionnalités
+  const navigateToPresences = () => {
+    router.push('/presences');
+  };
+
+  const navigateToInspections = () => {
+    // TODO: Implémenter plus tard
+    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+  };
+
+  const navigateToReports = () => {
+    // TODO: Implémenter plus tard
+    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+  };
+
+  const navigateToCommunication = () => {
+    // TODO: Implémenter plus tard
+    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+  };
+
+  const navigateToAdmin = () => {
+    // TODO: Implémenter plus tard
+    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -247,7 +273,7 @@ export default function Index() {
           <Text style={styles.sectionTitle}>Fonctionnalités</Text>
           
           {/* Présences */}
-          <TouchableOpacity style={styles.featureCard}>
+          <TouchableOpacity style={styles.featureCard} onPress={navigateToPresences}>
             <Text style={styles.featureTitle}>📊 Gestion des Présences</Text>
             <Text style={styles.featureDescription}>
               Enregistrer et consulter les présences
@@ -255,7 +281,7 @@ export default function Index() {
           </TouchableOpacity>
 
           {/* Inspections */}
-          <TouchableOpacity style={styles.featureCard}>
+          <TouchableOpacity style={styles.featureCard} onPress={navigateToInspections}>
             <Text style={styles.featureTitle}>👕 Inspection d'Uniformes</Text>
             <Text style={styles.featureDescription}>
               Effectuer et consulter les inspections
@@ -263,7 +289,7 @@ export default function Index() {
           </TouchableOpacity>
 
           {/* Rapports */}
-          <TouchableOpacity style={styles.featureCard}>
+          <TouchableOpacity style={styles.featureCard} onPress={navigateToReports}>
             <Text style={styles.featureTitle}>📈 Rapports</Text>
             <Text style={styles.featureDescription}>
               Générer et exporter des rapports
@@ -271,7 +297,7 @@ export default function Index() {
           </TouchableOpacity>
 
           {/* Communication */}
-          <TouchableOpacity style={styles.featureCard}>
+          <TouchableOpacity style={styles.featureCard} onPress={navigateToCommunication}>
             <Text style={styles.featureTitle}>💬 Communication</Text>
             <Text style={styles.featureDescription}>
               Fil d'actualité et messagerie
@@ -280,7 +306,7 @@ export default function Index() {
 
           {/* Administration - uniquement pour admin/encadrement */}
           {(user?.role === 'cadet_admin' || user?.role === 'encadrement') && (
-            <TouchableOpacity style={[styles.featureCard, styles.adminCard]}>
+            <TouchableOpacity style={[styles.featureCard, styles.adminCard]} onPress={navigateToAdmin}>
               <Text style={styles.featureTitle}>⚙️ Administration</Text>
               <Text style={styles.featureDescription}>
                 Gestion des utilisateurs et paramètres
