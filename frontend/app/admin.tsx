@@ -933,12 +933,20 @@ export default function Admin() {
                 >
                   <Text style={styles.addButtonText}>+ Inviter Utilisateur</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.refreshButton}
-                  onPress={forceReloadAllData}
-                >
-                  <Text style={styles.refreshButtonText}>🔄 Actualiser</Text>
-                </TouchableOpacity>
+                <View style={styles.refreshButtonsRow}>
+                  <TouchableOpacity
+                    style={styles.refreshButton}
+                    onPress={forceReloadAllData}
+                  >
+                    <Text style={styles.refreshButtonText}>🔄 Actualiser</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.resetButton}
+                    onPress={forceCompleteReset}
+                  >
+                    <Text style={styles.resetButtonText}>⚠️ Reset</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
 
