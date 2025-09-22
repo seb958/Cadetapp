@@ -181,13 +181,45 @@ export default function Presences() {
   };
 
   const openTakeAttendance = () => {
-    // Initialiser les données de présence pour tous les cadets
-    const initialData: {[key: string]: {status: string, commentaire: string}} = {};
-    cadets.forEach(cadet => {
-      initialData[cadet.id] = { status: 'present', commentaire: '' };
-    });
-    setAttendanceData(initialData);
+    // Réinitialiser les états
+    setSelectedCadets(new Set());
+    setAttendanceData({});
+    setAttendanceMode('all');
     setShowTakeAttendance(true);
+  };
+
+  const initializeAttendanceData = (mode: 'all' | 'selected' | 'individual') => {
+    const initialData: {[key: string]: {status: string, commentaire: string}} = {};
+    
+    if (mode === 'all') {
+      cadets.forEach(cadet => {
+        initialData[cadet.id] = { status: 'present', commentaire: '' };
+      });
+    } else if (mode === 'selected') {
+      Array.from(selectedCadets).forEach(cadetId => {
+        initialData[cadetId] = { status: 'present', commentaire: '' };
+      });
+    }
+    
+    setAttendanceData(initialData);
+  };
+
+  const toggleCadetSelection = (cadetId: string) => {
+    const newSelected = new Set(selectedCadets);
+    if (newSelected.has(cadetId)) {
+      newSelected.delete(cadetId);
+    } else {
+      newSelected.add(cadetId);
+    }
+    setSelectedCadets(newSelected);
+  };
+
+  const selectAllCadets = () => {
+    setSelectedCadets(new Set(cadets.map(c => c.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedCadets(new Set());
   };
 
   const updateAttendanceStatus = (cadetId: string, status: string) => {
