@@ -356,17 +356,26 @@ export default function Admin() {
 
   const openActivityModal = (activity: Activity | null = null) => {
     if (activity) {
-      setEditingActivity(activity);
-      setActivityForm({
-        nom: activity.nom,
-        description: activity.description || '',
-        type: activity.type,
-        cadet_ids: activity.cadet_ids,
-        recurrence_interval: activity.recurrence_interval?.toString() || '7',
-        recurrence_unit: activity.recurrence_unit || 'days',
-        next_date: activity.next_date || '',
-        planned_date: activity.planned_date || ''
-      });
+      // Trouver l'activité par nom dans la liste actuelle pour éviter les références obsolètes
+      const currentActivity = activities.find(a => a.nom === activity.nom && a.id === activity.id);
+      if (currentActivity) {
+        console.log('Ouverture modal pour activité:', currentActivity.nom, 'ID:', currentActivity.id);
+        setEditingActivity(currentActivity);
+        setActivityForm({
+          nom: currentActivity.nom,
+          description: currentActivity.description || '',
+          type: currentActivity.type,
+          cadet_ids: currentActivity.cadet_ids,
+          recurrence_interval: currentActivity.recurrence_interval?.toString() || '7',
+          recurrence_unit: currentActivity.recurrence_unit || 'days',
+          next_date: currentActivity.next_date || '',
+          planned_date: currentActivity.planned_date || ''
+        });
+      } else {
+        console.error('Activité non trouvée dans la liste actuelle:', activity.nom);
+        showAlert('Erreur', 'Activité non trouvée dans les données actuelles. Veuillez actualiser.');
+        return;
+      }
     } else {
       setEditingActivity(null);
       setActivityForm({
