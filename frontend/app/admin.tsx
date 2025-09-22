@@ -1233,6 +1233,111 @@ export default function Admin() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Modal pour créer/modifier une section */}
+      <Modal
+        visible={showSectionModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {editingSection ? 'Modifier la Section' : 'Nouvelle Section'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowSectionModal(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {/* Informations de base */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Informations de base</Text>
+              
+              <Text style={styles.inputLabel}>Nom de la section *</Text>
+              <TextInput
+                style={styles.input}
+                value={sectionForm.nom}
+                onChangeText={(text) => setSectionForm(prev => ({...prev, nom: text}))}
+                placeholder="Ex: Section Alpha"
+              />
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={sectionForm.description}
+                onChangeText={(text) => setSectionForm(prev => ({...prev, description: text}))}
+                placeholder="Description de la section..."
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            {/* Responsable de section */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Responsable de section</Text>
+              
+              <TouchableOpacity
+                style={[
+                  styles.sectionOption,
+                  sectionForm.responsable_id === '' && styles.sectionOptionActive
+                ]}
+                onPress={() => setSectionForm(prev => ({...prev, responsable_id: ''}))}
+              >
+                <Text style={[
+                  styles.sectionOptionText,
+                  sectionForm.responsable_id === '' && styles.sectionOptionTextActive
+                ]}>
+                  Aucun responsable
+                </Text>
+              </TouchableOpacity>
+
+              {users.filter(u => ['cadet_responsible', 'cadet_admin', 'encadrement'].includes(u.role)).map((user) => (
+                <TouchableOpacity
+                  key={user.id}
+                  style={[
+                    styles.sectionOption,
+                    sectionForm.responsable_id === user.id && styles.sectionOptionActive
+                  ]}
+                  onPress={() => setSectionForm(prev => ({...prev, responsable_id: user.id}))}
+                >
+                  <View style={styles.responsableInfo}>
+                    <Text style={[
+                      styles.sectionOptionText,
+                      sectionForm.responsable_id === user.id && styles.sectionOptionTextActive
+                    ]}>
+                      {user.prenom} {user.nom}
+                    </Text>
+                    <Text style={styles.responsableRole}>
+                      {getRoleDisplayName(user.role)} - {getGradeDisplayName(user.grade)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Information */}
+            <View style={styles.infoSection}>
+              <Text style={styles.infoTitle}>📋 À propos des sections</Text>
+              <Text style={styles.infoText}>
+                Les sections permettent d'organiser les cadets en groupes. Un responsable de section peut prendre les présences et gérer les cadets de sa section.
+              </Text>
+            </View>
+
+            {/* Bouton de sauvegarde */}
+            <TouchableOpacity
+              style={[styles.saveButton, savingSection && styles.saveButtonDisabled]}
+              onPress={saveSection}
+              disabled={savingSection}
+            >
+              <Text style={styles.saveButtonText}>
+                {savingSection ? 'Enregistrement...' : editingSection ? 'Modifier la Section' : 'Créer la Section'}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
