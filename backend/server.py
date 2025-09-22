@@ -464,6 +464,7 @@ async def invite_user(
         grade=invitation.grade,
         role=invitation.role,
         section_id=invitation.section_id,
+        has_admin_privileges=invitation.has_admin_privileges,
         invitation_token=invitation_token,
         invitation_expires=invitation_expires,
         created_by=current_user.id,
