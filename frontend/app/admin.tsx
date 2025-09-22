@@ -1141,7 +1141,6 @@ export default function Admin() {
       <Modal
         visible={showUserModal}
         animationType="slide"
-        presentationStyle="pageSheet"
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
