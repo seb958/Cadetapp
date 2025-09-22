@@ -134,7 +134,6 @@ class Presence(BaseModel):
 
 class PresenceCreate(BaseModel):
     cadet_id: str
-    date: date
     status: PresenceStatus
     commentaire: Optional[str] = None
 
