@@ -479,43 +479,93 @@ export default function Admin() {
         planned_date: activityForm.type === 'unique' && activityForm.planned_date ? activityForm.planned_date : null
       };
 
-      const url = editingActivity 
-        ? `${EXPO_PUBLIC_BACKEND_URL}/api/activities/${editingActivity.id}`
-        : `${EXPO_PUBLIC_BACKEND_URL}/api/activities`;
-      
-      const method = editingActivity ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        showAlert(
-          'Succès', 
-          editingActivity ? 'Activité modifiée avec succès' : 'Activité créée avec succès'
-        );
-        setShowActivityModal(false);
-        setEditingActivity(null);
-        // Réinitialiser le formulaire
-        setActivityForm({
-          nom: '',
-          description: '',
-          type: 'unique',
-          cadet_ids: [],
-          recurrence_interval: '7',
-          recurrence_unit: 'days',
-          next_date: '',
-          planned_date: ''
+      if (editingActivity) {
+        // MODIFICATION : Chercher l'activité actuelle par nom au lieu d'utiliser l'ID cached
+        console.log('🔍 Recherche activité par nom:', activityForm.nom);
+        
+        // Étape 1: Chercher l'activité actuelle en base par nom
+        const searchResponse = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
-        await loadActivities();
+        
+        if (!searchResponse.ok) {
+          throw new Error('Impossible de récupérer les activités');
+        }
+        
+        const allActivities = await searchResponse.json();
+        const currentActivity = allActivities.find((a: Activity) => 
+          a.nom === editingActivity.nom && a.id === editingActivity.id
+        );
+        
+        if (!currentActivity) {
+          showAlert('Erreur', `Activité "${editingActivity.nom}" non trouvée en base`);
+          setSavingActivity(false);
+          return;
+        }
+        
+        console.log('✅ Activité trouvée avec ID:', currentActivity.id);
+        
+        // Étape 2: Utiliser l'ID actuel pour la modification
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities/${currentActivity.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          showAlert('Succès', 'Activité modifiée avec succès');
+          setShowActivityModal(false);
+          setEditingActivity(null);
+          setActivityForm({
+            nom: '',
+            description: '',
+            type: 'unique',
+            cadet_ids: [],
+            recurrence_interval: '7',
+            recurrence_unit: 'days',
+            next_date: '',
+            planned_date: ''
+          });
+          await loadActivities();
+        } else {
+          const errorData = await response.json();
+          showAlert('Erreur', errorData.detail || 'Erreur lors de la modification');
+        }
       } else {
-        const errorData = await response.json();
-        showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+        // CRÉATION (reste inchangée)
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          showAlert('Succès', 'Activité créée avec succès');
+          setShowActivityModal(false);
+          setEditingActivity(null);
+          setActivityForm({
+            nom: '',
+            description: '',
+            type: 'unique',
+            cadet_ids: [],
+            recurrence_interval: '7',
+            recurrence_unit: 'days',
+            next_date: '',
+            planned_date: ''
+          });
+          await loadActivities();
+        } else {
+          const errorData = await response.json();
+          showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+        }
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
