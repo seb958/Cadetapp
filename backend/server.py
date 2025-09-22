@@ -1090,6 +1090,11 @@ async def get_activity(
             # Conversion date object vers string
             planned_date = activity["planned_date"].strftime("%Y-%m-%d")
 
+    # Conversion de created_at
+    created_at = activity["created_at"]
+    if isinstance(created_at, str):
+        created_at = datetime.fromisoformat(created_at)
+
     return ActivityResponse(
         id=activity["id"],
         nom=activity["nom"],
@@ -1102,7 +1107,7 @@ async def get_activity(
         next_date=next_date,
         planned_date=planned_date,
         created_by=activity["created_by"],
-        created_at=datetime.fromisoformat(activity["created_at"]),
+        created_at=created_at,
         active=activity["active"]
     )
 
