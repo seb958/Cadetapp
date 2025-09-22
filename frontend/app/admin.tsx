@@ -139,7 +139,7 @@ export default function Admin() {
   const [refreshing, setRefreshing] = useState(false);
   
   // Navigation
-  const [activeTab, setActiveTab] = useState<'activities' | 'users' | 'sections' | 'settings'>('activities');
+  const [activeTab, setActiveTab] = useState<'activities' | 'users' | 'sections' | 'settings' | 'alerts'>('activities');
 
   // États pour l'onglet Alertes
   const [alertedCadets, setAlertedCadets] = useState([]);
