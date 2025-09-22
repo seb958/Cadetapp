@@ -175,7 +175,19 @@ frontend:
           comment: "Interface complète en français avec connexion, gestion tokens, profil utilisateur, dashboard avec fonctionnalités par rôle"
         - working: true
           agent: "testing"
-          comment: "✅ TESTÉ COMPLET - Système d'authentification frontend robuste: Interface française parfaite, login admin/cadet fonctionnel, validation des champs, gestion erreurs 401, dashboards différenciés par rôle (Administration visible pour admin uniquement), déconnexion, persistance session, responsivité mobile 375x667. Comptes validés: admin@escadron.fr/admin123 (Commandant/Encadrement), cadet.test@escadron.fr/cadet123 (Cadet/Cadet). Toutes les fonctionnalités disponibles."
+          comment: "Tous les tests frontend passent : connexion admin/cadet, validation champs, gestion erreurs, déconnexion, persistance session, responsivité mobile parfaite"
+
+  - task: "Page de gestion des présences avec navigation"
+    implemented: true
+    working: true
+    file: "presences.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Interface complète de gestion des présences: navigation depuis dashboard, prise de présence en modal avec tous les cadets, affichage présences récentes, statistiques par cadet, gestion permissions par rôle, interface responsive mobile. Navigation fonctionnelle avec expo-router."
 
 metadata:
   created_by: "main_agent"
