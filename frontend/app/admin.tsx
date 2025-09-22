@@ -293,7 +293,8 @@ export default function Admin() {
       loadActivities(),
       loadCadets(),
       loadUsers(),
-      loadSections()
+      loadSections(),
+      loadAlerts()
     ]);
   };
 
