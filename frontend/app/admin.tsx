@@ -253,46 +253,21 @@ export default function Admin() {
     console.log('✅ Rechargement complet terminé');
   };
 
-  // Fonction pour purge complète et rechargement forcé
+  // Fonction pour purge complète et rechargement forcé (version simplifiée)
   const forcePurgeAndReload = async () => {
-    console.log('🔥 PURGE COMPLÈTE DÉMARRÉE');
-    
     try {
-      // 1. Vider complètement AsyncStorage
+      console.log('🔥 PURGE SIMPLE DÉMARRÉE');
+      
+      // 1. Vider AsyncStorage
       await AsyncStorage.clear();
-      console.log('✅ AsyncStorage vidé');
       
-      // 2. Réinitialiser TOUS les états
-      setUsers([]);
-      setCadets([]);
-      setSections([]);
-      setActivities([]);
-      setUser(null);
-      setIsAuthenticated(false);
-      setActiveTab('activities');
-      setLoading(true);
-      
-      // 3. Fermer tous les modals
-      setShowUserModal(false);
-      setShowSectionModal(false);
-      setShowActivityModal(false);
-      setEditingUser(null);
-      setEditingSection(null);
-      setEditingActivity(null);
-      
-      console.log('✅ États réinitialisés');
-      
-      // 4. Attendre un peu pour s'assurer que tout est nettoyé
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 5. Redirection vers login pour forcer une reconnexion complète
+      // 2. Redirection immédiate vers login
       router.push('/');
-      
-      console.log('🎯 Purge terminée - redirecting vers login');
       
     } catch (error) {
       console.error('❌ Erreur lors de la purge:', error);
-      showAlert('Erreur', 'Erreur lors de la purge complète');
+      // En cas d'erreur, forcer quand même la redirection
+      router.push('/');
     }
   };
 
