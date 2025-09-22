@@ -172,6 +172,55 @@ class PresenceStats(BaseModel):
     retards: int
     taux_presence: float
 
+# Modèles pour les activités pré-définies
+class Activity(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    type: ActivityType
+    cadet_ids: List[str]  # Liste des IDs des cadets participants
+    
+    # Pour les activités récurrentes
+    recurrence_interval: Optional[int] = None  # ex: 14 pour toutes les 2 semaines
+    recurrence_unit: Optional[str] = None  # "days", "weeks", "months"
+    next_date: Optional[date] = None
+    
+    # Pour les activités ponctuelles  
+    planned_date: Optional[date] = None
+    
+    created_by: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    active: bool = True
+
+class ActivityCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    type: ActivityType
+    cadet_ids: List[str]
+    
+    # Pour récurrence
+    recurrence_interval: Optional[int] = None
+    recurrence_unit: Optional[str] = None
+    next_date: Optional[date] = None
+    
+    # Pour ponctuel
+    planned_date: Optional[date] = None
+
+class ActivityResponse(BaseModel):
+    id: str
+    nom: str
+    description: Optional[str]
+    type: ActivityType
+    cadet_ids: List[str]
+    cadet_names: List[str]  # Noms complets des cadets
+    recurrence_interval: Optional[int]
+    recurrence_unit: Optional[str]
+    next_date: Optional[date]
+    planned_date: Optional[date]
+    created_by: str
+    created_at: datetime
+    active: bool
+
 # Password utilities
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
