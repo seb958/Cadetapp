@@ -238,6 +238,47 @@ class ActivityResponse(BaseModel):
     created_at: datetime
     active: bool
 
+class AlertStatus(str, Enum):
+    ACTIVE = "active"
+    CONTACTED = "contacted"
+    RESOLVED = "resolved"
+
+class Alert(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cadet_id: str
+    consecutive_absences: int
+    last_absence_date: date
+    status: AlertStatus = AlertStatus.ACTIVE
+    contacted_by: Optional[str] = None
+    contacted_at: Optional[datetime] = None
+    contact_comment: Optional[str] = None
+    resolved_by: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class AlertResponse(BaseModel):
+    id: str
+    cadet_id: str
+    cadet_nom: str
+    cadet_prenom: str
+    consecutive_absences: int
+    last_absence_date: date
+    status: AlertStatus
+    contacted_by: Optional[str] = None
+    contacted_at: Optional[datetime] = None
+    contact_comment: Optional[str] = None
+    resolved_by: Optional[str] = None
+    resolved_at: Optional[datetime] = None
+    created_at: datetime
+
+class AlertUpdate(BaseModel):
+    status: AlertStatus
+    contact_comment: Optional[str] = None
+
+class ConsecutiveAbsenceCalculation(BaseModel):
+    cadet_id: str
+    consecutive_absences: int
+    last_absence_date: Optional[date] = None
 # Password utilities
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
