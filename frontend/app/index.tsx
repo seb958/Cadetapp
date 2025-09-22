@@ -56,8 +56,30 @@ export default function Index() {
       const userData = await AsyncStorage.getItem('user_data');
       
       if (token && userData) {
-        setUser(JSON.parse(userData));
-        setIsAuthenticated(true);
+        // Vérifier si le token est encore valide côté serveur
+        try {
+          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            setUser(JSON.parse(userData));
+            setIsAuthenticated(true);
+          } else {
+            // Token invalide, supprimer les données stockées
+            await AsyncStorage.removeItem('access_token');
+            await AsyncStorage.removeItem('user_data');
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la vérification du token:', error);
+          // En cas d'erreur réseau, on garde la session locale
+          setUser(JSON.parse(userData));
+          setIsAuthenticated(true);
+        }
       }
     } catch (error) {
       console.error('Erreur lors de la vérification du statut d\'authentification:', error);
