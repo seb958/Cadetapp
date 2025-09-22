@@ -375,7 +375,124 @@ export default function Admin() {
     );
   };
 
-  const toggleCadetSelection = (cadetId: string) => {
+  const openUserModal = (user: User | null = null) => {
+    if (user) {
+      setEditingUser(user);
+      setUserForm({
+        nom: user.nom,
+        prenom: user.prenom,
+        email: user.email,
+        grade: user.grade,
+        role: user.role,
+        section_id: user.section_id || ''
+      });
+    } else {
+      setEditingUser(null);
+      setUserForm({
+        nom: '',
+        prenom: '',
+        email: '',
+        grade: 'cadet',
+        role: 'cadet',
+        section_id: ''
+      });
+    }
+    setShowUserModal(true);
+  };
+
+  const saveUser = async () => {
+    if (!userForm.nom.trim() || !userForm.prenom.trim() || !userForm.email.trim()) {
+      Alert.alert('Erreur', 'Le nom, prénom et email sont requis');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userForm.email)) {
+      Alert.alert('Erreur', 'Format d\'email invalide');
+      return;
+    }
+
+    setSavingUser(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      if (editingUser) {
+        // Modification d'utilisateur existant - pas encore implémenté dans l'API
+        Alert.alert('Information', 'La modification d\'utilisateurs sera disponible prochainement');
+        setSavingUser(false);
+        return;
+      } else {
+        // Création d'invitation
+        const payload = {
+          nom: userForm.nom.trim(),
+          prenom: userForm.prenom.trim(),
+          email: userForm.email.trim().toLowerCase(),
+          grade: userForm.grade,
+          role: userForm.role,
+          section_id: userForm.section_id || null
+        };
+
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/invite`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          Alert.alert(
+            'Succès', 
+            `Invitation envoyée à ${userForm.email}.\n\nToken d'invitation (pour test): ${data.token.substring(0, 20)}...`
+          );
+          setShowUserModal(false);
+          await loadUsers();
+        } else {
+          const errorData = await response.json();
+          Alert.alert('Erreur', errorData.detail || 'Erreur lors de l\'invitation');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      Alert.alert('Erreur', 'Impossible d\'envoyer l\'invitation');
+    } finally {
+      setSavingUser(false);
+    }
+  };
+
+  const deleteUser = async (user: User) => {
+    Alert.alert(
+      'Confirmer la suppression',
+      `Êtes-vous sûr de vouloir supprimer l'utilisateur "${user.prenom} ${user.nom}" ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            Alert.alert('Information', 'La suppression d\'utilisateurs sera disponible prochainement');
+          }
+        }
+      ]
+    );
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    const roleObj = ROLES.find(r => r.value === role);
+    return roleObj ? roleObj.label : role;
+  };
+
+  const getGradeDisplayName = (grade: string) => {
+    const gradeObj = GRADES.find(g => g.value === grade);
+    return gradeObj ? gradeObj.label : grade;
+  };
+
+  const getSectionName = (sectionId: string) => {
+    const section = sections.find(s => s.id === sectionId);
+    return section ? section.nom : 'Aucune section';
+  };
     setActivityForm(prev => ({
       ...prev,
       cadet_ids: prev.cadet_ids.includes(cadetId)
