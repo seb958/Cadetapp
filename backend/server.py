@@ -420,13 +420,13 @@ async def get_sections(current_user: User = Depends(get_current_user)):
 @api_router.post("/presences", response_model=Presence)
 async def create_presence(
     presence: PresenceCreate,
-    date: date = None,
+    presence_date: date = None,
     activite: Optional[str] = None,
     current_user: User = Depends(require_presence_permissions)
 ):
     # Utiliser la date d'aujourd'hui si non fournie
-    if date is None:
-        date = date.today()
+    if presence_date is None:
+        presence_date = date.today()
     
     # Vérifier que le cadet existe
     cadet = await db.users.find_one({"id": presence.cadet_id, "actif": True})
@@ -448,7 +448,7 @@ async def create_presence(
     # Vérifier si une présence existe déjà pour ce cadet à cette date
     existing_presence = await db.presences.find_one({
         "cadet_id": presence.cadet_id,
-        "date": date.isoformat()
+        "date": presence_date.isoformat()
     })
     
     if existing_presence:
@@ -460,7 +460,7 @@ async def create_presence(
     # Créer la présence
     presence_data = Presence(
         cadet_id=presence.cadet_id,
-        date=date,
+        date=presence_date,
         status=presence.status,
         commentaire=presence.commentaire,
         enregistre_par=current_user.id,
