@@ -253,24 +253,6 @@ export default function Admin() {
     console.log('✅ Rechargement complet terminé');
   };
 
-  // Fonction pour purge complète et rechargement forcé (version simplifiée)
-  const forcePurgeAndReload = async () => {
-    try {
-      console.log('🔥 PURGE SIMPLE DÉMARRÉE');
-      
-      // 1. Vider AsyncStorage
-      await AsyncStorage.clear();
-      
-      // 2. Redirection immédiate vers login
-      router.push('/');
-      
-    } catch (error) {
-      console.error('❌ Erreur lors de la purge:', error);
-      // En cas d'erreur, forcer quand même la redirection
-      router.push('/');
-    }
-  };
-
   const loadData = async () => {
     await Promise.all([
       loadActivities(),
