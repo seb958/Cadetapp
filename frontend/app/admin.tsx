@@ -158,10 +158,6 @@ export default function Admin() {
   });
   const [savingActivity, setSavingActivity] = useState(false);
 
-  // États pour les DatePickers
-  const [showPlannedDatePicker, setShowPlannedDatePicker] = useState(false);
-  const [showNextDatePicker, setShowNextDatePicker] = useState(false);
-
   // Gestion des utilisateurs
   const [users, setUsers] = useState<User[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
