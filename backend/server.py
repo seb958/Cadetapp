@@ -1254,6 +1254,180 @@ async def delete_activity(
     
     return {"message": "Activité désactivée avec succès"}
 
+# Routes pour les alertes d'absences consécutives
+@api_router.get("/alerts/consecutive-absences")
+async def calculate_consecutive_absences(
+    threshold: int = 3,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Calculer les absences consécutives pour tous les cadets"""
+    
+    # Récupérer tous les cadets
+    cadets = await db.users.find({"role": {"$in": ["cadet", "cadet_responsible"]}, "actif": True}).to_list(1000)
+    
+    consecutive_absences_list = []
+    
+    for cadet in cadets:
+        # Récupérer les présences du cadet triées par date décroissante
+        presences = await db.presences.find(
+            {"cadet_id": cadet["id"]}
+        ).sort("date", -1).to_list(1000)
+        
+        consecutive_count = 0
+        last_absence_date = None
+        
+        for presence in presences:
+            presence_date = datetime.fromisoformat(presence["date"]).date()
+            
+            if presence["status"] in ["absent", "absent_excuse"]:
+                consecutive_count += 1
+                if last_absence_date is None:
+                    last_absence_date = presence_date
+            else:
+                # Dès qu'on trouve une présence, on arrête le comptage
+                break
+        
+        if consecutive_count >= threshold:
+            consecutive_absences_list.append(ConsecutiveAbsenceCalculation(
+                cadet_id=cadet["id"],
+                consecutive_absences=consecutive_count,
+                last_absence_date=last_absence_date
+            ))
+    
+    return consecutive_absences_list
+
+@api_router.get("/alerts", response_model=List[AlertResponse])
+async def get_alerts(
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Récupérer toutes les alertes actives"""
+    
+    # Récupérer les alertes depuis la base de données
+    alerts = await db.alerts.find().sort("created_at", -1).to_list(1000)
+    
+    enriched_alerts = []
+    for alert in alerts:
+        # Récupérer les informations du cadet
+        cadet = await db.users.find_one({"id": alert["cadet_id"]})
+        if not cadet:
+            continue
+        
+        enriched_alert = AlertResponse(
+            id=alert["id"],
+            cadet_id=alert["cadet_id"],
+            cadet_nom=cadet["nom"],
+            cadet_prenom=cadet["prenom"],
+            consecutive_absences=alert["consecutive_absences"],
+            last_absence_date=datetime.fromisoformat(alert["last_absence_date"]).date() if alert.get("last_absence_date") else None,
+            status=AlertStatus(alert["status"]),
+            contacted_by=alert.get("contacted_by"),
+            contacted_at=datetime.fromisoformat(alert["contacted_at"]) if alert.get("contacted_at") else None,
+            contact_comment=alert.get("contact_comment"),
+            resolved_by=alert.get("resolved_by"),
+            resolved_at=datetime.fromisoformat(alert["resolved_at"]) if alert.get("resolved_at") else None,
+            created_at=datetime.fromisoformat(alert["created_at"])
+        )
+        enriched_alerts.append(enriched_alert)
+    
+    return enriched_alerts
+
+@api_router.post("/alerts/generate")
+async def generate_alerts(
+    threshold: int = 3,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Générer de nouvelles alertes basées sur les absences consécutives"""
+    
+    # Calculer les absences consécutives
+    consecutive_absences = await calculate_consecutive_absences(threshold, current_user)
+    
+    new_alerts_count = 0
+    
+    for absence_calc in consecutive_absences:
+        # Vérifier si une alerte active existe déjà pour ce cadet
+        existing_alert = await db.alerts.find_one({
+            "cadet_id": absence_calc.cadet_id,
+            "status": {"$in": ["active", "contacted"]}
+        })
+        
+        if not existing_alert:
+            # Créer une nouvelle alerte
+            alert_data = Alert(
+                cadet_id=absence_calc.cadet_id,
+                consecutive_absences=absence_calc.consecutive_absences,
+                last_absence_date=absence_calc.last_absence_date,
+                status=AlertStatus.ACTIVE
+            )
+            
+            await db.alerts.insert_one(alert_data.dict())
+            new_alerts_count += 1
+        else:
+            # Mettre à jour l'alerte existante si le nombre d'absences a augmenté
+            if absence_calc.consecutive_absences > existing_alert["consecutive_absences"]:
+                await db.alerts.update_one(
+                    {"id": existing_alert["id"]},
+                    {"$set": {
+                        "consecutive_absences": absence_calc.consecutive_absences,
+                        "last_absence_date": absence_calc.last_absence_date.isoformat() if absence_calc.last_absence_date else None
+                    }}
+                )
+    
+    return {"message": f"{new_alerts_count} nouvelles alertes générées"}
+
+@api_router.put("/alerts/{alert_id}")
+async def update_alert(
+    alert_id: str,
+    alert_update: AlertUpdate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Mettre à jour le statut d'une alerte"""
+    
+    # Vérifier que l'alerte existe
+    existing_alert = await db.alerts.find_one({"id": alert_id})
+    if not existing_alert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alerte non trouvée"
+        )
+    
+    update_data = {"status": alert_update.status.value}
+    
+    if alert_update.status == AlertStatus.CONTACTED:
+        update_data.update({
+            "contacted_by": current_user.id,
+            "contacted_at": datetime.utcnow().isoformat(),
+            "contact_comment": alert_update.contact_comment
+        })
+    elif alert_update.status == AlertStatus.RESOLVED:
+        update_data.update({
+            "resolved_by": current_user.id,
+            "resolved_at": datetime.utcnow().isoformat()
+        })
+    
+    await db.alerts.update_one(
+        {"id": alert_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Alerte mise à jour avec succès"}
+
+@api_router.delete("/alerts/{alert_id}")
+async def delete_alert(
+    alert_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Supprimer une alerte"""
+    
+    result = await db.alerts.delete_one({"id": alert_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alerte non trouvée"
+        )
+    
+    return {"message": "Alerte supprimée avec succès"}
+
 # Route de test
 @api_router.get("/")
 async def root():
