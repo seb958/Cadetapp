@@ -116,6 +116,21 @@ export default function Admin() {
   });
   const [savingActivity, setSavingActivity] = useState(false);
 
+  // Gestion des utilisateurs
+  const [users, setUsers] = useState<User[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [userForm, setUserForm] = useState<UserFormData>({
+    nom: '',
+    prenom: '',
+    email: '',
+    grade: 'cadet',
+    role: 'cadet',
+    section_id: ''
+  });
+  const [savingUser, setSavingUser] = useState(false);
+
   useEffect(() => {
     checkAuth();
   }, []);
