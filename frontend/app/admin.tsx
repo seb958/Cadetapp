@@ -10,7 +10,8 @@ import {
   Modal,
   ActivityIndicator,
   RefreshControl,
-  Switch
+  Switch,
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
