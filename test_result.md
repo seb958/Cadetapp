@@ -149,6 +149,17 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTÉ COMPLET - Gestion utilisateurs/sections fonctionnelle: Admin peut lister utilisateurs (4 trouvés), créer sections, permissions correctes (cadet ne peut pas accéder liste utilisateurs). Toutes les routes protégées fonctionnent"
+  - task: "API complète de gestion des présences"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "API complète: création présences individuelles/bulk, consultation avec permissions par rôle (cadet voit seulement ses présences, cadet_responsible sa section, admin/encadrement tout), statistiques, mise à jour. Testé avec curl - fonctionne parfaitement."
 
 frontend:
   - task: "Interface d'authentification française"
