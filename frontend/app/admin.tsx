@@ -13,6 +13,7 @@ import {
   Switch,
   Platform
 } from 'react-native';
+import DatePicker from 'react-native-date-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
