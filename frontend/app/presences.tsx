@@ -535,58 +535,69 @@ export default function Presences() {
               </View>
             )}
 
-            {/* Liste des cadets */}
-            <Text style={styles.sectionTitle}>Cadets ({cadets.length})</Text>
-            
-            {cadets.map((cadet) => (
-              <View key={cadet.id} style={styles.cadetCard}>
-                <Text style={styles.cadetName}>
-                  {cadet.prenom} {cadet.nom}
+            {/* Liste des cadets pour prise de présence */}
+            {Object.keys(attendanceData).length > 0 && (
+              <View>
+                <Text style={styles.sectionTitle}>
+                  Présences ({Object.keys(attendanceData).length} cadet{Object.keys(attendanceData).length > 1 ? 's' : ''})
                 </Text>
                 
-                {/* Boutons de statut */}
-                <View style={styles.statusButtons}>
-                  {['present', 'absent', 'absent_excuse', 'retard'].map((status) => (
-                    <TouchableOpacity
-                      key={status}
-                      style={[
-                        styles.statusButton,
-                        attendanceData[cadet.id]?.status === status && styles.statusButtonActive,
-                        { borderColor: getStatusColor(status) }
-                      ]}
-                      onPress={() => updateAttendanceStatus(cadet.id, status)}
-                    >
-                      <Text style={[
-                        styles.statusButtonText,
-                        attendanceData[cadet.id]?.status === status && { color: getStatusColor(status) }
-                      ]}>
-                        {getStatusDisplayName(status)}
+                {Object.keys(attendanceData).map((cadetId) => {
+                  const cadet = cadets.find(c => c.id === cadetId);
+                  if (!cadet) return null;
+                  
+                  return (
+                    <View key={cadet.id} style={styles.cadetCard}>
+                      <Text style={styles.cadetName}>
+                        {cadet.prenom} {cadet.nom}
                       </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                      
+                      {/* Boutons de statut */}
+                      <View style={styles.statusButtons}>
+                        {['present', 'absent', 'absent_excuse', 'retard'].map((status) => (
+                          <TouchableOpacity
+                            key={status}
+                            style={[
+                              styles.statusButton,
+                              attendanceData[cadet.id]?.status === status && styles.statusButtonActive,
+                              { borderColor: getStatusColor(status) }
+                            ]}
+                            onPress={() => updateAttendanceStatus(cadet.id, status)}
+                          >
+                            <Text style={[
+                              styles.statusButtonText,
+                              attendanceData[cadet.id]?.status === status && { color: getStatusColor(status) }
+                            ]}>
+                              {getStatusDisplayName(status)}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
 
-                {/* Commentaire */}
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Commentaire (optionnel)"
-                  value={attendanceData[cadet.id]?.commentaire || ''}
-                  onChangeText={(text) => updateAttendanceComment(cadet.id, text)}
-                  multiline
-                />
+                      {/* Commentaire */}
+                      <TextInput
+                        style={styles.commentInput}
+                        placeholder="Commentaire (optionnel)"
+                        value={attendanceData[cadet.id]?.commentaire || ''}
+                        onChangeText={(text) => updateAttendanceComment(cadet.id, text)}
+                        multiline
+                      />
+                    </View>
+                  );
+                })}
+
+                {/* Bouton de sauvegarde */}
+                <TouchableOpacity
+                  style={[styles.saveButton, savingAttendance && styles.saveButtonDisabled]}
+                  onPress={saveAttendance}
+                  disabled={savingAttendance}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {savingAttendance ? 'Enregistrement...' : `Enregistrer ${Object.keys(attendanceData).length} présence${Object.keys(attendanceData).length > 1 ? 's' : ''}`}
+                  </Text>
+                </TouchableOpacity>
               </View>
-            ))}
-
-            {/* Bouton de sauvegarde */}
-            <TouchableOpacity
-              style={[styles.saveButton, savingAttendance && styles.saveButtonDisabled]}
-              onPress={saveAttendance}
-              disabled={savingAttendance}
-            >
-              <Text style={styles.saveButtonText}>
-                {savingAttendance ? 'Enregistrement...' : `Enregistrer ${cadets.length} présences`}
-              </Text>
-            </TouchableOpacity>
+            )}
           </ScrollView>
         </SafeAreaView>
       </Modal>
