@@ -494,6 +494,16 @@ export default function Admin() {
     return section ? section.nom : 'Aucune section';
   };
 
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'cadet': return '#6b7280';
+      case 'cadet_responsible': return '#3b82f6';
+      case 'cadet_admin': return '#10b981';
+      case 'encadrement': return '#dc2626';
+      default: return '#6b7280';
+    }
+  };
+
   const toggleCadetSelection = (cadetId: string) => {
     setActivityForm(prev => ({
       ...prev,
