@@ -290,8 +290,17 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
+        const userData = await response.json();
+        console.log('📊 Utilisateurs chargés depuis API:', userData.length);
+        
+        // Log détaillé de chaque utilisateur pour débogage
+        userData.forEach((user: User, index: number) => {
+          console.log(`${index + 1}. ${user.prenom} ${user.nom} | ID: ${user.id} | Actif: ${user.actif}`);
+        });
+        
+        setUsers(userData);
+      } else {
+        console.error('Erreur lors du chargement des utilisateurs:', response.status);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error);
