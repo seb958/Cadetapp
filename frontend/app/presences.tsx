@@ -499,7 +499,7 @@ export default function Presences() {
                       onPress={() => initializeAttendanceData('selected')}
                       disabled={selectedCadets.size === 0}
                     >
-                      <Text style={styles.smallButtonText}>Confirmer</Text>
+                      <Text style={[styles.smallButtonText, {color: 'white'}]}>Confirmer</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
