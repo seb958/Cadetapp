@@ -1561,7 +1561,10 @@ export default function Admin() {
                     {alert.status === 'contacted' && (
                       <TouchableOpacity
                         style={[styles.alertActionButton, {backgroundColor: '#10b981'}]}
-                        onPress={() => updateAlertStatus('resolved')}
+                        onPress={() => {
+                          setSelectedAlert(alert);
+                          updateAlertStatus('resolved');
+                        }}
                       >
                         <Text style={styles.alertActionText}>✅ Marquer comme résolu</Text>
                       </TouchableOpacity>
