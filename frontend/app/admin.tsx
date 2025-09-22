@@ -1054,20 +1054,12 @@ export default function Admin() {
                 >
                   <Text style={styles.addButtonText}>+ Inviter Utilisateur</Text>
                 </TouchableOpacity>
-                <View style={styles.refreshButtonsRow}>
-                  <TouchableOpacity
-                    style={styles.refreshButton}
-                    onPress={forceReloadAllData}
-                  >
-                    <Text style={styles.refreshButtonText}>🔄 Actualiser</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.resetButton}
-                    onPress={forcePurgeAndReload}
-                  >
-                    <Text style={styles.resetButtonText}>🔥 PURGE</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={styles.refreshButton}
+                  onPress={forceReloadAllData}
+                >
+                  <Text style={styles.refreshButtonText}>🔄 Actualiser</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
