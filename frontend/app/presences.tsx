@@ -73,6 +73,7 @@ export default function Presences() {
   const [user, setUser] = useState<User | null>(null);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [cadets, setCadets] = useState<User[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
