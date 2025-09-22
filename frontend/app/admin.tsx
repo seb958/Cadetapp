@@ -1415,7 +1415,15 @@ export default function Admin() {
               
               {Object.entries(settings.inspectionCriteria).map(([tenueType, criteria]) => (
                 <View key={tenueType} style={styles.tenueGroup}>
-                  <Text style={styles.tenueTitle}>{tenueType}</Text>
+                  <View style={styles.tenueHeader}>
+                    <Text style={styles.tenueTitle}>{tenueType}</Text>
+                    <TouchableOpacity
+                      style={styles.removeTenueButton}
+                      onPress={() => removeTenue(tenueType)}
+                    >
+                      <Text style={styles.removeTenueButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
                   
                   {criteria.map((criterion, index) => (
                     <View key={index} style={styles.criterionItem}>
@@ -1454,6 +1462,25 @@ export default function Admin() {
                   </TouchableOpacity>
                 </View>
               ))}
+
+              {/* Section pour ajouter une nouvelle tenue */}
+              <View style={styles.newTenueSection}>
+                <Text style={styles.settingLabel}>Ajouter une nouvelle tenue</Text>
+                <View style={styles.newTenueInputRow}>
+                  <TextInput
+                    style={[styles.input, {flex: 1}]}
+                    value={newTenueName}
+                    onChangeText={setNewTenueName}
+                    placeholder="Ex: C3 - Tenue de Combat, Tenue de Sortie..."
+                  />
+                  <TouchableOpacity
+                    style={styles.addNewTenueButton}
+                    onPress={addNewTenue}
+                  >
+                    <Text style={styles.addNewTenueButtonText}>+ Ajouter</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
               
               <View style={styles.settingItem}>
                 <Text style={styles.settingLabel}>Barème de notation</Text>
