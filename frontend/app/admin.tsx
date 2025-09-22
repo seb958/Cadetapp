@@ -1296,14 +1296,10 @@ export default function Admin() {
                   La suppression d'un utilisateur est irréversible. Toutes ses données seront perdues définitivement.
                 </Text>
                 <TouchableOpacity
-                  style={styles.dangerButton}
-                  onPress={() => {
-                    alert('BOUTON UTILISATEUR MARCHE!');
-                    console.log('BOUTON UTILISATEUR CLIQUE!');
-                    deleteUser(editingUser);
-                  }}
+                  style={[styles.dangerButton, {backgroundColor: '#ff0000', padding: 20}]}
+                  onPress={() => alert('TEST BOUTON UTILISATEUR!')}
                 >
-                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cet utilisateur</Text>
+                  <Text style={[styles.dangerButtonText, {color: 'white', fontSize: 16}]}>TEST - Supprimer utilisateur</Text>
                 </TouchableOpacity>
               </View>
             )}
