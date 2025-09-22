@@ -2857,11 +2857,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
+  tenueHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   tenueTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 10,
+    flex: 1,
+  },
+  removeTenueButton: {
+    backgroundColor: '#ef4444',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeTenueButtonText: {
+    fontSize: 16,
+  },
+  newTenueSection: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#0ea5e9',
+  },
+  newTenueInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  addNewTenueButton: {
+    backgroundColor: '#0ea5e9',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  addNewTenueButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   // Styles pour les alertes
   alertCard: {
