@@ -137,6 +137,16 @@ export default function Admin() {
   });
   const [savingUser, setSavingUser] = useState(false);
 
+  // Gestion des sections
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [editingSection, setEditingSection] = useState<Section | null>(null);
+  const [sectionForm, setSectionForm] = useState({
+    nom: '',
+    description: '',
+    responsable_id: ''
+  });
+  const [savingSection, setSavingSection] = useState(false);
+
   useEffect(() => {
     checkAuth();
   }, []);
