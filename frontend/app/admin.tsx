@@ -57,7 +57,10 @@ const GRADES = [
   { value: 'adjudant_2e_classe', label: 'Adjudant de 2e classe' },
   { value: 'adjudant_1re_classe', label: 'Adjudant de 1re classe' },
   { value: 'instructeur_civil', label: 'Instructeur civil' },
-  // Note: Liste semble incomplète, ajouter les grades manquants
+  { value: 'eleve_officier', label: 'Élève-officier' },
+  { value: 'sous_lieutenant', label: 'Sous-Lieutenant' },
+  { value: 'lieutenant', label: 'Lieutenant' },
+  { value: 'capitaine', label: 'Capitaine' }
 ];
 
 const ROLES = [
