@@ -656,7 +656,8 @@ export default function Admin() {
           email: currentUser.email || '',
           role: currentUser.role,
           grade: currentUser.grade,
-          section_id: currentUser.section_id || ''
+          section_id: currentUser.section_id || '',
+          has_admin_privileges: currentUser.has_admin_privileges || false
         });
       } else {
         console.error('Utilisateur non trouvé dans la liste actuelle:', user.nom, user.prenom);
