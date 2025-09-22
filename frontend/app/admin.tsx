@@ -1921,4 +1921,56 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 2,
   },
+  // Styles pour la zone de suppression dangereuse
+  dangerZone: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#dc2626',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  dangerZoneTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#dc2626',
+    marginBottom: 8,
+  },
+  dangerZoneText: {
+    fontSize: 14,
+    color: '#991b1b',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  dangerButton: {
+    backgroundColor: '#dc2626',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  dangerButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  userStatus: {
+    fontSize: 12,
+    color: '#f59e0b',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  statusBadge: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  statusBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '600',
+  },
 });
