@@ -80,9 +80,11 @@ class PresenceTestSuite:
         """Test création de présence individuelle"""
         print("\n=== TEST CRÉATION PRÉSENCE INDIVIDUELLE ===")
         
-        # Test avec cadet_admin (doit réussir) - utiliser une date future unique
+        # Test avec cadet_admin (doit réussir) - utiliser une date aléatoire unique
         cadet_id = self.users["cadet1"]["id"]
-        future_date = date(2025, 12, 15)  # Date fixe dans le futur
+        # Générer une date aléatoire dans le futur
+        random_days = random.randint(100, 365)
+        future_date = date.today() + timedelta(days=random_days)
         presence_data = {
             "cadet_id": cadet_id,
             "presence_date": future_date.isoformat(),
