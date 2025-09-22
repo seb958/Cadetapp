@@ -902,6 +902,172 @@ export default function Admin() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Modal pour créer/modifier un utilisateur */}
+      <Modal
+        visible={showUserModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {editingUser ? 'Modifier l\'Utilisateur' : 'Inviter un Utilisateur'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowUserModal(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {/* Informations personnelles */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Informations personnelles</Text>
+              
+              <Text style={styles.inputLabel}>Prénom *</Text>
+              <TextInput
+                style={styles.input}
+                value={userForm.prenom}
+                onChangeText={(text) => setUserForm(prev => ({...prev, prenom: text}))}
+                placeholder="Ex: Jean"
+              />
+
+              <Text style={styles.inputLabel}>Nom *</Text>
+              <TextInput
+                style={styles.input}
+                value={userForm.nom}
+                onChangeText={(text) => setUserForm(prev => ({...prev, nom: text}))}
+                placeholder="Ex: Dupont"
+              />
+
+              <Text style={styles.inputLabel}>Email *</Text>
+              <TextInput
+                style={styles.input}
+                value={userForm.email}
+                onChangeText={(text) => setUserForm(prev => ({...prev, email: text}))}
+                placeholder="jean.dupont@exemple.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={!editingUser} // Email non modifiable pour utilisateurs existants
+              />
+            </View>
+
+            {/* Grade et rôle */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Grade et rôle</Text>
+              
+              <Text style={styles.inputLabel}>Grade</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.optionsRow}>
+                  {GRADES.map((grade) => (
+                    <TouchableOpacity
+                      key={grade.value}
+                      style={[
+                        styles.optionButton,
+                        userForm.grade === grade.value && styles.optionButtonActive
+                      ]}
+                      onPress={() => setUserForm(prev => ({...prev, grade: grade.value}))}
+                    >
+                      <Text style={[
+                        styles.optionButtonText,
+                        userForm.grade === grade.value && styles.optionButtonTextActive
+                      ]}>
+                        {grade.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+
+              <Text style={styles.inputLabel}>Rôle</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.optionsRow}>
+                  {ROLES.map((role) => (
+                    <TouchableOpacity
+                      key={role.value}
+                      style={[
+                        styles.optionButton,
+                        userForm.role === role.value && styles.optionButtonActive
+                      ]}
+                      onPress={() => setUserForm(prev => ({...prev, role: role.value}))}
+                    >
+                      <Text style={[
+                        styles.optionButtonText,
+                        userForm.role === role.value && styles.optionButtonTextActive
+                      ]}>
+                        {role.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Section */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Affectation</Text>
+              
+              <Text style={styles.inputLabel}>Section</Text>
+              <View style={styles.sectionSelector}>
+                <TouchableOpacity
+                  style={[
+                    styles.sectionOption,
+                    userForm.section_id === '' && styles.sectionOptionActive
+                  ]}
+                  onPress={() => setUserForm(prev => ({...prev, section_id: ''}))}
+                >
+                  <Text style={[
+                    styles.sectionOptionText,
+                    userForm.section_id === '' && styles.sectionOptionTextActive
+                  ]}>
+                    Aucune section
+                  </Text>
+                </TouchableOpacity>
+
+                {sections.map((section) => (
+                  <TouchableOpacity
+                    key={section.id}
+                    style={[
+                      styles.sectionOption,
+                      userForm.section_id === section.id && styles.sectionOptionActive
+                    ]}
+                    onPress={() => setUserForm(prev => ({...prev, section_id: section.id}))}
+                  >
+                    <Text style={[
+                      styles.sectionOptionText,
+                      userForm.section_id === section.id && styles.sectionOptionTextActive
+                    ]}>
+                      {section.nom}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Information sur l'invitation */}
+            {!editingUser && (
+              <View style={styles.infoSection}>
+                <Text style={styles.infoTitle}>📧 Processus d'invitation</Text>
+                <Text style={styles.infoText}>
+                  Un email d'invitation sera envoyé à l'utilisateur avec un lien pour définir son mot de passe.
+                  {'\n\n'}En mode test, le token d'invitation sera affiché pour permettre la simulation du processus.
+                </Text>
+              </View>
+            )}
+
+            {/* Bouton de sauvegarde */}
+            <TouchableOpacity
+              style={[styles.saveButton, savingUser && styles.saveButtonDisabled]}
+              onPress={saveUser}
+              disabled={savingUser}
+            >
+              <Text style={styles.saveButtonText}>
+                {savingUser ? 'Envoi en cours...' : editingUser ? 'Modifier l\'Utilisateur' : 'Envoyer l\'Invitation'}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
