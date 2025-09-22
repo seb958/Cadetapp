@@ -512,13 +512,6 @@ export default function Admin() {
         : [...prev.cadet_ids, cadetId]
     }));
   };
-    setActivityForm(prev => ({
-      ...prev,
-      cadet_ids: prev.cadet_ids.includes(cadetId)
-        ? prev.cadet_ids.filter(id => id !== cadetId)
-        : [...prev.cadet_ids, cadetId]
-    }));
-  };
 
   if (loading) {
     return (
