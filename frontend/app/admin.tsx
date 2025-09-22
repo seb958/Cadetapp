@@ -915,7 +915,7 @@ export default function Admin() {
           <View style={styles.tabContent}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Gestion des Utilisateurs</Text>
-              <View style={styles.sectionHeader}>
+              <View style={styles.sectionActions}>
                 <TouchableOpacity
                   style={styles.addButton}
                   onPress={() => openUserModal()}
