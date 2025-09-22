@@ -919,12 +919,6 @@ export default function Admin() {
                       >
                         <Text style={styles.editButtonText}>Modifier</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => deleteSection(section)}
-                      >
-                        <Text style={styles.deleteButtonText}>Supprimer</Text>
-                      </TouchableOpacity>
                     </View>
                   </View>
                   
