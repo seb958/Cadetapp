@@ -843,7 +843,63 @@ export default function Admin() {
 
         {activeTab === 'sections' && (
           <View style={styles.tabContent}>
-            <Text style={styles.comingSoon}>Gestion des Sections - Prochainement</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Gestion des Sections</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => openSectionModal()}
+              >
+                <Text style={styles.addButtonText}>+ Nouvelle Section</Text>
+              </TouchableOpacity>
+            </View>
+
+            {sections.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>Aucune section créée</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Créez votre première section pour organiser les cadets
+                </Text>
+              </View>
+            ) : (
+              sections.map((section) => (
+                <View key={section.id} style={styles.sectionCard}>
+                  <View style={styles.sectionCardHeader}>
+                    <Text style={styles.sectionCardName}>{section.nom}</Text>
+                    <View style={styles.sectionActions}>
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => openSectionModal(section)}
+                      >
+                        <Text style={styles.editButtonText}>Modifier</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={() => deleteSection(section)}
+                      >
+                        <Text style={styles.deleteButtonText}>Supprimer</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  
+                  {section.description && (
+                    <Text style={styles.sectionCardDescription}>{section.description}</Text>
+                  )}
+                  
+                  <Text style={styles.sectionCardInfo}>
+                    Responsable: {section.responsable_id ? getResponsableName(section.responsable_id) : 'Aucun'}
+                  </Text>
+                  
+                  <Text style={styles.sectionCardInfo}>
+                    Créée le: {new Date(section.created_at).toLocaleDateString('fr-FR')}
+                  </Text>
+
+                  {/* Nombre de membres */}
+                  <Text style={styles.sectionCardInfo}>
+                    Membres: {users.filter(u => u.section_id === section.id).length} cadet(s)
+                  </Text>
+                </View>
+              ))
+            )}
           </View>
         )}
 
