@@ -958,7 +958,10 @@ export default function Admin() {
                   <View style={styles.userActions}>
                     <TouchableOpacity
                       style={styles.editButton}
-                      onPress={() => openUserModal(user)}
+                      onPress={() => {
+                        console.log('Bouton modifier cliqué pour:', user.nom, user.prenom);
+                        openUserModal(user);
+                      }}
                     >
                       <Text style={styles.editButtonText}>Modifier</Text>
                     </TouchableOpacity>
