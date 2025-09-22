@@ -92,7 +92,7 @@ class User(UserBase):
     created_at: datetime
 
 class UserInvitation(BaseModel):
-    email: EmailStr
+    email: Optional[EmailStr] = None
     nom: str
     prenom: str
     grade: Grade
