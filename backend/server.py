@@ -470,6 +470,66 @@ async def get_user(user_id: str, current_user: User = Depends(get_current_user))
         )
     return User(**user)
 
+@api_router.put("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    user_update: UserUpdate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que l'utilisateur existe
+    existing_user = await db.users.find_one({"id": user_id, "actif": True})
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Préparer les mises à jour (seulement les champs fournis)
+    update_data = {}
+    
+    if user_update.nom is not None:
+        update_data["nom"] = user_update.nom.strip()
+    if user_update.prenom is not None:
+        update_data["prenom"] = user_update.prenom.strip()
+    if user_update.email is not None:
+        # Vérifier que l'email n'est pas déjà utilisé par un autre utilisateur
+        if user_update.email:
+            existing_email = await db.users.find_one({
+                "email": user_update.email,
+                "id": {"$ne": user_id}
+            })
+            if existing_email:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cet email est déjà utilisé par un autre utilisateur"
+                )
+        update_data["email"] = user_update.email
+    if user_update.grade is not None:
+        update_data["grade"] = user_update.grade.value
+    if user_update.role is not None:
+        update_data["role"] = user_update.role.value
+    if user_update.section_id is not None:
+        # Vérifier que la section existe si fournie
+        if user_update.section_id:
+            section = await db.sections.find_one({"id": user_update.section_id})
+            if not section:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Section non trouvée"
+                )
+        update_data["section_id"] = user_update.section_id
+    if user_update.actif is not None:
+        update_data["actif"] = user_update.actif
+    
+    # Effectuer la mise à jour
+    if update_data:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Utilisateur mis à jour avec succès"}
+
 # Routes pour les sections
 @api_router.post("/sections", response_model=Section)
 async def create_section(
