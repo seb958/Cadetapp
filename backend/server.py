@@ -1312,6 +1312,149 @@ async def delete_activity(
     
     return {"message": "Activité désactivée avec succès"}
 
+# Routes pour la gestion des rôles
+@api_router.get("/roles", response_model=List[Role])
+async def get_roles(current_user: User = Depends(require_admin_or_encadrement)):
+    """Récupérer tous les rôles"""
+    roles = await db.roles.find().to_list(1000)
+    return [Role(**role) for role in roles]
+
+@api_router.post("/roles", response_model=Role)
+async def create_role(
+    role: RoleCreate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Créer un nouveau rôle"""
+    # Vérifier que le nom du rôle n'existe pas déjà
+    existing_role = await db.roles.find_one({"name": role.name})
+    if existing_role:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un rôle avec ce nom existe déjà"
+        )
+    
+    role_data = Role(**role.dict())
+    await db.roles.insert_one(role_data.dict())
+    return role_data
+
+@api_router.put("/roles/{role_id}")
+async def update_role(
+    role_id: str,
+    role_update: RoleUpdate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Mettre à jour un rôle"""
+    # Vérifier que le rôle existe
+    existing_role = await db.roles.find_one({"id": role_id})
+    if not existing_role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rôle non trouvé"
+        )
+    
+    # Empêcher la modification des rôles système
+    if existing_role.get("is_system_role", False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Les rôles système ne peuvent pas être modifiés"
+        )
+    
+    # Préparer les mises à jour
+    update_data = {}
+    if role_update.name is not None:
+        # Vérifier que le nouveau nom n'existe pas déjà
+        name_exists = await db.roles.find_one({
+            "name": role_update.name,
+            "id": {"$ne": role_id}
+        })
+        if name_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Un rôle avec ce nom existe déjà"
+            )
+        update_data["name"] = role_update.name
+    
+    if role_update.description is not None:
+        update_data["description"] = role_update.description
+    
+    if role_update.permissions is not None:
+        update_data["permissions"] = [perm.value for perm in role_update.permissions]
+    
+    # Effectuer la mise à jour
+    if update_data:
+        await db.roles.update_one(
+            {"id": role_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Rôle mis à jour avec succès"}
+
+@api_router.delete("/roles/{role_id}")
+async def delete_role(
+    role_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Supprimer un rôle"""
+    # Vérifier que le rôle existe
+    existing_role = await db.roles.find_one({"id": role_id})
+    if not existing_role:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rôle non trouvé"
+        )
+    
+    # Empêcher la suppression des rôles système
+    if existing_role.get("is_system_role", False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Les rôles système ne peuvent pas être supprimés"
+        )
+    
+    # Vérifier qu'aucun utilisateur n'utilise ce rôle
+    users_with_role = await db.users.find({"custom_role_id": role_id}).to_list(1)
+    if users_with_role:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de supprimer un rôle utilisé par des utilisateurs"
+        )
+    
+    # Supprimer le rôle
+    result = await db.roles.delete_one({"id": role_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rôle non trouvé"
+        )
+    
+    return {"message": "Rôle supprimé avec succès"}
+
+@api_router.get("/users/filters")
+async def get_user_filters(current_user: User = Depends(require_admin_or_encadrement)):
+    """Récupérer les options de filtres pour les utilisateurs"""
+    
+    # Récupérer tous les utilisateurs pour extraire les filtres
+    users = await db.users.find({"actif": True}).to_list(1000)
+    sections = await db.sections.find().to_list(1000)
+    
+    # Extraire les grades uniques
+    grades = list(set([user.get("grade") for user in users if user.get("grade")]))
+    grades.sort()
+    
+    # Extraire les rôles uniques
+    roles = list(set([user.get("role") for user in users if user.get("role")]))
+    roles.sort()
+    
+    # Formatter les sections
+    section_options = [{"id": section["id"], "name": section["nom"]} for section in sections]
+    section_options.sort(key=lambda x: x["name"])
+    
+    return {
+        "grades": grades,
+        "roles": roles,
+        "sections": section_options
+    }
+
 # Routes pour les alertes d'absences consécutives
 @api_router.get("/alerts/consecutive-absences")
 async def calculate_consecutive_absences(
