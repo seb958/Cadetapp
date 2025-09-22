@@ -452,7 +452,88 @@ export default function Presences() {
                 onChangeText={setActivite}
                 placeholder="Ex: Entraînement, Parade, etc."
               />
+
+              {/* Sélecteur de mode */}
+              <Text style={styles.inputLabel}>Mode de prise de présence</Text>
+              <View style={styles.modeSelector}>
+                <TouchableOpacity
+                  style={[styles.modeButton, attendanceMode === 'all' && styles.modeButtonActive]}
+                  onPress={() => {
+                    setAttendanceMode('all');
+                    initializeAttendanceData('all');
+                  }}
+                >
+                  <Text style={[styles.modeButtonText, attendanceMode === 'all' && styles.modeButtonTextActive]}>
+                    Tous les cadets
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.modeButton, attendanceMode === 'selected' && styles.modeButtonActive]}
+                  onPress={() => {
+                    setAttendanceMode('selected');
+                    setAttendanceData({});
+                  }}
+                >
+                  <Text style={[styles.modeButtonText, attendanceMode === 'selected' && styles.modeButtonTextActive]}>
+                    Sélection de cadets
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
+
+            {/* Interface de sélection des cadets pour le mode 'selected' */}
+            {attendanceMode === 'selected' && (
+              <View style={styles.selectionInterface}>
+                <View style={styles.selectionHeader}>
+                  <Text style={styles.sectionTitle}>Sélectionner les cadets ({selectedCadets.size}/{cadets.length})</Text>
+                  <View style={styles.selectionButtons}>
+                    <TouchableOpacity style={styles.smallButton} onPress={selectAllCadets}>
+                      <Text style={styles.smallButtonText}>Tout</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.smallButton} onPress={clearSelection}>
+                      <Text style={styles.smallButtonText}>Aucun</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.smallButton, styles.confirmButton]}
+                      onPress={() => initializeAttendanceData('selected')}
+                      disabled={selectedCadets.size === 0}
+                    >
+                      <Text style={styles.smallButtonText}>Confirmer</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Liste des cadets pour sélection */}
+                {cadets.map((cadet) => (
+                  <TouchableOpacity
+                    key={cadet.id}
+                    style={[
+                      styles.cadetSelectionCard,
+                      selectedCadets.has(cadet.id) && styles.cadetSelectionCardSelected
+                    ]}
+                    onPress={() => toggleCadetSelection(cadet.id)}
+                  >
+                    <View style={styles.cadetSelectionInfo}>
+                      <Text style={styles.cadetSelectionName}>
+                        {cadet.prenom} {cadet.nom}
+                      </Text>
+                      <Text style={styles.cadetSelectionGrade}>
+                        {cadet.grade}
+                      </Text>
+                    </View>
+                    <View style={[
+                      styles.checkbox,
+                      selectedCadets.has(cadet.id) && styles.checkboxSelected
+                    ]}>
+                      {selectedCadets.has(cadet.id) && (
+                        <Text style={styles.checkmark}>✓</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             {/* Liste des cadets */}
             <Text style={styles.sectionTitle}>Cadets ({cadets.length})</Text>
