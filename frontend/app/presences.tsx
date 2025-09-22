@@ -517,6 +517,19 @@ export default function Presences() {
                     Sélection de cadets
                   </Text>
                 </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.modeButton, attendanceMode === 'activity' && styles.modeButtonActive]}
+                  onPress={() => {
+                    setAttendanceMode('activity');
+                    setAttendanceData({});
+                    setSelectedActivity(null);
+                  }}
+                >
+                  <Text style={[styles.modeButtonText, attendanceMode === 'activity' && styles.modeButtonTextActive]}>
+                    Liste d'activité
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
 
