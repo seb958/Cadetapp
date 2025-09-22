@@ -253,31 +253,24 @@ export default function Admin() {
     console.log('✅ Rechargement complet terminé');
   };
 
-  // Fonction pour reset complet avec déconnexion
-  const forceCompleteReset = async () => {
+  // Fonction pour purge complète et rechargement forcé
+  const forcePurgeAndReload = async () => {
+    console.log('🔥 PURGE COMPLÈTE DÉMARRÉE');
+    
     try {
-      // Afficher une alerte de confirmation avant le reset
-      const confirmReset = Platform.OS === 'web' 
-        ? window.confirm('⚠️ RESET COMPLET\n\nCeci va:\n- Vider tous les caches\n- Vous déconnecter\n- Recharger toutes les données\n\nContinuer ?')
-        : true; // Sur mobile, on procède directement
-      
-      if (!confirmReset && Platform.OS === 'web') return;
-      
-      showAlert('Information', 'Reset complet en cours...');
-      
-      console.log('🔄 RESET COMPLET DÉMARRÉ');
-      
-      // 1. Vider AsyncStorage complètement
+      // 1. Vider complètement AsyncStorage
       await AsyncStorage.clear();
       console.log('✅ AsyncStorage vidé');
       
-      // 2. Réinitialiser tous les états React
+      // 2. Réinitialiser TOUS les états
       setUsers([]);
       setCadets([]);
       setSections([]);
       setActivities([]);
       setUser(null);
       setIsAuthenticated(false);
+      setActiveTab('activities');
+      setLoading(true);
       
       // 3. Fermer tous les modals
       setShowUserModal(false);
@@ -287,27 +280,19 @@ export default function Admin() {
       setEditingSection(null);
       setEditingActivity(null);
       
-      console.log('✅ États React réinitialisés');
+      console.log('✅ États réinitialisés');
       
-      // 4. Sur web, vider aussi le cache du navigateur si possible
-      if (Platform.OS === 'web' && 'caches' in window) {
-        try {
-          const cacheNames = await caches.keys();
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-          console.log('✅ Cache navigateur vidé');
-        } catch (error) {
-          console.log('⚠️ Impossible de vider le cache navigateur:', error);
-        }
-      }
+      // 4. Attendre un peu pour s'assurer que tout est nettoyé
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // 5. Rediriger vers la connexion
+      // 5. Redirection vers login pour forcer une reconnexion complète
       router.push('/');
       
-      console.log('🎯 Reset complet terminé - redirection vers login');
+      console.log('🎯 Purge terminée - redirecting vers login');
       
     } catch (error) {
-      console.error('❌ Erreur lors du reset:', error);
-      showAlert('Erreur', 'Erreur lors du reset complet');
+      console.error('❌ Erreur lors de la purge:', error);
+      showAlert('Erreur', 'Erreur lors de la purge complète');
     }
   };
 
