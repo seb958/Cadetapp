@@ -243,9 +243,10 @@ class PresenceTestSuite:
         
         # Test 2: Cadet ne peut pas créer de présences
         try:
+            future_date = date.today() + timedelta(days=5)
             presence_data = {
                 "cadet_id": self.users["cadet1"]["id"],
-                "date": date.today().isoformat(),
+                "presence_date": future_date.isoformat(),
                 "status": "present",
                 "commentaire": "Test permission refusée"
             }
