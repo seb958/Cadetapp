@@ -523,6 +523,12 @@ export default function Admin() {
   };
 
   const deleteUser = async (user: User) => {
+    const confirmDelete = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer définitivement "${user.prenom} ${user.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nToutes les données associées (présences, inspections, etc.) seront perdues.`
+    );
+    
+    if (!confirmDelete) return;
+
     try {
       const token = await AsyncStorage.getItem('access_token');
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/${user.id}`, {
@@ -533,16 +539,16 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Alert.alert('Succès', `L'utilisateur "${user.prenom} ${user.nom}" a été supprimé définitivement.`);
+        window.alert(`L'utilisateur "${user.prenom} ${user.nom}" a été supprimé définitivement.`);
         setShowUserModal(false);
         await loadUsers();
       } else {
         const errorData = await response.json();
-        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer l\'utilisateur');
+        window.alert(`Erreur: ${errorData.detail || 'Impossible de supprimer l\'utilisateur'}`);
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+      window.alert('Erreur réseau lors de la suppression');
     }
   };
 
