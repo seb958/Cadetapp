@@ -154,8 +154,10 @@ export default function Admin() {
 
   const checkAuth = async () => {
     try {
+      const token = await AsyncStorage.getItem('access_token');
       const userData = await AsyncStorage.getItem('user_data');
-      if (userData) {
+      
+      if (token && userData) {
         const parsedUser = JSON.parse(userData);
         
         // Vérifier les permissions d'administration
@@ -165,8 +167,29 @@ export default function Admin() {
           return;
         }
         
-        setUser(parsedUser);
-        await loadData();
+        // Vérifier si le token est encore valide
+        try {
+          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          
+          if (response.ok) {
+            setUser(parsedUser);
+            await loadData();
+          } else {
+            // Token invalide, rediriger vers la connexion
+            Alert.alert('Session expirée', 'Veuillez vous reconnecter.');
+            await AsyncStorage.removeItem('access_token');
+            await AsyncStorage.removeItem('user_data');
+            router.push('/');
+          }
+        } catch (error) {
+          console.error('Erreur lors de la vérification du token:', error);
+          Alert.alert('Erreur de connexion', 'Impossible de vérifier votre authentification.');
+          router.push('/');
+        }
       } else {
         router.push('/');
       }
