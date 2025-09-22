@@ -168,7 +168,23 @@ export default function Presences() {
     }
   };
 
-  const onRefresh = async () => {
+  const loadActivities = async (currentUser: User) => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setActivities(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des activités:', error);
+    }
+  };
     setRefreshing(true);
     if (user) {
       await loadPresences(user);
