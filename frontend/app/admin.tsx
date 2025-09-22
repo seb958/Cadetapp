@@ -696,12 +696,21 @@ export default function Admin() {
   // Fonctions pour les sections
   const openSectionModal = (section: Section | null = null) => {
     if (section) {
-      setEditingSection(section);
-      setSectionForm({
-        nom: section.nom,
-        description: section.description || '',
-        responsable_id: section.responsable_id || ''
-      });
+      // Trouver la section par nom dans la liste actuelle pour éviter les références obsolètes
+      const currentSection = sections.find(s => s.nom === section.nom && s.id === section.id);
+      if (currentSection) {
+        console.log('Ouverture modal pour section:', currentSection.nom, 'ID:', currentSection.id);
+        setEditingSection(currentSection);
+        setSectionForm({
+          nom: currentSection.nom,
+          description: currentSection.description || '',
+          responsable_id: currentSection.responsable_id || ''
+        });
+      } else {
+        console.error('Section non trouvée dans la liste actuelle:', section.nom);
+        showAlert('Erreur', 'Section non trouvée dans les données actuelles. Veuillez actualiser.');
+        return;
+      }
     } else {
       setEditingSection(null);
       setSectionForm({
