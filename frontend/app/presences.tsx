@@ -84,7 +84,8 @@ export default function Presences() {
   const [attendanceData, setAttendanceData] = useState<{[key: string]: {status: string, commentaire: string}}>({});
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [selectedCadets, setSelectedCadets] = useState<Set<string>>(new Set());
-  const [attendanceMode, setAttendanceMode] = useState<'all' | 'selected' | 'individual'>('all');
+  const [attendanceMode, setAttendanceMode] = useState<'all' | 'selected' | 'activity'>('all');
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   // États pour les statistiques
   const [showStats, setShowStats] = useState(false);
