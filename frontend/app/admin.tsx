@@ -1395,6 +1395,35 @@ export default function Admin() {
               </Text>
             </View>
 
+            {/* Zone de suppression dangereuse - uniquement pour sections existantes */}
+            {editingSection && (
+              <View style={styles.dangerZone}>
+                <Text style={styles.dangerZoneTitle}>🚨 Zone dangereuse</Text>
+                <Text style={styles.dangerZoneText}>
+                  La suppression d'une section est irréversible. Tous les cadets de cette section perdront leur affectation.
+                </Text>
+                <TouchableOpacity
+                  style={styles.dangerButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Supprimer définitivement',
+                      `Êtes-vous sûr de vouloir supprimer définitivement la section "${editingSection.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets de cette section perdront leur affectation.`,
+                      [
+                        { text: 'Annuler', style: 'cancel' },
+                        {
+                          text: 'Supprimer définitivement',
+                          style: 'destructive',
+                          onPress: () => deleteSection(editingSection)
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cette section</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             {/* Bouton de sauvegarde */}
             <TouchableOpacity
               style={[styles.saveButton, savingSection && styles.saveButtonDisabled]}
