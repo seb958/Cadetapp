@@ -523,20 +523,27 @@ export default function Admin() {
   };
 
   const deleteUser = async (user: User) => {
-    Alert.alert(
-      'Confirmer la suppression',
-      `Êtes-vous sûr de vouloir supprimer l'utilisateur "${user.prenom} ${user.nom}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            Alert.alert('Information', 'La suppression d\'utilisateurs sera disponible prochainement');
-          }
-        }
-      ]
-    );
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/${user.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert('Succès', `L'utilisateur "${user.prenom} ${user.nom}" a été supprimé définitivement.`);
+        setShowUserModal(false);
+        await loadUsers();
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer l\'utilisateur');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+    }
   };
 
   const getRoleDisplayName = (role: string) => {
