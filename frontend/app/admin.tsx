@@ -201,7 +201,8 @@ export default function Admin() {
     email: '',
     grade: 'cadet',
     role: 'cadet',
-    section_id: ''
+    section_id: '',
+    has_admin_privileges: false
   });
   const [savingUser, setSavingUser] = useState(false);
 
