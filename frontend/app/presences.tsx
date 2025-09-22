@@ -538,21 +538,22 @@ export default function Presences() {
               <View style={styles.selectionInterface}>
                 <View style={styles.selectionHeader}>
                   <Text style={styles.sectionTitle}>Sélectionner les cadets ({selectedCadets.size}/{cadets.length})</Text>
-                  <View style={styles.selectionButtons}>
-                    <TouchableOpacity style={styles.smallButton} onPress={selectAllCadets}>
-                      <Text style={styles.smallButtonText}>Tout</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.smallButton} onPress={clearSelection}>
-                      <Text style={styles.smallButtonText}>Aucun</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.smallButton, styles.confirmButton]}
-                      onPress={() => initializeAttendanceData('selected')}
-                      disabled={selectedCadets.size === 0}
-                    >
-                      <Text style={[styles.smallButtonText, {color: 'white'}]}>Confirmer</Text>
-                    </TouchableOpacity>
-                  </View>
+                </View>
+                
+                <View style={styles.selectionButtons}>
+                  <TouchableOpacity style={styles.smallButton} onPress={selectAllCadets}>
+                    <Text style={styles.smallButtonText}>Tout</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.smallButton} onPress={clearSelection}>
+                    <Text style={styles.smallButtonText}>Aucun</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.smallButton, styles.confirmButton]}
+                    onPress={() => initializeAttendanceData('selected')}
+                    disabled={selectedCadets.size === 0}
+                  >
+                    <Text style={[styles.smallButtonText, {color: 'white'}]}>Confirmer</Text>
+                  </TouchableOpacity>
                 </View>
 
                 {/* Liste des cadets pour sélection */}
