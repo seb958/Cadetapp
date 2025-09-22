@@ -1184,4 +1184,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
+  // Styles pour l'interface d'activité
+  activityCard: {
+    backgroundColor: '#f7fafc',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  activityCardSelected: {
+    backgroundColor: '#ebf8ff',
+    borderColor: '#3182ce',
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  activityName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a365d',
+    flex: 1,
+    marginRight: 10,
+  },
+  activityTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  activityTypeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  activityDescription: {
+    fontSize: 14,
+    color: '#4a5568',
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  activityCadets: {
+    fontSize: 14,
+    color: '#2d3748',
+    marginBottom: 4,
+  },
+  activityDate: {
+    fontSize: 13,
+    color: '#718096',
+    fontWeight: '500',
+  },
 });
