@@ -812,8 +812,8 @@ async def get_activities(
             cadet_names=cadet_names,
             recurrence_interval=activity.get("recurrence_interval"),
             recurrence_unit=activity.get("recurrence_unit"),
-            next_date=datetime.fromisoformat(activity["next_date"]).date() if activity.get("next_date") else None,
-            planned_date=datetime.fromisoformat(activity["planned_date"]).date() if activity.get("planned_date") else None,
+            next_date=datetime.fromisoformat(activity.get("next_date")).date() if activity.get("next_date") else None,
+            planned_date=datetime.fromisoformat(activity.get("planned_date")).date() if activity.get("planned_date") else None,
             created_by=activity["created_by"],
             created_at=datetime.fromisoformat(activity["created_at"]),
             active=activity["active"]
