@@ -1002,18 +1002,22 @@ const styles = StyleSheet.create({
   selectionButtons: {
     flexDirection: 'row',
     gap: 8,
+    flexShrink: 0,
   },
   smallButton: {
     backgroundColor: '#e2e8f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 6,
+    minWidth: 60,
+    alignItems: 'center',
   },
   confirmButton: {
-    backgroundColor: '#3182ce',
+    backgroundColor: '#10b981',
+    minWidth: 80,
   },
   smallButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: '#2d3748',
   },
