@@ -496,15 +496,24 @@ export default function Admin() {
 
   const openUserModal = (user: User | null = null) => {
     if (user) {
-      setEditingUser(user);
-      setUserForm({
-        nom: user.nom,
-        prenom: user.prenom,
-        email: user.email,
-        grade: user.grade,
-        role: user.role,
-        section_id: user.section_id || ''
-      });
+      // Trouver l'utilisateur par nom dans la liste actuelle pour éviter les références obsolètes
+      const currentUser = users.find(u => u.prenom === user.prenom && u.nom === user.nom);
+      if (currentUser) {
+        console.log('Ouverture modal pour:', currentUser.nom, currentUser.prenom, 'ID:', currentUser.id);
+        setEditingUser(currentUser);
+        setUserForm({
+          nom: currentUser.nom,
+          prenom: currentUser.prenom,
+          email: currentUser.email || '',
+          role: currentUser.role,
+          grade: currentUser.grade,
+          section_id: currentUser.section_id || ''
+        });
+      } else {
+        console.error('Utilisateur non trouvé dans la liste actuelle:', user.nom, user.prenom);
+        showAlert('Erreur', 'Utilisateur non trouvé dans les données actuelles. Veuillez actualiser.');
+        return;
+      }
     } else {
       setEditingUser(null);
       setUserForm({
