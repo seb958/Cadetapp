@@ -237,15 +237,22 @@ export default function Presences() {
   };
 
   const saveAttendance = async () => {
+    // Vérifier qu'il y a des cadets sélectionnés
+    const cadetsToSave = Object.keys(attendanceData);
+    if (cadetsToSave.length === 0) {
+      Alert.alert('Erreur', 'Aucun cadet sélectionné pour la prise de présence');
+      return;
+    }
+
     setSavingAttendance(true);
     try {
       const token = await AsyncStorage.getItem('access_token');
       
       // Préparer les données pour l'API
-      const presencesData = Object.entries(attendanceData).map(([cadetId, data]) => ({
+      const presencesData = cadetsToSave.map(cadetId => ({
         cadet_id: cadetId,
-        status: data.status,
-        commentaire: data.commentaire || null
+        status: attendanceData[cadetId].status,
+        commentaire: attendanceData[cadetId].commentaire || null
       }));
 
       const payload = {
