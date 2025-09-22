@@ -388,7 +388,7 @@ export default function Admin() {
         nom: activityForm.nom.trim(),
         description: activityForm.description.trim() || null,
         type: activityForm.type,
-        cadet_ids: activityForm.cadet_ids,
+        cadet_ids: validCadetIds,
         recurrence_interval: activityForm.type === 'recurring' ? parseInt(activityForm.recurrence_interval) : null,
         recurrence_unit: activityForm.type === 'recurring' ? activityForm.recurrence_unit : null,
         next_date: activityForm.type === 'recurring' && activityForm.next_date ? activityForm.next_date : null,
