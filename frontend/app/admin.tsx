@@ -62,6 +62,7 @@ interface User {
   role: string;
   section_id?: string;
   actif: boolean;
+  has_admin_privileges: boolean;
   created_at: string;
 }
 
