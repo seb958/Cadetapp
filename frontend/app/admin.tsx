@@ -2153,12 +2153,17 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 15,
   },
+  sectionActions: {
+    flexDirection: 'column',
+    gap: 10,
+    marginBottom: 15,
+  },
   refreshButton: {
     backgroundColor: '#059669',
     paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingVertical: 12,
     borderRadius: 8,
-    flexShrink: 1,
+    alignItems: 'center',
   },
   refreshButtonText: {
     color: 'white',
