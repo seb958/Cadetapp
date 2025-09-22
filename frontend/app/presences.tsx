@@ -586,6 +586,70 @@ export default function Presences() {
               </View>
             )}
 
+            {/* Interface de sélection d'activité pour le mode 'activity' */}
+            {attendanceMode === 'activity' && (
+              <View style={styles.selectionInterface}>
+                <Text style={styles.sectionTitle}>Choisir une activité pré-définie</Text>
+                
+                {activities.length === 0 ? (
+                  <Text style={styles.emptyStateText}>Aucune activité configurée</Text>
+                ) : (
+                  activities.map((activity) => (
+                    <TouchableOpacity
+                      key={activity.id}
+                      style={[
+                        styles.activityCard,
+                        selectedActivity?.id === activity.id && styles.activityCardSelected
+                      ]}
+                      onPress={() => {
+                        setSelectedActivity(activity);
+                        setActivite(activity.nom);
+                        
+                        // Pré-remplir avec les cadets de l'activité
+                        const initialData: {[key: string]: {status: string, commentaire: string}} = {};
+                        activity.cadet_ids.forEach(cadetId => {
+                          initialData[cadetId] = { status: 'present', commentaire: '' };
+                        });
+                        setAttendanceData(initialData);
+                      }}
+                    >
+                      <View style={styles.activityHeader}>
+                        <Text style={styles.activityName}>{activity.nom}</Text>
+                        <View style={[
+                          styles.activityTypeBadge,
+                          { backgroundColor: activity.type === 'recurring' ? '#10b981' : '#3b82f6' }
+                        ]}>
+                          <Text style={styles.activityTypeText}>
+                            {activity.type === 'recurring' ? 'Récurrent' : 'Ponctuel'}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      {activity.description && (
+                        <Text style={styles.activityDescription}>{activity.description}</Text>
+                      )}
+                      
+                      <Text style={styles.activityCadets}>
+                        Cadets: {activity.cadet_names.join(', ')} ({activity.cadet_ids.length})
+                      </Text>
+                      
+                      {activity.type === 'recurring' && activity.next_date && (
+                        <Text style={styles.activityDate}>
+                          Prochaine: {new Date(activity.next_date).toLocaleDateString('fr-FR')}
+                        </Text>
+                      )}
+                      
+                      {activity.type === 'unique' && activity.planned_date && (
+                        <Text style={styles.activityDate}>
+                          Prévue: {new Date(activity.planned_date).toLocaleDateString('fr-FR')}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            )}
+
             {/* Liste des cadets pour prise de présence */}
             {Object.keys(attendanceData).length > 0 && (
               <View>
