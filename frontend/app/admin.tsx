@@ -81,6 +81,7 @@ interface UserFormData {
   grade: string;
   role: string;
   section_id: string;
+  has_admin_privileges: boolean;
 }
 
 const GRADES = [
