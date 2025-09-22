@@ -1283,44 +1283,47 @@ export default function Admin() {
             <View style={styles.settingsSection}>
               <Text style={styles.settingsGroupTitle}>👔 Critères d'Inspection des Uniformes</Text>
               
-              <View style={styles.settingItem}>
-                <Text style={styles.settingLabel}>Critères d'évaluation</Text>
-                {settings.inspectionCriteria.map((criterion, index) => (
-                  <View key={index} style={styles.criterionItem}>
-                    <TextInput
-                      style={[styles.input, {flex: 1}]}
-                      value={criterion}
-                      onChangeText={(text) => {
-                        const newCriteria = [...settings.inspectionCriteria];
-                        newCriteria[index] = text;
-                        setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
-                      }}
-                      placeholder={`Critère ${index + 1}`}
-                    />
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => {
-                        const newCriteria = settings.inspectionCriteria.filter((_, i) => i !== index);
-                        setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
-                      }}
-                    >
-                      <Text style={styles.removeButtonText}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-                
-                <TouchableOpacity
-                  style={styles.addCriterionButton}
-                  onPress={() => {
-                    setSettings(prev => ({
-                      ...prev, 
-                      inspectionCriteria: [...prev.inspectionCriteria, '']
-                    }));
-                  }}
-                >
-                  <Text style={styles.addCriterionText}>+ Ajouter un critère</Text>
-                </TouchableOpacity>
-              </View>
+              {Object.entries(settings.inspectionCriteria).map(([tenueType, criteria]) => (
+                <View key={tenueType} style={styles.tenueGroup}>
+                  <Text style={styles.tenueTitle}>{tenueType}</Text>
+                  
+                  {criteria.map((criterion, index) => (
+                    <View key={index} style={styles.criterionItem}>
+                      <TextInput
+                        style={[styles.input, {flex: 1}]}
+                        value={criterion}
+                        onChangeText={(text) => {
+                          const newCriteria = {...settings.inspectionCriteria};
+                          newCriteria[tenueType][index] = text;
+                          setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+                        }}
+                        placeholder={`Critère ${index + 1}`}
+                      />
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => {
+                          const newCriteria = {...settings.inspectionCriteria};
+                          newCriteria[tenueType] = newCriteria[tenueType].filter((_, i) => i !== index);
+                          setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+                        }}
+                      >
+                        <Text style={styles.removeButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                  
+                  <TouchableOpacity
+                    style={styles.addCriterionButton}
+                    onPress={() => {
+                      const newCriteria = {...settings.inspectionCriteria};
+                      newCriteria[tenueType] = [...newCriteria[tenueType], ''];
+                      setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+                    }}
+                  >
+                    <Text style={styles.addCriterionText}>+ Ajouter un critère pour {tenueType}</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
               
               <View style={styles.settingItem}>
                 <Text style={styles.settingLabel}>Barème de notation</Text>
