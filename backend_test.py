@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 # Configuration
-BASE_URL = "https://squadronapp.preview.emergentagent.com/api"
+BASE_URL = "https://cadetsquad-app.preview.emergentagent.com/api"
 
 # Comptes de test
 ADMIN_CREDENTIALS = {
