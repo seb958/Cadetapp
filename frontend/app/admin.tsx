@@ -1410,4 +1410,128 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  // Styles pour la gestion des utilisateurs
+  userCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  userHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  userInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a365d',
+    marginBottom: 2,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#4a5568',
+  },
+  userBadges: {
+    alignItems: 'flex-end',
+  },
+  roleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleBadgeText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  userDetails: {
+    marginBottom: 12,
+    gap: 4,
+  },
+  userDetail: {
+    fontSize: 14,
+    color: '#4a5568',
+  },
+  userActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  // Styles pour le modal utilisateur
+  optionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 10,
+  },
+  optionButton: {
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: 'white',
+  },
+  optionButtonActive: {
+    borderColor: '#3182ce',
+    backgroundColor: '#ebf8ff',
+  },
+  optionButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  optionButtonTextActive: {
+    color: '#3182ce',
+  },
+  sectionSelector: {
+    gap: 8,
+  },
+  sectionOption: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#f7fafc',
+  },
+  sectionOptionActive: {
+    borderColor: '#3182ce',
+    backgroundColor: '#ebf8ff',
+  },
+  sectionOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4a5568',
+  },
+  sectionOptionTextActive: {
+    color: '#3182ce',
+  },
+  infoSection: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3182ce',
+  },
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e40af',
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#1e40af',
+    lineHeight: 20,
+  },
 });
