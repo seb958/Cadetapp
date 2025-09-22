@@ -1203,7 +1203,169 @@ export default function Admin() {
 
         {activeTab === 'settings' && (
           <View style={styles.tabContent}>
-            <Text style={styles.comingSoon}>Paramètres - Prochainement</Text>
+            <Text style={styles.sectionTitle}>Paramètres de l'Escadron</Text>
+            
+            {/* Configuration générale */}
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsGroupTitle}>🏛️ Configuration Générale</Text>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Nom de l'escadron</Text>
+                <TextInput
+                  style={styles.input}
+                  value={settings.escadronName}
+                  onChangeText={(text) => setSettings(prev => ({...prev, escadronName: text}))}
+                  placeholder="Ex: Escadron 781 Toulouse"
+                />
+              </View>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Adresse</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={settings.address}
+                  onChangeText={(text) => setSettings(prev => ({...prev, address: text}))}
+                  placeholder="Adresse complète de l'escadron"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Email de contact</Text>
+                <TextInput
+                  style={styles.input}
+                  value={settings.contactEmail}
+                  onChangeText={(text) => setSettings(prev => ({...prev, contactEmail: text}))}
+                  placeholder="contact@escadron781.fr"
+                  keyboardType="email-address"
+                />
+              </View>
+            </View>
+
+            {/* Paramètres des présences */}
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsGroupTitle}>📋 Paramètres des Présences</Text>
+              
+              <View style={styles.settingItem}>
+                <View style={styles.switchContainer}>
+                  <Text style={styles.settingLabel}>Autoriser les absences motivées</Text>
+                  <Switch
+                    value={settings.allowMotivatedAbsences}
+                    onValueChange={(value) => setSettings(prev => ({...prev, allowMotivatedAbsences: value}))}
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.settingItem}>
+                <View style={styles.switchContainer}>
+                  <Text style={styles.settingLabel}>Notifications automatiques aux parents</Text>
+                  <Switch
+                    value={settings.notifyParents}
+                    onValueChange={(value) => setSettings(prev => ({...prev, notifyParents: value}))}
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Seuil d'alerte absences (%)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={settings.absenceThreshold.toString()}
+                  onChangeText={(text) => setSettings(prev => ({...prev, absenceThreshold: parseInt(text) || 0}))}
+                  placeholder="20"
+                  keyboardType="numeric"
+                />
+                <Text style={styles.helperText}>Alerte automatique si un cadet dépasse ce pourcentage d'absences</Text>
+              </View>
+            </View>
+
+            {/* Critères d'inspection */}
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsGroupTitle}>👔 Critères d'Inspection des Uniformes</Text>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Critères d'évaluation</Text>
+                {settings.inspectionCriteria.map((criterion, index) => (
+                  <View key={index} style={styles.criterionItem}>
+                    <TextInput
+                      style={[styles.input, {flex: 1}]}
+                      value={criterion}
+                      onChangeText={(text) => {
+                        const newCriteria = [...settings.inspectionCriteria];
+                        newCriteria[index] = text;
+                        setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+                      }}
+                      placeholder={`Critère ${index + 1}`}
+                    />
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => {
+                        const newCriteria = settings.inspectionCriteria.filter((_, i) => i !== index);
+                        setSettings(prev => ({...prev, inspectionCriteria: newCriteria}));
+                      }}
+                    >
+                      <Text style={styles.removeButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                
+                <TouchableOpacity
+                  style={styles.addCriterionButton}
+                  onPress={() => {
+                    setSettings(prev => ({
+                      ...prev, 
+                      inspectionCriteria: [...prev.inspectionCriteria, '']
+                    }));
+                  }}
+                >
+                  <Text style={styles.addCriterionText}>+ Ajouter un critère</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Barème de notation</Text>
+                <Text style={styles.helperText}>
+                  Excellent (4/4) - Bien (3/4) - Satisfaisant (2/4) - À améliorer (1/4) - Insuffisant (0/4)
+                </Text>
+              </View>
+            </View>
+
+            {/* Sauvegarde et données */}
+            <View style={styles.settingsSection}>
+              <Text style={styles.settingsGroupTitle}>💾 Sauvegarde et Données</Text>
+              
+              <View style={styles.settingItem}>
+                <View style={styles.switchContainer}>
+                  <Text style={styles.settingLabel}>Sauvegarde automatique hebdomadaire</Text>
+                  <Switch
+                    value={settings.autoBackup}
+                    onValueChange={(value) => setSettings(prev => ({...prev, autoBackup: value}))}
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.backupButton}>
+                  <Text style={styles.backupButtonText}>📥 Exporter les données</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.backupButton}>
+                  <Text style={styles.backupButtonText}>📤 Importer des données</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Bouton sauvegarder */}
+            <TouchableOpacity
+              style={[styles.saveButton, savingSettings && styles.saveButtonDisabled]}
+              onPress={saveSettings}
+              disabled={savingSettings}
+            >
+              <Text style={styles.saveButtonText}>
+                {savingSettings ? 'Sauvegarde...' : '💾 Sauvegarder les paramètres'}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
