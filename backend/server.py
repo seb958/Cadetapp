@@ -551,9 +551,25 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 
 # Routes pour la gestion des utilisateurs
 @api_router.get("/users", response_model=List[User])
-async def get_users(current_user: User = Depends(require_admin_or_encadrement)):
-    # Récupérer tous les utilisateurs (actifs et en attente)
-    users = await db.users.find({}).to_list(1000)
+async def get_users(
+    grade: Optional[str] = None,
+    role: Optional[str] = None,
+    section_id: Optional[str] = None,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Construire le filtre de base
+    filter_dict = {}
+    
+    # Ajouter les filtres optionnels
+    if grade:
+        filter_dict["grade"] = grade
+    if role:
+        filter_dict["role"] = role
+    if section_id:
+        filter_dict["section_id"] = section_id
+    
+    # Récupérer tous les utilisateurs (actifs et en attente) avec les filtres appliqués
+    users = await db.users.find(filter_dict).to_list(1000)
     return [User(**user) for user in users]
 
 @api_router.post("/users", response_model=dict)
