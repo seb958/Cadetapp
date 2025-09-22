@@ -831,7 +831,12 @@ export default function Admin() {
                   <View style={styles.userHeader}>
                     <View style={styles.userInfo}>
                       <Text style={styles.userName}>{user.prenom} {user.nom}</Text>
-                      <Text style={styles.userEmail}>{user.email}</Text>
+                      <Text style={styles.userEmail}>{user.email || 'Pas d\'email'}</Text>
+                      {!user.actif && (
+                        <Text style={styles.userStatus}>
+                          ⏳ En attente de confirmation
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.userBadges}>
                       <View style={[
@@ -842,6 +847,11 @@ export default function Admin() {
                           {getRoleDisplayName(user.role)}
                         </Text>
                       </View>
+                      {!user.actif && (
+                        <View style={styles.statusBadge}>
+                          <Text style={styles.statusBadgeText}>En attente</Text>
+                        </View>
+                      )}
                     </View>
                   </View>
                   
