@@ -474,9 +474,10 @@ class PresenceTestSuite:
         
         # Test 3: Données invalides
         try:
+            future_date = date.today() + timedelta(days=25)
             invalid_data = {
                 "cadet_id": self.users["cadet1"]["id"],
-                "date": date.today().isoformat(),
+                "presence_date": future_date.isoformat(),
                 "status": "status_invalide",
                 "commentaire": "Test status invalide"
             }
