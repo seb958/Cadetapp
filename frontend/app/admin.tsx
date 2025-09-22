@@ -1116,11 +1116,12 @@ export default function Admin() {
                     <View style={styles.userInfo}>
                       <Text style={styles.userName}>{user.prenom} {user.nom}</Text>
                       <Text style={styles.userEmail}>{user.email || 'Pas d\'email'}</Text>
-                      {!user.actif && (
-                        <Text style={styles.userStatus}>
-                          ⏳ En attente de confirmation
-                        </Text>
-                      )}
+                    <Text style={styles.userStatus}>
+                      {user.actif 
+                        ? (user.email ? 'Peut se connecter' : 'Ne s\'est pas encore connecté')
+                        : 'Compte désactivé'
+                      }
+                    </Text>
                     </View>
                     <View style={styles.userBadges}>
                       <View style={[
