@@ -512,6 +512,23 @@ async def update_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cet email est déjà utilisé par un autre utilisateur"
                 )
+            
+            # Si l'utilisateur n'avait pas d'email avant et qu'on lui en ajoute un
+            if not existing_user.get("email") and user_update.email:
+                # Créer un token d'invitation et l'envoyer
+                invitation_token = create_invitation_token(user_update.email)
+                update_data["invitation_token"] = invitation_token
+                update_data["invitation_expires"] = (datetime.utcnow() + timedelta(days=7)).isoformat()
+                update_data["actif"] = False  # L'utilisateur devra confirmer par email
+                
+                # Envoyer l'email d'invitation
+                await send_invitation_email(
+                    user_update.email,
+                    existing_user["nom"],
+                    existing_user["prenom"],
+                    invitation_token
+                )
+        
         update_data["email"] = user_update.email
     if user_update.grade is not None:
         update_data["grade"] = user_update.grade.value
