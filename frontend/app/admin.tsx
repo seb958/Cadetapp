@@ -592,16 +592,16 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Alert.alert('Succès', `L'utilisateur "${user.prenom} ${user.nom}" a été supprimé définitivement.`);
+        showAlert('Succès', `L'utilisateur "${user.prenom} ${user.nom}" a été supprimé définitivement.`);
         setShowUserModal(false);
         await loadUsers();
       } else {
         const errorData = await response.json();
-        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer l\'utilisateur');
+        showAlert('Erreur', errorData.detail || 'Impossible de supprimer l\'utilisateur');
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+      showAlert('Erreur', 'Erreur réseau lors de la suppression');
     }
   };
 
