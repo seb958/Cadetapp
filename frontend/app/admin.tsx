@@ -1804,4 +1804,52 @@ const styles = StyleSheet.create({
     color: '#1e40af',
     lineHeight: 20,
   },
+  // Styles pour les sections
+  sectionCard: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  sectionCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionCardName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a365d',
+    flex: 1,
+    marginRight: 10,
+  },
+  sectionCardDescription: {
+    fontSize: 14,
+    color: '#4a5568',
+    fontStyle: 'italic',
+    marginBottom: 8,
+  },
+  sectionCardInfo: {
+    fontSize: 14,
+    color: '#2d3748',
+    marginBottom: 4,
+  },
+  sectionActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  responsableInfo: {
+    flex: 1,
+  },
+  responsableRole: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
 });
