@@ -255,13 +255,60 @@ export default function Admin() {
 
   // Fonction pour reset complet avec déconnexion
   const forceCompleteReset = async () => {
-    showAlert('Information', 'Réinitialisation complète en cours...');
-    
-    // Vider AsyncStorage complètement
-    await AsyncStorage.clear();
-    
-    // Rediriger vers la connexion
-    router.push('/');
+    try {
+      // Afficher une alerte de confirmation avant le reset
+      const confirmReset = Platform.OS === 'web' 
+        ? window.confirm('⚠️ RESET COMPLET\n\nCeci va:\n- Vider tous les caches\n- Vous déconnecter\n- Recharger toutes les données\n\nContinuer ?')
+        : true; // Sur mobile, on procède directement
+      
+      if (!confirmReset && Platform.OS === 'web') return;
+      
+      showAlert('Information', 'Reset complet en cours...');
+      
+      console.log('🔄 RESET COMPLET DÉMARRÉ');
+      
+      // 1. Vider AsyncStorage complètement
+      await AsyncStorage.clear();
+      console.log('✅ AsyncStorage vidé');
+      
+      // 2. Réinitialiser tous les états React
+      setUsers([]);
+      setCadets([]);
+      setSections([]);
+      setActivities([]);
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      // 3. Fermer tous les modals
+      setShowUserModal(false);
+      setShowSectionModal(false);
+      setShowActivityModal(false);
+      setEditingUser(null);
+      setEditingSection(null);
+      setEditingActivity(null);
+      
+      console.log('✅ États React réinitialisés');
+      
+      // 4. Sur web, vider aussi le cache du navigateur si possible
+      if (Platform.OS === 'web' && 'caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+          console.log('✅ Cache navigateur vidé');
+        } catch (error) {
+          console.log('⚠️ Impossible de vider le cache navigateur:', error);
+        }
+      }
+      
+      // 5. Rediriger vers la connexion
+      router.push('/');
+      
+      console.log('🎯 Reset complet terminé - redirection vers login');
+      
+    } catch (error) {
+      console.error('❌ Erreur lors du reset:', error);
+      showAlert('Erreur', 'Erreur lors du reset complet');
+    }
   };
 
   const loadData = async () => {
