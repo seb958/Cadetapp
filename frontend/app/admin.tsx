@@ -912,6 +912,88 @@ export default function Admin() {
     }
   };
 
+  const loadAlerts = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/alerts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAlerts(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des alertes:', error);
+    }
+  };
+
+  const generateAlerts = async () => {
+    setLoadingAlerts(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/alerts/generate?threshold=${settings.consecutiveAbsenceThreshold}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        showAlert('Alertes générées', result.message);
+        await loadAlerts();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la génération des alertes:', error);
+      showAlert('Erreur', 'Impossible de générer les alertes');
+    } finally {
+      setLoadingAlerts(false);
+    }
+  };
+
+  const openAlertModal = (alert) => {
+    setSelectedAlert(alert);
+    setContactComment(alert.contact_comment || '');
+    setShowAlertModal(true);
+  };
+
+  const updateAlertStatus = async (status, comment = '') => {
+    if (!selectedAlert) return;
+
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/alerts/${selectedAlert.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: status,
+          contact_comment: comment
+        }),
+      });
+
+      if (response.ok) {
+        const statusLabels = {
+          'contacted': 'contacté',
+          'resolved': 'résolu'
+        };
+        showAlert('Succès', `Alerte marquée comme ${statusLabels[status]}`);
+        setShowAlertModal(false);
+        setSelectedAlert(null);
+        setContactComment('');
+        await loadAlerts();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'alerte:', error);
+      showAlert('Erreur', 'Impossible de mettre à jour l\'alerte');
+    }
+  };
+
   const saveSettings = async () => {
     setSavingSettings(true);
     try {
