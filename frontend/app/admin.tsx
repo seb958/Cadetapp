@@ -1422,6 +1422,7 @@ export default function Admin() {
                 <TouchableOpacity
                   style={styles.dangerButton}
                   onPress={() => {
+                    alert('BOUTON SECTION MARCHE!');
                     console.log('BOUTON SECTION CLIQUE!');
                     deleteSection(editingSection);
                   }}
