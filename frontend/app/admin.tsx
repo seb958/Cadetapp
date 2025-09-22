@@ -1298,6 +1298,7 @@ export default function Admin() {
                 <TouchableOpacity
                   style={styles.dangerButton}
                   onPress={() => {
+                    alert('BOUTON UTILISATEUR MARCHE!');
                     console.log('BOUTON UTILISATEUR CLIQUE!');
                     deleteUser(editingUser);
                   }}
