@@ -1101,12 +1101,14 @@ export default function Admin() {
               {activityForm.type === 'unique' && (
                 <View>
                   <Text style={styles.inputLabel}>Date prévue</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={activityForm.planned_date}
-                    onChangeText={(text) => setActivityForm(prev => ({...prev, planned_date: text}))}
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowPlannedDatePicker(true)}
+                  >
+                    <Text style={styles.datePickerText}>
+                      {activityForm.planned_date || '📅 Sélectionner une date'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -1122,12 +1124,14 @@ export default function Admin() {
                   />
                   
                   <Text style={styles.inputLabel}>Prochaine occurrence</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={activityForm.next_date}
-                    onChangeText={(text) => setActivityForm(prev => ({...prev, next_date: text}))}
-                    placeholder="YYYY-MM-DD"
-                  />
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowNextDatePicker(true)}
+                  >
+                    <Text style={styles.datePickerText}>
+                      {activityForm.next_date || '📅 Sélectionner une date'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>
