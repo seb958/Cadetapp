@@ -2480,4 +2480,81 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Styles pour les paramètres
+  settingsSection: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  settingsGroupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 15,
+  },
+  settingItem: {
+    marginBottom: 20,
+  },
+  settingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  criterionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 10,
+  },
+  removeButton: {
+    backgroundColor: '#ef4444',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  addCriterionButton: {
+    backgroundColor: '#10b981',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  addCriterionText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  backupButton: {
+    flex: 1,
+    backgroundColor: '#6366f1',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  backupButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
