@@ -230,9 +230,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système d'authentification JWT avec 4 rôles utilisateur"
-    - "API d'invitation par email et définition mot de passe"
-    - "Interface d'authentification française"
+    - "Système d'alertes d'absences consécutives"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -258,3 +256,7 @@ agent_communication:
       message: "✅ SUPPRESSION MULTI-PLATEFORME COMPLÈTEMENT FONCTIONNELLE - Problème authentification JWT résolu (vérification tokens expirés). Solution cross-platform implémentée: window.confirm/alert sur web, Alert.alert sur mobile. Suppressions utilisateurs/sections/activités fonctionnelles sur web et mobile. UX cohérente: tous les boutons suppression dans modals de modification avec confirmations appropriées."
     - agent: "main"
       message: "🎉 PROBLÈME CACHE FANTÔME COMPLÈTEMENT RÉSOLU - Cause racine: confusion entre bases 'cadet_management' vs 'escadron_cadets' + 2 utilisateurs inactifs obsolètes (IDs 6311f377-... et 9dd56820-...). Solution: suppression utilisateurs fantômes, nettoyage base correcte. Résultat: 9 utilisateurs actifs, Marie Dubois fonctionnelle, création activités OK avec tous cadets, fini erreurs 404. Système d'administration complètement opérationnel."
+    - agent: "main"
+      message: "✅ SYSTÈME D'ALERTES D'ABSENCES CONSÉCUTIVES IMPLÉMENTÉ - 5 nouveaux endpoints ajoutés: GET /api/alerts/consecutive-absences?threshold=3 (calcul), GET /api/alerts (récupération), POST /api/alerts/generate?threshold=3 (génération), PUT /api/alerts/{id} (mise à jour statut), DELETE /api/alerts/{id} (suppression). Permissions admin/encadrement requises. Gestion des statuts: active → contacted → resolved avec commentaires. Modèles Alert, AlertResponse, AlertUpdate, ConsecutiveAbsenceCalculation ajoutés. Prêt pour tests."
+    - agent: "testing"
+      message: "✅ TESTS SYSTÈME D'ALERTES COMPLETS RÉUSSIS - 20/20 tests passés (100% réussite). Système d'alertes d'absences consécutives parfaitement fonctionnel: Calcul absences consécutives OK (détecté 1 cadet avec 5 absences consécutives), Génération alertes automatique (1 nouvelle alerte créée), Mise à jour statuts active→contacted→resolved avec commentaires, Suppression alertes, Permissions correctes (admin/encadrement OK, cadet refusé 403), Compatibilité endpoints existants préservée (9 utilisateurs, 9 sections, 12 présences, 3 activités). Bug sérialisation dates MongoDB corrigé. Tous les 5 nouveaux endpoints testés et fonctionnels. Base URL: https://cadetsquad-app.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
