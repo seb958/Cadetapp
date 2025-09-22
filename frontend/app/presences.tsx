@@ -185,11 +185,14 @@ export default function Presences() {
       console.error('Erreur lors du chargement des activités:', error);
     }
   };
+
+  const onRefresh = async () => {
     setRefreshing(true);
     if (user) {
       await loadPresences(user);
       if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role)) {
         await loadCadets(user);
+        await loadActivities(user);
       }
     }
     setRefreshing(false);
