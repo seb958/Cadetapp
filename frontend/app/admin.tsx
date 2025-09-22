@@ -183,6 +183,25 @@ export default function Admin() {
   });
   const [savingSection, setSavingSection] = useState(false);
 
+  // Gestion des paramètres
+  const [settings, setSettings] = useState({
+    escadronName: '',
+    address: '',
+    contactEmail: '',
+    allowMotivatedAbsences: true,
+    notifyParents: true,
+    absenceThreshold: 20,
+    inspectionCriteria: [
+      'Tenue générale',
+      'Propreté des chaussures',
+      'Coiffure réglementaire',
+      'Port des insignes',
+      'État des équipements'
+    ],
+    autoBackup: true
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
   useEffect(() => {
     checkAuth();
   }, []);
