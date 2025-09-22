@@ -239,3 +239,5 @@ agent_communication:
       message: "Travail en cours sur l'amélioration UX suppression sections. L'interface est déjà en place dans le modal avec zone dangereuse et confirmation, mais la fonction deleteSection n'est pas complètement implémentée."
     - agent: "main"
       message: "✅ AMÉLIORATION UX SUPPRESSION SECTIONS TERMINÉE - Frontend: fonction deleteSection complètement implémentée avec appel API. Backend: endpoint DELETE /api/sections/{id} ajouté avec gestion complète (vérification, suppression, désaffectation utilisateurs, erreurs). UX optimale: bouton suppression dans modal avec double confirmation. Prêt pour tests."
+    - agent: "main"
+      message: "✅ SUPPRESSION MULTI-PLATEFORME COMPLÈTEMENT FONCTIONNELLE - Problème authentification JWT résolu (vérification tokens expirés). Solution cross-platform implémentée: window.confirm/alert sur web, Alert.alert sur mobile. Suppressions utilisateurs/sections/activités fonctionnelles sur web et mobile. UX cohérente: tous les boutons suppression dans modals de modification avec confirmations appropriées."
