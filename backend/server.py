@@ -59,6 +59,8 @@ class Grade(str, Enum):
     SOUS_LIEUTENANT = "sous_lieutenant"
     LIEUTENANT = "lieutenant"
     CAPITAINE = "capitaine"
+    # Grade legacy (pour compatibilité avec données existantes)
+    COMMANDANT = "commandant"
 
 class PresenceStatus(str, Enum):
     PRESENT = "present"
