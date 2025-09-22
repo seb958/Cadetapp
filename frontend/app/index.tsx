@@ -165,8 +165,7 @@ export default function Index() {
   };
 
   const navigateToAdmin = () => {
-    // TODO: Implémenter plus tard
-    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+    router.push('/admin');
   };
 
   if (loading) {
