@@ -107,6 +107,7 @@ class UserInvitation(BaseModel):
     grade: Grade
     role: UserRole
     section_id: Optional[str] = None
+    has_admin_privileges: bool = False
 
 class SetPasswordRequest(BaseModel):
     token: str
