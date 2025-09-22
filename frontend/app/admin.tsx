@@ -140,6 +140,20 @@ export default function Admin() {
   
   // Navigation
   const [activeTab, setActiveTab] = useState<'activities' | 'users' | 'sections' | 'settings'>('activities');
+
+  // États pour l'onglet Alertes
+  const [alertedCadets, setAlertedCadets] = useState([]);
+
+  // Fonction pour calculer les cadets en alerte (simulation)
+  const calculateAlertedCadets = () => {
+    // Simulation : quelques cadets avec absences consécutives
+    const simulated = [
+      { id: '1', nom: 'Martin', prenom: 'Marie', consecutiveAbsences: 4, lastAbsenceDate: '2025-01-20' },
+      { id: '2', nom: 'Dubois', prenom: 'Pierre', consecutiveAbsences: 3, lastAbsenceDate: '2025-01-19' }
+    ].filter(cadet => cadet.consecutiveAbsences >= settings.consecutiveAbsenceThreshold);
+    
+    setAlertedCadets(simulated);
+  };
   
   // Gestion des activités
   const [activities, setActivities] = useState<Activity[]>([]);
