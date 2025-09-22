@@ -1006,12 +1006,13 @@ async def get_activities(
     # Enrichir avec les noms des cadets
     enriched_activities = []
     for activity in activities:
-        # Récupérer les noms des cadets
+        # Récupérer les noms des cadets (actifs et non actifs)
         cadet_names = []
         for cadet_id in activity["cadet_ids"]:
-            cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+            cadet = await db.users.find_one({"id": cadet_id})
             if cadet:
-                cadet_names.append(f"{cadet['prenom']} {cadet['nom']}")
+                status_indicator = "" if cadet.get("actif", False) else " (non confirmé)"
+                cadet_names.append(f"{cadet['prenom']} {cadet['nom']}{status_indicator}")
         
         # Conversion des dates pour la réponse
         next_date = None
