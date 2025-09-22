@@ -45,15 +45,20 @@ class UserRole(str, Enum):
     ENCADREMENT = "encadrement"
 
 class Grade(str, Enum):
-    # Grades pour cadets
+    # Grades pour cadets (ordre croissant)
     CADET = "cadet"
+    CADET_AIR_1RE_CLASSE = "cadet_air_1re_classe"
     CAPORAL = "caporal"
+    CAPORAL_SECTION = "caporal_section"
     SERGENT = "sergent"
-    ADJUDANT = "adjudant"
-    # Grades pour encadrement
+    SERGENT_SECTION = "sergent_section"
+    ADJUDANT_2E_CLASSE = "adjudant_2e_classe"
+    ADJUDANT_1RE_CLASSE = "adjudant_1re_classe"
+    INSTRUCTEUR_CIVIL = "instructeur_civil"
+    ELEVE_OFFICIER = "eleve_officier"
+    SOUS_LIEUTENANT = "sous_lieutenant"
     LIEUTENANT = "lieutenant"
     CAPITAINE = "capitaine"
-    COMMANDANT = "commandant"
 
 class PresenceStatus(str, Enum):
     PRESENT = "present"
