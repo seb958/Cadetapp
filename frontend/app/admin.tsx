@@ -1231,7 +1231,10 @@ export default function Admin() {
                     <View style={styles.userInfo}>
                       <Text style={styles.userName}>{user.prenom} {user.nom}</Text>
                       <Text style={styles.userEmail}>{user.email || 'Pas d\'email'}</Text>
-                    <Text style={styles.userStatus}>
+                    <Text style={[
+                      styles.userStatus,
+                      user.actif && user.email && {color: '#10b981'} // Vert pour "Peut se connecter"
+                    ]}>
                       {user.actif 
                         ? (user.email ? 'Peut se connecter' : 'Ne s\'est pas encore connecté')
                         : 'Compte désactivé'
