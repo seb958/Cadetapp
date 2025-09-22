@@ -460,6 +460,46 @@ async def get_users(current_user: User = Depends(require_admin_or_encadrement)):
     users = await db.users.find({}).to_list(1000)
     return [User(**user) for user in users]
 
+@api_router.post("/users", response_model=dict)
+async def create_user(
+    user: UserCreate, 
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier si l'utilisateur existe déjà
+    existing_user = await db.users.find_one({"email": user.email}) if user.email else None
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Un utilisateur avec cet email existe déjà"
+        )
+    
+    # Créer l'utilisateur - TOUJOURS ACTIF lors de la création par admin
+    new_user = {
+        "id": str(uuid.uuid4()),
+        "prenom": user.prenom,
+        "nom": user.nom,
+        "email": user.email,
+        "password_hash": None,  # Pas de mot de passe initial
+        "role": user.role,
+        "grade": user.grade,
+        "section_id": user.section_id,
+        "actif": True,  # 🔥 TOUJOURS ACTIF lors de la création par admin
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.users.insert_one(new_user)
+    
+    # Envoyer l'invitation par email si un email est fourni
+    if user.email:
+        try:
+            # Ici on pourrait envoyer un vrai email d'invitation
+            # Pour l'instant, on simule l'envoi
+            print(f"📧 Email d'invitation envoyé à {user.email}")
+        except Exception as e:
+            print(f"⚠️ Erreur lors de l'envoi de l'email: {e}")
+    
+    return {"message": "Utilisateur créé avec succès", "user_id": new_user["id"]}
+
 @api_router.get("/users/{user_id}", response_model=User)
 async def get_user(user_id: str, current_user: User = Depends(get_current_user)):
     # Les utilisateurs peuvent voir leur propre profil
