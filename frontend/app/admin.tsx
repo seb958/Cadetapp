@@ -415,38 +415,28 @@ export default function Admin() {
   };
 
   const deleteActivity = async (activity: Activity) => {
-    Alert.alert(
-      'Confirmer la suppression',
-      `Êtes-vous sûr de vouloir supprimer l'activité "${activity.nom}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = await AsyncStorage.getItem('access_token');
-              const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities/${activity.id}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/activities/${activity.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-              if (response.ok) {
-                Alert.alert('Succès', 'Activité supprimée avec succès');
-                await loadActivities();
-              } else {
-                Alert.alert('Erreur', 'Impossible de supprimer l\'activité');
-              }
-            } catch (error) {
-              console.error('Erreur lors de la suppression:', error);
-              Alert.alert('Erreur', 'Erreur réseau');
-            }
-          }
-        }
-      ]
-    );
+      if (response.ok) {
+        showAlert('Succès', `L'activité "${activity.nom}" a été supprimée définitivement.`);
+        setShowActivityModal(false);
+        setEditingActivity(null);
+        await loadActivities();
+      } else {
+        const errorData = await response.json();
+        showAlert('Erreur', errorData.detail || 'Impossible de supprimer l\'activité');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      showAlert('Erreur', 'Erreur réseau lors de la suppression');
+    }
   };
 
   const openUserModal = (user: User | null = null) => {
