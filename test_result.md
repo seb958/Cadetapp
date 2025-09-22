@@ -207,6 +207,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Administration panel - Amélioration UX suppression sections"
+    implemented: false
+    working: false
+    file: "admin.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Amélioration de l'UX pour la suppression des sections en cours. L'interface existe déjà (zone dangereuse dans le modal), mais la fonction deleteSection n'est pas complètement implémentée - elle affiche juste un placeholder au lieu de faire l'appel API."
+
 agent_communication:
     - agent: "main"
       message: "Phase 1 implémentée: système d'authentification complet backend + frontend. Testé manuellement avec curl - tous les endpoints fonctionnent. Admin créé: admin@escadron.fr / admin123. Prêt pour tests automatisés backend."
