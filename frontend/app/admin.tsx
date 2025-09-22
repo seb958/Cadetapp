@@ -19,6 +19,39 @@ import { router } from 'expo-router';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+// Fonction utilitaire pour les alertes multi-plateforme
+const showConfirmation = (title: string, message: string, onConfirm: () => void) => {
+  if (Platform.OS === 'web') {
+    // Pour web, utiliser window.confirm
+    const confirmed = window.confirm(`${title}\n\n${message}`);
+    if (confirmed) {
+      onConfirm();
+    }
+  } else {
+    // Pour mobile, utiliser Alert.alert
+    Alert.alert(
+      title,
+      message,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer définitivement',
+          style: 'destructive',
+          onPress: onConfirm
+        }
+      ]
+    );
+  }
+};
+
+const showAlert = (title: string, message: string) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
 interface User {
   id: string;
   nom: string;
