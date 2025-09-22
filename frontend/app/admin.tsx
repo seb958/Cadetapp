@@ -1267,25 +1267,15 @@ export default function Admin() {
               </View>
               
               <View style={styles.settingItem}>
-                <View style={styles.switchContainer}>
-                  <Text style={styles.settingLabel}>Notifications automatiques aux parents</Text>
-                  <Switch
-                    value={settings.notifyParents}
-                    onValueChange={(value) => setSettings(prev => ({...prev, notifyParents: value}))}
-                  />
-                </View>
-              </View>
-              
-              <View style={styles.settingItem}>
-                <Text style={styles.settingLabel}>Seuil d'alerte absences (%)</Text>
+                <Text style={styles.settingLabel}>Seuil d'alerte absences consécutives</Text>
                 <TextInput
                   style={styles.input}
-                  value={settings.absenceThreshold.toString()}
-                  onChangeText={(text) => setSettings(prev => ({...prev, absenceThreshold: parseInt(text) || 0}))}
-                  placeholder="20"
+                  value={settings.consecutiveAbsenceThreshold.toString()}
+                  onChangeText={(text) => setSettings(prev => ({...prev, consecutiveAbsenceThreshold: parseInt(text) || 3}))}
+                  placeholder="3"
                   keyboardType="numeric"
                 />
-                <Text style={styles.helperText}>Alerte automatique si un cadet dépasse ce pourcentage d'absences</Text>
+                <Text style={styles.helperText}>Alerte automatique si un cadet a ce nombre d'absences consécutives</Text>
               </View>
             </View>
 
