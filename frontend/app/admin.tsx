@@ -217,6 +217,7 @@ export default function Admin() {
     autoBackup: true
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [newTenueName, setNewTenueName] = useState('');
 
   useEffect(() => {
     checkAuth();
