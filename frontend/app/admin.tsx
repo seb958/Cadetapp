@@ -1447,10 +1447,18 @@ export default function Admin() {
                   La suppression d'une section est irréversible. Tous les cadets de cette section perdront leur affectation.
                 </Text>
                 <TouchableOpacity
-                  style={[styles.dangerButton, {backgroundColor: '#ff0000', padding: 20}]}
-                  onPress={() => alert('TEST BOUTON SECTION!')}
+                  style={styles.dangerButton}
+                  onPress={() => {
+                    const confirmDelete = window.confirm(
+                      `Êtes-vous sûr de vouloir supprimer définitivement la section "${editingSection.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets de cette section perdront leur affectation.`
+                    );
+                    
+                    if (confirmDelete) {
+                      deleteSection(editingSection);
+                    }
+                  }}
                 >
-                  <Text style={[styles.dangerButtonText, {color: 'white', fontSize: 16}]}>TEST - Supprimer section</Text>
+                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cette section</Text>
                 </TouchableOpacity>
               </View>
             )}
