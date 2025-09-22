@@ -140,7 +140,7 @@ export default function Admin() {
   const [refreshing, setRefreshing] = useState(false);
   
   // Navigation
-  const [activeTab, setActiveTab] = useState<'activities' | 'users' | 'sections' | 'settings' | 'alerts'>('activities');
+  const [activeTab, setActiveTab] = useState<'activities' | 'users' | 'sections' | 'settings' | 'alerts' | 'roles'>('activities');
 
   // États pour l'onglet Alertes
   const [alerts, setAlerts] = useState([]);
@@ -148,6 +148,29 @@ export default function Admin() {
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [contactComment, setContactComment] = useState('');
+
+  // États pour les filtres utilisateurs
+  const [userFilters, setUserFilters] = useState({
+    grade: '',
+    role: '',
+    section_id: ''
+  });
+  const [filterOptions, setFilterOptions] = useState({
+    grades: [],
+    roles: [],
+    sections: []
+  });
+
+  // États pour la gestion des rôles
+  const [roles, setRoles] = useState([]);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
+  const [roleForm, setRoleForm] = useState({
+    name: '',
+    description: '',
+    permissions: []
+  });
+  const [savingRole, setSavingRole] = useState(false);
   
   // Gestion des activités
   const [activities, setActivities] = useState<Activity[]>([]);
