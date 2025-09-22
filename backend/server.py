@@ -275,6 +275,57 @@ class AlertUpdate(BaseModel):
     status: AlertStatus
     contact_comment: Optional[str] = None
 
+class Permission(str, Enum):
+    # Permissions de base
+    VIEW_USERS = "view_users"
+    CREATE_USERS = "create_users"
+    EDIT_USERS = "edit_users"
+    DELETE_USERS = "delete_users"
+    
+    # Permissions des sections
+    VIEW_SECTIONS = "view_sections"
+    CREATE_SECTIONS = "create_sections"
+    EDIT_SECTIONS = "edit_sections"
+    DELETE_SECTIONS = "delete_sections"
+    
+    # Permissions des activités
+    VIEW_ACTIVITIES = "view_activities"
+    CREATE_ACTIVITIES = "create_activities"
+    EDIT_ACTIVITIES = "edit_activities"
+    DELETE_ACTIVITIES = "delete_activities"
+    
+    # Permissions des présences
+    VIEW_PRESENCES = "view_presences"
+    CREATE_PRESENCES = "create_presences"
+    EDIT_PRESENCES = "edit_presences"
+    DELETE_PRESENCES = "delete_presences"
+    
+    # Permissions des alertes
+    VIEW_ALERTS = "view_alerts"
+    MANAGE_ALERTS = "manage_alerts"
+    
+    # Permissions administratives
+    MANAGE_ROLES = "manage_roles"
+    SYSTEM_SETTINGS = "system_settings"
+
+class Role(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    permissions: List[Permission] = []
+    is_system_role: bool = False  # Les rôles système ne peuvent pas être supprimés
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RoleCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    permissions: List[Permission] = []
+
+class RoleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: Optional[List[Permission]] = None
+
 class ConsecutiveAbsenceCalculation(BaseModel):
     cadet_id: str
     consecutive_absences: int
