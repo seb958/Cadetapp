@@ -1468,7 +1468,157 @@ export default function Admin() {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Gestion des Alertes */}
+        {activeTab === 'alerts' && (
+          <View style={styles.tabContent}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Alertes d'Absences Consécutives</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={generateAlerts}
+                disabled={loadingAlerts}
+              >
+                <Text style={styles.addButtonText}>
+                  {loadingAlerts ? 'Génération...' : '🔄 Générer Alertes'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.helperText}>
+              Seuil configuré : {settings.consecutiveAbsenceThreshold} absences consécutives
+            </Text>
+
+            {alerts.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>Aucune alerte active</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Cliquez sur "Générer Alertes" pour vérifier les absences consécutives
+                </Text>
+              </View>
+            ) : (
+              alerts.map((alert) => (
+                <View key={alert.id} style={styles.alertCard}>
+                  <View style={styles.alertHeader}>
+                    <Text style={styles.alertCadetName}>
+                      {alert.cadet_prenom} {alert.cadet_nom}
+                    </Text>
+                    <View style={[
+                      styles.alertStatusBadge,
+                      { backgroundColor: 
+                        alert.status === 'active' ? '#ef4444' : 
+                        alert.status === 'contacted' ? '#f59e0b' : 
+                        '#10b981' 
+                      }
+                    ]}>
+                      <Text style={styles.alertStatusText}>
+                        {alert.status === 'active' ? 'Active' : 
+                         alert.status === 'contacted' ? 'Contacté' : 
+                         'Résolu'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.alertDetails}>
+                    🚨 {alert.consecutive_absences} absences consécutives
+                  </Text>
+                  
+                  {alert.last_absence_date && (
+                    <Text style={styles.alertDetails}>
+                      📅 Dernière absence : {new Date(alert.last_absence_date).toLocaleDateString('fr-FR')}
+                    </Text>
+                  )}
+
+                  {alert.contact_comment && (
+                    <View style={styles.alertComment}>
+                      <Text style={styles.alertCommentTitle}>💬 Commentaire :</Text>
+                      <Text style={styles.alertCommentText}>{alert.contact_comment}</Text>
+                    </View>
+                  )}
+
+                  {alert.contacted_at && (
+                    <Text style={styles.alertMeta}>
+                      Contacté le {new Date(alert.contacted_at).toLocaleDateString('fr-FR')}
+                    </Text>
+                  )}
+
+                  {alert.resolved_at && (
+                    <Text style={styles.alertMeta}>
+                      Résolu le {new Date(alert.resolved_at).toLocaleDateString('fr-FR')}
+                    </Text>
+                  )}
+
+                  <View style={styles.alertActions}>
+                    {alert.status === 'active' && (
+                      <TouchableOpacity
+                        style={[styles.alertActionButton, {backgroundColor: '#f59e0b'}]}
+                        onPress={() => openAlertModal(alert)}
+                      >
+                        <Text style={styles.alertActionText}>📞 Marquer comme contacté</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    {alert.status === 'contacted' && (
+                      <TouchableOpacity
+                        style={[styles.alertActionButton, {backgroundColor: '#10b981'}]}
+                        onPress={() => updateAlertStatus('resolved')}
+                      >
+                        <Text style={styles.alertActionText}>✅ Marquer comme résolu</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        )}
       </ScrollView>
+
+      {/* Modal pour marquer une alerte comme contactée */}
+      <Modal
+        visible={showAlertModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Marquer comme contacté</Text>
+            <TouchableOpacity onPress={() => setShowAlertModal(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalContent}>
+            {selectedAlert && (
+              <>
+                <Text style={styles.modalSubtitle}>
+                  {selectedAlert.cadet_prenom} {selectedAlert.cadet_nom}
+                </Text>
+                <Text style={styles.modalSubtitle}>
+                  {selectedAlert.consecutive_absences} absences consécutives
+                </Text>
+
+                <Text style={styles.inputLabel}>Commentaire (visible aux autres administrateurs)</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={contactComment}
+                  onChangeText={setContactComment}
+                  placeholder="Décrivez les actions entreprises (contact parents, entretien avec le cadet, etc.)"
+                  multiline
+                  numberOfLines={4}
+                />
+
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => updateAlertStatus('contacted', contactComment)}
+                >
+                  <Text style={styles.saveButtonText}>📞 Marquer comme contacté</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       {/* Modal pour créer/modifier une activité */}
       <Modal
