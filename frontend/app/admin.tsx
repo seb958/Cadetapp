@@ -189,15 +189,24 @@ export default function Admin() {
     address: '',
     contactEmail: '',
     allowMotivatedAbsences: true,
-    notifyParents: true,
-    absenceThreshold: 20,
-    inspectionCriteria: [
-      'Tenue générale',
-      'Propreté des chaussures',
-      'Coiffure réglementaire',
-      'Port des insignes',
-      'État des équipements'
-    ],
+    consecutiveAbsenceThreshold: 3,
+    inspectionCriteria: {
+      'C1 - Tenue de Parade': [
+        'Kippi réglementaire',
+        'Chemise blanche impeccable',
+        'Cravate correctement nouée',
+        'Veste ajustée et boutonnée',
+        'Pantalon repassé',
+        'Chaussures cirées'
+      ],
+      'C5 - Tenue d\'Entraînement': [
+        'Béret correctement porté',
+        'Polo de sport propre',
+        'Short/pantalon de sport',
+        'Chaussures de sport',
+        'Équipements sportifs'
+      ]
+    },
     autoBackup: true
   });
   const [savingSettings, setSavingSettings] = useState(false);
