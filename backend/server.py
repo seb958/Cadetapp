@@ -1068,6 +1068,23 @@ async def get_activity(
         if cadet:
             cadet_names.append(f"{cadet['prenom']} {cadet['nom']}")
     
+    # Conversion des dates pour la réponse
+    next_date = None
+    if activity.get("next_date"):
+        if isinstance(activity["next_date"], str):
+            next_date = activity["next_date"]
+        else:
+            # Conversion date object vers string
+            next_date = activity["next_date"].strftime("%Y-%m-%d")
+    
+    planned_date = None
+    if activity.get("planned_date"):
+        if isinstance(activity["planned_date"], str):
+            planned_date = activity["planned_date"]
+        else:
+            # Conversion date object vers string
+            planned_date = activity["planned_date"].strftime("%Y-%m-%d")
+
     return ActivityResponse(
         id=activity["id"],
         nom=activity["nom"],
@@ -1077,8 +1094,8 @@ async def get_activity(
         cadet_names=cadet_names,
         recurrence_interval=activity.get("recurrence_interval"),
         recurrence_unit=activity.get("recurrence_unit"),
-        next_date=datetime.fromisoformat(activity.get("next_date")).date() if activity.get("next_date") else None,
-        planned_date=datetime.fromisoformat(activity.get("planned_date")).date() if activity.get("planned_date") else None,
+        next_date=next_date,
+        planned_date=planned_date,
         created_by=activity["created_by"],
         created_at=datetime.fromisoformat(activity["created_at"]),
         active=activity["active"]
