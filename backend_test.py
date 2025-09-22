@@ -284,11 +284,13 @@ class PresenceTestSuite:
         
         # Test 4: Cadet admin peut créer des présences
         try:
+            future_date = date.today() + timedelta(days=15)
             presence_data = {
                 "cadet_id": self.users["cadet2"]["id"],
-                "date": (date.today() + timedelta(days=1)).isoformat(),
+                "presence_date": future_date.isoformat(),
                 "status": "retard",
-                "commentaire": "Test permission cadet admin"
+                "commentaire": "Test permission cadet admin",
+                "activite": "Test automatisé"
             }
             
             response = requests.post(
