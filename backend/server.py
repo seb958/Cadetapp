@@ -508,18 +508,20 @@ async def create_bulk_presences(
                 created_presences.append(existing_presence["id"])
             else:
                 # Créer nouvelle présence
-                presence_data = Presence(
-                    cadet_id=presence_create.cadet_id,
-                    date=bulk_data.date,
-                    status=presence_create.status,
-                    commentaire=presence_create.commentaire,
-                    enregistre_par=current_user.id,
-                    section_id=cadet.get("section_id"),
-                    activite=bulk_data.activite
-                )
+                presence_data = {
+                    "id": str(uuid.uuid4()),
+                    "cadet_id": presence_create.cadet_id,
+                    "date": bulk_data.date.isoformat(),
+                    "status": presence_create.status.value,
+                    "commentaire": presence_create.commentaire,
+                    "enregistre_par": current_user.id,
+                    "heure_enregistrement": datetime.utcnow().isoformat(),
+                    "section_id": cadet.get("section_id"),
+                    "activite": bulk_data.activite
+                }
                 
-                await db.presences.insert_one(presence_data.dict())
-                created_presences.append(presence_data.id)
+                await db.presences.insert_one(presence_data)
+                created_presences.append(presence_data["id"])
                 
         except Exception as e:
             errors.append(f"Erreur pour cadet {presence_create.cadet_id}: {str(e)}")
