@@ -959,4 +959,110 @@ const styles = StyleSheet.create({
     color: '#4a5568',
     marginTop: 10,
   },
+  // Nouveaux styles pour l'interface de sélection
+  modeSelector: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  modeButton: {
+    flex: 1,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  modeButtonActive: {
+    borderColor: '#3182ce',
+    backgroundColor: '#ebf8ff',
+  },
+  modeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4a5568',
+  },
+  modeButtonTextActive: {
+    color: '#3182ce',
+  },
+  selectionInterface: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 20,
+  },
+  selectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  selectionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  smallButton: {
+    backgroundColor: '#e2e8f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  confirmButton: {
+    backgroundColor: '#3182ce',
+  },
+  smallButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2d3748',
+  },
+  cadetSelectionCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f7fafc',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cadetSelectionCardSelected: {
+    backgroundColor: '#ebf8ff',
+    borderColor: '#3182ce',
+  },
+  cadetSelectionInfo: {
+    flex: 1,
+  },
+  cadetSelectionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a365d',
+  },
+  cadetSelectionGrade: {
+    fontSize: 14,
+    color: '#4a5568',
+    marginTop: 2,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e2e8f0',
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#3182ce',
+    borderColor: '#3182ce',
+  },
+  checkmark: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });
