@@ -288,7 +288,9 @@ class PresenceTestSuite:
         
         # Test 4: Cadet admin peut créer des présences
         try:
-            future_date = date(2025, 12, 20)  # Date fixe dans le futur
+            # Générer une date aléatoire différente
+            random_days = random.randint(200, 400)
+            future_date = date.today() + timedelta(days=random_days)
             presence_data = {
                 "cadet_id": self.users["cadet2"]["id"],
                 "presence_date": future_date.isoformat(),
