@@ -61,6 +61,10 @@ class PresenceStatus(str, Enum):
     ABSENT_EXCUSE = "absent_excuse"
     RETARD = "retard"
 
+class ActivityType(str, Enum):
+    UNIQUE = "unique"  # Activité ponctuelle
+    RECURRING = "recurring"  # Activité récurrente
+
 # Models
 class UserBase(BaseModel):
     nom: str
