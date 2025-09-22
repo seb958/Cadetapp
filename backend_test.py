@@ -1,328 +1,459 @@
 #!/usr/bin/env python3
 """
-Tests pour l'endpoint DELETE /api/sections/{id}
-Test de suppression des sections avec désaffectation des utilisateurs
+Tests complets pour l'API Gestion Escadron Cadets
+Focus sur le nouveau système d'alertes d'absences consécutives
 """
 
 import requests
 import json
+from datetime import datetime, date, timedelta
 import uuid
-from datetime import datetime
 import sys
 
 # Configuration
 BASE_URL = "https://cadetsquad-app.preview.emergentagent.com/api"
+ADMIN_EMAIL = "admin@escadron.fr"
+ADMIN_PASSWORD = "admin123"
 
-# Comptes de test
-ADMIN_CREDENTIALS = {
-    "email": "admin@escadron.fr",
-    "password": "admin123"
-}
-
-# Créer un compte cadet pour les tests de permissions
-CADET_CREDENTIALS = {
-    "email": "cadet.test@escadron.fr", 
-    "password": "cadet123"
-}
-
-class TestResults:
+class CadetSquadTester:
     def __init__(self):
-        self.total_tests = 0
-        self.passed_tests = 0
-        self.failed_tests = 0
-        self.results = []
-    
-    def add_result(self, test_name, passed, message=""):
-        self.total_tests += 1
-        if passed:
-            self.passed_tests += 1
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = {
+            "total_tests": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "categories": {}
+        }
+        
+    def log_test(self, category, test_name, success, message=""):
+        """Enregistrer le résultat d'un test"""
+        self.test_results["total_tests"] += 1
+        
+        if category not in self.test_results["categories"]:
+            self.test_results["categories"][category] = {
+                "passed": 0,
+                "failed": 0,
+                "tests": []
+            }
+        
+        if success:
+            self.test_results["passed_tests"] += 1
+            self.test_results["categories"][category]["passed"] += 1
             status = "✅ PASS"
         else:
-            self.failed_tests += 1
+            self.test_results["failed_tests"] += 1
+            self.test_results["categories"][category]["failed"] += 1
             status = "❌ FAIL"
+            
+        self.test_results["categories"][category]["tests"].append({
+            "name": test_name,
+            "success": success,
+            "message": message
+        })
         
-        result = f"{status} - {test_name}"
+        print(f"{status} - {category}: {test_name}")
         if message:
-            result += f": {message}"
-        
-        self.results.append(result)
-        print(result)
+            print(f"    {message}")
     
-    def print_summary(self):
-        print(f"\n{'='*60}")
-        print(f"RÉSUMÉ DES TESTS - ENDPOINT DELETE /api/sections/{{id}}")
-        print(f"{'='*60}")
-        print(f"Total: {self.total_tests}")
-        print(f"Réussis: {self.passed_tests}")
-        print(f"Échoués: {self.failed_tests}")
-        print(f"Taux de réussite: {(self.passed_tests/self.total_tests*100):.1f}%")
-        print(f"{'='*60}")
-
-def get_auth_token(credentials):
-    """Obtenir un token d'authentification"""
-    try:
-        response = requests.post(f"{BASE_URL}/auth/login", json=credentials)
-        if response.status_code == 200:
-            return response.json()["access_token"]
-        else:
-            print(f"Erreur login: {response.status_code} - {response.text}")
-            return None
-    except Exception as e:
-        print(f"Erreur lors de l'authentification: {e}")
-        return None
-
-def create_test_section(token, section_name=None):
-    """Créer une section de test"""
-    if not section_name:
-        section_name = f"Section Test {uuid.uuid4().hex[:8]}"
-    
-    headers = {"Authorization": f"Bearer {token}"}
-    section_data = {
-        "nom": section_name,
-        "description": "Section créée pour les tests de suppression"
-    }
-    
-    try:
-        response = requests.post(f"{BASE_URL}/sections", json=section_data, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Erreur création section: {response.status_code} - {response.text}")
-            return None
-    except Exception as e:
-        print(f"Erreur lors de la création de section: {e}")
-        return None
-
-def create_test_user(token, section_id=None):
-    """Créer un utilisateur de test"""
-    headers = {"Authorization": f"Bearer {token}"}
-    user_data = {
-        "nom": f"TestUser{uuid.uuid4().hex[:6]}",
-        "prenom": "Test",
-        "grade": "cadet",
-        "role": "cadet",
-        "section_id": section_id
-    }
-    
-    try:
-        response = requests.post(f"{BASE_URL}/auth/invite", json=user_data, headers=headers)
-        if response.status_code == 200:
-            return user_data
-        else:
-            print(f"Erreur création utilisateur: {response.status_code} - {response.text}")
-            return None
-    except Exception as e:
-        print(f"Erreur lors de la création d'utilisateur: {e}")
-        return None
-
-def get_users_by_section(token, section_id):
-    """Récupérer les utilisateurs d'une section"""
-    headers = {"Authorization": f"Bearer {token}"}
-    
-    try:
-        response = requests.get(f"{BASE_URL}/users", headers=headers)
-        if response.status_code == 200:
-            users = response.json()
-            return [user for user in users if user.get("section_id") == section_id]
-        else:
-            print(f"Erreur récupération utilisateurs: {response.status_code} - {response.text}")
-            return []
-    except Exception as e:
-        print(f"Erreur lors de la récupération des utilisateurs: {e}")
-        return []
-
-def test_delete_section_endpoint():
-    """Tests complets pour l'endpoint DELETE /api/sections/{id}"""
-    results = TestResults()
-    
-    print("🚀 DÉBUT DES TESTS - ENDPOINT DELETE /api/sections/{id}")
-    print("="*60)
-    
-    # 1. Test d'authentification - utilisateur non authentifié
-    print("\n📋 CATÉGORIE 1: TESTS D'AUTHENTIFICATION")
-    print("-" * 40)
-    
-    fake_section_id = str(uuid.uuid4())
-    response = requests.delete(f"{BASE_URL}/sections/{fake_section_id}")
-    results.add_result(
-        "Utilisateur non authentifié (401)",
-        response.status_code == 401,
-        f"Status: {response.status_code}"
-    )
-    
-    # 2. Obtenir les tokens d'authentification
-    admin_token = get_auth_token(ADMIN_CREDENTIALS)
-    cadet_token = get_auth_token(CADET_CREDENTIALS)
-    
-    if not admin_token:
-        results.add_result("Obtention token admin", False, "Impossible d'obtenir le token admin")
-        results.print_summary()
-        return results
-    
-    results.add_result("Obtention token admin", True, "Token admin obtenu avec succès")
-    
-    if not cadet_token:
-        results.add_result("Obtention token cadet", False, "Impossible d'obtenir le token cadet")
-    else:
-        results.add_result("Obtention token cadet", True, "Token cadet obtenu avec succès")
-    
-    # 3. Test permissions - cadet normal ne peut pas supprimer
-    if cadet_token:
-        headers = {"Authorization": f"Bearer {cadet_token}"}
-        response = requests.delete(f"{BASE_URL}/sections/{fake_section_id}", headers=headers)
-        results.add_result(
-            "Cadet normal ne peut pas supprimer (403)",
-            response.status_code == 403,
-            f"Status: {response.status_code}"
-        )
-    
-    # 4. Tests des cas normaux
-    print("\n📋 CATÉGORIE 2: TESTS CAS NORMAUX")
-    print("-" * 40)
-    
-    # Créer une section de test
-    admin_headers = {"Authorization": f"Bearer {admin_token}"}
-    test_section = create_test_section(admin_token, "Section à supprimer")
-    
-    if test_section:
-        results.add_result("Création section de test", True, f"Section créée: {test_section['nom']}")
-        section_id = test_section["id"]
-        
-        # Supprimer la section
-        response = requests.delete(f"{BASE_URL}/sections/{section_id}", headers=admin_headers)
-        results.add_result(
-            "Suppression section existante",
-            response.status_code == 200,
-            f"Status: {response.status_code}"
-        )
-        
-        if response.status_code == 200:
-            response_data = response.json()
-            results.add_result(
-                "Message de succès présent",
-                "message" in response_data and "supprimée définitivement" in response_data["message"],
-                f"Message: {response_data.get('message', 'Aucun message')}"
-            )
-            
-            # Vérifier que la section n'existe plus
-            get_response = requests.get(f"{BASE_URL}/sections", headers=admin_headers)
-            if get_response.status_code == 200:
-                sections = get_response.json()
-                section_exists = any(s["id"] == section_id for s in sections)
-                results.add_result(
-                    "Section supprimée de la base",
-                    not section_exists,
-                    f"Section trouvée: {section_exists}"
-                )
-            else:
-                results.add_result("Vérification suppression", False, "Impossible de vérifier la suppression")
-        
-    else:
-        results.add_result("Création section de test", False, "Impossible de créer la section de test")
-    
-    # 5. Tests de désaffectation des utilisateurs
-    print("\n📋 CATÉGORIE 3: TESTS DÉSAFFECTATION UTILISATEURS")
-    print("-" * 40)
-    
-    # Créer une nouvelle section avec des utilisateurs
-    test_section_2 = create_test_section(admin_token, "Section avec utilisateurs")
-    
-    if test_section_2:
-        section_id_2 = test_section_2["id"]
-        results.add_result("Création section avec utilisateurs", True, f"Section: {test_section_2['nom']}")
-        
-        # Créer des utilisateurs dans cette section
-        test_users = []
-        for i in range(2):
-            user = create_test_user(admin_token, section_id_2)
-            if user:
-                test_users.append(user)
-        
-        results.add_result(
-            "Création utilisateurs de test",
-            len(test_users) > 0,
-            f"{len(test_users)} utilisateurs créés"
-        )
-        
-        if test_users:
-            # Vérifier que les utilisateurs sont bien affectés à la section
-            users_in_section = get_users_by_section(admin_token, section_id_2)
-            results.add_result(
-                "Utilisateurs affectés à la section",
-                len(users_in_section) >= len(test_users),
-                f"{len(users_in_section)} utilisateurs trouvés dans la section"
-            )
-            
-            # Supprimer la section
-            response = requests.delete(f"{BASE_URL}/sections/{section_id_2}", headers=admin_headers)
-            results.add_result(
-                "Suppression section avec utilisateurs",
-                response.status_code == 200,
-                f"Status: {response.status_code}"
-            )
+    def authenticate_admin(self):
+        """Authentification admin"""
+        try:
+            response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": ADMIN_EMAIL,
+                "password": ADMIN_PASSWORD
+            })
             
             if response.status_code == 200:
-                # Vérifier que les utilisateurs ne sont plus affectés à la section
-                users_after_deletion = get_users_by_section(admin_token, section_id_2)
-                results.add_result(
-                    "Utilisateurs désaffectés",
-                    len(users_after_deletion) == 0,
-                    f"{len(users_after_deletion)} utilisateurs encore affectés"
-                )
+                data = response.json()
+                self.admin_token = data["access_token"]
+                self.session.headers.update({
+                    "Authorization": f"Bearer {self.admin_token}"
+                })
+                self.log_test("Authentication", "Admin login", True, f"Token obtenu pour {data['user']['email']}")
+                return True
+            else:
+                self.log_test("Authentication", "Admin login", False, f"Status: {response.status_code}, Response: {response.text}")
+                return False
                 
-                # Vérifier que les utilisateurs existent toujours mais sans section
-                all_users_response = requests.get(f"{BASE_URL}/users", headers=admin_headers)
-                if all_users_response.status_code == 200:
-                    all_users = all_users_response.json()
-                    users_without_section = [
-                        user for user in all_users 
-                        if any(user["nom"] == test_user["nom"] for test_user in test_users)
-                        and user.get("section_id") is None
-                    ]
-                    results.add_result(
-                        "Utilisateurs conservés sans section",
-                        len(users_without_section) >= len(test_users),
-                        f"{len(users_without_section)} utilisateurs trouvés sans section"
-                    )
-    else:
-        results.add_result("Création section avec utilisateurs", False, "Impossible de créer la section")
+        except Exception as e:
+            self.log_test("Authentication", "Admin login", False, f"Exception: {str(e)}")
+            return False
     
-    # 6. Tests des cas d'erreur
-    print("\n📋 CATÉGORIE 4: TESTS CAS D'ERREUR")
-    print("-" * 40)
+    def test_consecutive_absences_calculation(self):
+        """Test du calcul des absences consécutives"""
+        try:
+            # Test avec seuil par défaut (3)
+            response = self.session.get(f"{BASE_URL}/alerts/consecutive-absences")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test("Alerts", "Calculate consecutive absences (default threshold)", True, 
+                            f"Trouvé {len(data)} cadets avec absences consécutives")
+                
+                # Vérifier la structure des données
+                if data and len(data) > 0:
+                    first_item = data[0]
+                    required_fields = ["cadet_id", "consecutive_absences", "last_absence_date"]
+                    missing_fields = [field for field in required_fields if field not in first_item]
+                    
+                    if not missing_fields:
+                        self.log_test("Alerts", "Consecutive absences data structure", True, 
+                                    f"Structure correcte: {list(first_item.keys())}")
+                    else:
+                        self.log_test("Alerts", "Consecutive absences data structure", False, 
+                                    f"Champs manquants: {missing_fields}")
+                else:
+                    self.log_test("Alerts", "Consecutive absences data structure", True, 
+                                "Aucune absence consécutive trouvée (normal si pas de données)")
+                
+                # Test avec seuil personnalisé
+                response_custom = self.session.get(f"{BASE_URL}/alerts/consecutive-absences?threshold=2")
+                if response_custom.status_code == 200:
+                    custom_data = response_custom.json()
+                    self.log_test("Alerts", "Calculate consecutive absences (custom threshold=2)", True, 
+                                f"Trouvé {len(custom_data)} cadets avec seuil=2")
+                else:
+                    self.log_test("Alerts", "Calculate consecutive absences (custom threshold=2)", False, 
+                                f"Status: {response_custom.status_code}")
+                
+            else:
+                self.log_test("Alerts", "Calculate consecutive absences (default threshold)", False, 
+                            f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Calculate consecutive absences", False, f"Exception: {str(e)}")
     
-    # Tenter de supprimer une section inexistante
-    fake_id = str(uuid.uuid4())
-    response = requests.delete(f"{BASE_URL}/sections/{fake_id}", headers=admin_headers)
-    results.add_result(
-        "Suppression section inexistante (404)",
-        response.status_code == 404,
-        f"Status: {response.status_code}"
-    )
+    def test_get_alerts(self):
+        """Test de récupération des alertes"""
+        try:
+            response = self.session.get(f"{BASE_URL}/alerts")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test("Alerts", "Get all alerts", True, f"Trouvé {len(data)} alertes")
+                
+                # Vérifier la structure si des alertes existent
+                if data and len(data) > 0:
+                    first_alert = data[0]
+                    required_fields = ["id", "cadet_id", "cadet_nom", "cadet_prenom", "consecutive_absences", 
+                                     "status", "created_at"]
+                    missing_fields = [field for field in required_fields if field not in first_alert]
+                    
+                    if not missing_fields:
+                        self.log_test("Alerts", "Alert data structure", True, 
+                                    f"Structure correcte avec statut: {first_alert.get('status')}")
+                    else:
+                        self.log_test("Alerts", "Alert data structure", False, 
+                                    f"Champs manquants: {missing_fields}")
+                else:
+                    self.log_test("Alerts", "Alert data structure", True, "Aucune alerte existante")
+                    
+            else:
+                self.log_test("Alerts", "Get all alerts", False, 
+                            f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Get all alerts", False, f"Exception: {str(e)}")
     
-    # Test avec ID invalide
-    response = requests.delete(f"{BASE_URL}/sections/invalid-id", headers=admin_headers)
-    results.add_result(
-        "Suppression avec ID invalide",
-        response.status_code in [404, 422],  # 404 ou 422 selon l'implémentation
-        f"Status: {response.status_code}"
-    )
+    def test_generate_alerts(self):
+        """Test de génération d'alertes"""
+        try:
+            # Test avec seuil par défaut
+            response = self.session.post(f"{BASE_URL}/alerts/generate")
+            
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                self.log_test("Alerts", "Generate alerts (default threshold)", True, message)
+                
+                # Test avec seuil personnalisé
+                response_custom = self.session.post(f"{BASE_URL}/alerts/generate?threshold=2")
+                if response_custom.status_code == 200:
+                    custom_data = response_custom.json()
+                    custom_message = custom_data.get("message", "")
+                    self.log_test("Alerts", "Generate alerts (custom threshold=2)", True, custom_message)
+                else:
+                    self.log_test("Alerts", "Generate alerts (custom threshold=2)", False, 
+                                f"Status: {response_custom.status_code}")
+                
+            else:
+                self.log_test("Alerts", "Generate alerts (default threshold)", False, 
+                            f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Generate alerts", False, f"Exception: {str(e)}")
     
-    results.print_summary()
-    return results
+    def test_alert_status_updates(self):
+        """Test de mise à jour des statuts d'alertes"""
+        try:
+            # D'abord récupérer les alertes existantes
+            response = self.session.get(f"{BASE_URL}/alerts")
+            
+            if response.status_code != 200:
+                self.log_test("Alerts", "Alert status updates", False, "Impossible de récupérer les alertes")
+                return
+                
+            alerts = response.json()
+            
+            if not alerts:
+                # Générer des alertes d'abord
+                gen_response = self.session.post(f"{BASE_URL}/alerts/generate?threshold=1")
+                if gen_response.status_code == 200:
+                    # Récupérer à nouveau
+                    response = self.session.get(f"{BASE_URL}/alerts")
+                    if response.status_code == 200:
+                        alerts = response.json()
+                
+            if alerts and len(alerts) > 0:
+                alert_id = alerts[0]["id"]
+                
+                # Test 1: Passer à "contacted"
+                update_data = {
+                    "status": "contacted",
+                    "contact_comment": "Famille contactée par téléphone"
+                }
+                
+                response = self.session.put(f"{BASE_URL}/alerts/{alert_id}", json=update_data)
+                
+                if response.status_code == 200:
+                    self.log_test("Alerts", "Update alert to contacted", True, 
+                                "Alerte mise à jour vers 'contacted'")
+                    
+                    # Test 2: Passer à "resolved"
+                    resolve_data = {"status": "resolved"}
+                    response = self.session.put(f"{BASE_URL}/alerts/{alert_id}", json=resolve_data)
+                    
+                    if response.status_code == 200:
+                        self.log_test("Alerts", "Update alert to resolved", True, 
+                                    "Alerte mise à jour vers 'resolved'")
+                    else:
+                        self.log_test("Alerts", "Update alert to resolved", False, 
+                                    f"Status: {response.status_code}")
+                        
+                else:
+                    self.log_test("Alerts", "Update alert to contacted", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+                    
+                # Test 3: Test avec ID invalide
+                invalid_response = self.session.put(f"{BASE_URL}/alerts/invalid-id", json=update_data)
+                if invalid_response.status_code == 404:
+                    self.log_test("Alerts", "Update non-existent alert", True, 
+                                "Erreur 404 correcte pour ID invalide")
+                else:
+                    self.log_test("Alerts", "Update non-existent alert", False, 
+                                f"Status attendu 404, reçu: {invalid_response.status_code}")
+                    
+            else:
+                self.log_test("Alerts", "Alert status updates", False, 
+                            "Aucune alerte disponible pour les tests de mise à jour")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Alert status updates", False, f"Exception: {str(e)}")
+    
+    def test_delete_alert(self):
+        """Test de suppression d'alertes"""
+        try:
+            # Générer une alerte pour la supprimer
+            gen_response = self.session.post(f"{BASE_URL}/alerts/generate?threshold=1")
+            
+            # Récupérer les alertes
+            response = self.session.get(f"{BASE_URL}/alerts")
+            
+            if response.status_code == 200:
+                alerts = response.json()
+                
+                if alerts and len(alerts) > 0:
+                    alert_id = alerts[0]["id"]
+                    
+                    # Supprimer l'alerte
+                    delete_response = self.session.delete(f"{BASE_URL}/alerts/{alert_id}")
+                    
+                    if delete_response.status_code == 200:
+                        self.log_test("Alerts", "Delete alert", True, "Alerte supprimée avec succès")
+                        
+                        # Vérifier que l'alerte n'existe plus
+                        verify_response = self.session.delete(f"{BASE_URL}/alerts/{alert_id}")
+                        if verify_response.status_code == 404:
+                            self.log_test("Alerts", "Verify alert deletion", True, 
+                                        "Alerte correctement supprimée (404 sur seconde tentative)")
+                        else:
+                            self.log_test("Alerts", "Verify alert deletion", False, 
+                                        f"Status attendu 404, reçu: {verify_response.status_code}")
+                    else:
+                        self.log_test("Alerts", "Delete alert", False, 
+                                    f"Status: {delete_response.status_code}")
+                        
+                    # Test avec ID invalide
+                    invalid_response = self.session.delete(f"{BASE_URL}/alerts/invalid-id")
+                    if invalid_response.status_code == 404:
+                        self.log_test("Alerts", "Delete non-existent alert", True, 
+                                    "Erreur 404 correcte pour ID invalide")
+                    else:
+                        self.log_test("Alerts", "Delete non-existent alert", False, 
+                                    f"Status attendu 404, reçu: {invalid_response.status_code}")
+                        
+                else:
+                    self.log_test("Alerts", "Delete alert", False, "Aucune alerte disponible pour suppression")
+                    
+            else:
+                self.log_test("Alerts", "Delete alert", False, "Impossible de récupérer les alertes")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Delete alert", False, f"Exception: {str(e)}")
+    
+    def test_alert_permissions(self):
+        """Test des permissions pour les alertes"""
+        try:
+            # Créer un token cadet pour tester les permissions
+            cadet_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": "marie.dubois@escadron.fr",  # Cadet existant
+                "password": "cadet123"
+            })
+            
+            if cadet_response.status_code == 200:
+                cadet_data = cadet_response.json()
+                cadet_token = cadet_data["access_token"]
+                
+                # Tester l'accès avec token cadet
+                cadet_session = requests.Session()
+                cadet_session.headers.update({
+                    "Authorization": f"Bearer {cadet_token}"
+                })
+                
+                # Test accès aux alertes (devrait échouer)
+                response = cadet_session.get(f"{BASE_URL}/alerts")
+                if response.status_code == 403:
+                    self.log_test("Alerts", "Cadet permission denied", True, 
+                                "Accès correctement refusé pour cadet")
+                else:
+                    self.log_test("Alerts", "Cadet permission denied", False, 
+                                f"Status attendu 403, reçu: {response.status_code}")
+                    
+                # Test génération d'alertes (devrait échouer)
+                gen_response = cadet_session.post(f"{BASE_URL}/alerts/generate")
+                if gen_response.status_code == 403:
+                    self.log_test("Alerts", "Cadet generate permission denied", True, 
+                                "Génération d'alertes correctement refusée pour cadet")
+                else:
+                    self.log_test("Alerts", "Cadet generate permission denied", False, 
+                                f"Status attendu 403, reçu: {gen_response.status_code}")
+                    
+            else:
+                self.log_test("Alerts", "Alert permissions", False, 
+                            "Impossible de se connecter avec compte cadet pour test permissions")
+                
+        except Exception as e:
+            self.log_test("Alerts", "Alert permissions", False, f"Exception: {str(e)}")
+    
+    def test_existing_endpoints_compatibility(self):
+        """Test de compatibilité avec les endpoints existants"""
+        try:
+            # Test endpoint utilisateurs
+            response = self.session.get(f"{BASE_URL}/users")
+            if response.status_code == 200:
+                users = response.json()
+                self.log_test("Compatibility", "Users endpoint", True, f"Trouvé {len(users)} utilisateurs")
+            else:
+                self.log_test("Compatibility", "Users endpoint", False, f"Status: {response.status_code}")
+            
+            # Test endpoint sections
+            response = self.session.get(f"{BASE_URL}/sections")
+            if response.status_code == 200:
+                sections = response.json()
+                self.log_test("Compatibility", "Sections endpoint", True, f"Trouvé {len(sections)} sections")
+            else:
+                self.log_test("Compatibility", "Sections endpoint", False, f"Status: {response.status_code}")
+            
+            # Test endpoint présences
+            response = self.session.get(f"{BASE_URL}/presences")
+            if response.status_code == 200:
+                presences = response.json()
+                self.log_test("Compatibility", "Presences endpoint", True, f"Trouvé {len(presences)} présences")
+            else:
+                self.log_test("Compatibility", "Presences endpoint", False, f"Status: {response.status_code}")
+            
+            # Test endpoint activités
+            response = self.session.get(f"{BASE_URL}/activities")
+            if response.status_code == 200:
+                activities = response.json()
+                self.log_test("Compatibility", "Activities endpoint", True, f"Trouvé {len(activities)} activités")
+            else:
+                self.log_test("Compatibility", "Activities endpoint", False, f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Compatibility", "Existing endpoints", False, f"Exception: {str(e)}")
+    
+    def run_all_tests(self):
+        """Exécuter tous les tests"""
+        print("🚀 DÉBUT DES TESTS - Système d'alertes d'absences consécutives")
+        print("=" * 80)
+        
+        # Authentification
+        if not self.authenticate_admin():
+            print("❌ Impossible de s'authentifier - Arrêt des tests")
+            return
+        
+        # Tests du système d'alertes
+        print("\n📋 TESTS DU SYSTÈME D'ALERTES")
+        print("-" * 40)
+        self.test_consecutive_absences_calculation()
+        self.test_get_alerts()
+        self.test_generate_alerts()
+        self.test_alert_status_updates()
+        self.test_delete_alert()
+        self.test_alert_permissions()
+        
+        # Tests de compatibilité
+        print("\n🔄 TESTS DE COMPATIBILITÉ")
+        print("-" * 40)
+        self.test_existing_endpoints_compatibility()
+        
+        # Résumé
+        self.print_summary()
+    
+    def print_summary(self):
+        """Afficher le résumé des tests"""
+        print("\n" + "=" * 80)
+        print("📊 RÉSUMÉ DES TESTS")
+        print("=" * 80)
+        
+        total = self.test_results["total_tests"]
+        passed = self.test_results["passed_tests"]
+        failed = self.test_results["failed_tests"]
+        success_rate = (passed / total * 100) if total > 0 else 0
+        
+        print(f"Total des tests: {total}")
+        print(f"✅ Réussis: {passed}")
+        print(f"❌ Échoués: {failed}")
+        print(f"📈 Taux de réussite: {success_rate:.1f}%")
+        
+        print("\n📋 DÉTAIL PAR CATÉGORIE:")
+        for category, results in self.test_results["categories"].items():
+            cat_total = results["passed"] + results["failed"]
+            cat_rate = (results["passed"] / cat_total * 100) if cat_total > 0 else 0
+            print(f"  {category}: {results['passed']}/{cat_total} ({cat_rate:.1f}%)")
+        
+        if failed > 0:
+            print("\n❌ TESTS ÉCHOUÉS:")
+            for category, results in self.test_results["categories"].items():
+                failed_tests = [t for t in results["tests"] if not t["success"]]
+                if failed_tests:
+                    print(f"  {category}:")
+                    for test in failed_tests:
+                        print(f"    - {test['name']}: {test['message']}")
+        
+        print("\n" + "=" * 80)
+        
+        if success_rate >= 90:
+            print("🎉 EXCELLENT! Système d'alertes fonctionnel")
+        elif success_rate >= 75:
+            print("✅ BON! Quelques ajustements mineurs nécessaires")
+        elif success_rate >= 50:
+            print("⚠️  MOYEN! Plusieurs problèmes à corriger")
+        else:
+            print("❌ CRITIQUE! Système nécessite des corrections majeures")
 
 if __name__ == "__main__":
-    print("🧪 TESTS ENDPOINT DELETE /api/sections/{id}")
-    print("Testeur: Agent de test backend")
-    print(f"URL de base: {BASE_URL}")
-    print(f"Timestamp: {datetime.now().isoformat()}")
-    
-    results = test_delete_section_endpoint()
-    
-    # Code de sortie basé sur les résultats
-    if results.failed_tests == 0:
-        print("\n🎉 TOUS LES TESTS SONT PASSÉS!")
-        sys.exit(0)
-    else:
-        print(f"\n⚠️  {results.failed_tests} TEST(S) ONT ÉCHOUÉ")
-        sys.exit(1)
+    tester = CadetSquadTester()
+    tester.run_all_tests()
