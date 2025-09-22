@@ -859,12 +859,6 @@ export default function Admin() {
                     >
                       <Text style={styles.editButtonText}>Modifier</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => deleteActivity(activity)}
-                    >
-                      <Text style={styles.deleteButtonText}>Supprimer</Text>
-                    </TouchableOpacity>
                   </View>
                 </View>
               ))
