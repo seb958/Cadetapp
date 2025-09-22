@@ -29,6 +29,22 @@ interface User {
   actif: boolean;
 }
 
+interface Activity {
+  id: string;
+  nom: string;
+  description?: string;
+  type: 'unique' | 'recurring';
+  cadet_ids: string[];
+  cadet_names: string[];
+  recurrence_interval?: number;
+  recurrence_unit?: string;
+  next_date?: string;
+  planned_date?: string;
+  created_by: string;
+  created_at: string;
+  active: boolean;
+}
+
 interface Presence {
   id: string;
   cadet_id: string;
