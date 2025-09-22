@@ -361,9 +361,23 @@ export default function Admin() {
       return;
     }
 
-    if (activityForm.cadet_ids.length === 0) {
+    // Filtrer les IDs de cadets pour ne garder que ceux qui existent encore
+    const validCadetIds = activityForm.cadet_ids.filter(cadetId => 
+      cadets.some(cadet => cadet.id === cadetId)
+    );
+
+    if (validCadetIds.length === 0) {
       showAlert('Erreur', 'Veuillez sélectionner au moins un cadet');
       return;
+    }
+
+    // Informer l'utilisateur si certains cadets ont été supprimés
+    if (validCadetIds.length < activityForm.cadet_ids.length) {
+      const removedCount = activityForm.cadet_ids.length - validCadetIds.length;
+      showAlert(
+        'Information', 
+        `${removedCount} cadet(s) ont été automatiquement retirés car ils ne sont plus actifs.`
+      );
     }
 
     setSavingActivity(true);
