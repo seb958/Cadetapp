@@ -610,7 +610,7 @@ index 8aacf37..993e1da 100644
 -------+import random
 ------- 
 ------- # Configuration
-------- BASE_URL = "https://cadetron.preview.emergentagent.com/api"
+------- BASE_URL = "https://squadronapp.preview.emergentagent.com/api"
 ------- 
 --------# Comptes de test existants
 --------ADMIN_EMAIL = "admin@escadron.fr"
@@ -1601,7 +1601,7 @@ index 8aacf37..993e1da 100644
 ------------+import sys
 ------------+
 ------------+# Configuration
-------------+BASE_URL = "https://cadetron.preview.emergentagent.com/api"
+------------+BASE_URL = "https://squadronapp.preview.emergentagent.com/api"
 ------------+
 ------------+# Comptes de test existants
 ------------+ADMIN_EMAIL = "admin@escadron.fr"
@@ -2174,7 +2174,7 @@ index 8aacf37..993e1da 100644
 ------------\ No newline at end of file
 ------------+      message: "Phase 1 implémentée: système d'authentification complet backend + frontend. Testé manuellement avec curl - tous les endpoints fonctionnent. Admin créé: admin@escadron.fr / admin123. Prêt pour tests automatisés backend."
 ------------+    - agent: "testing"
-------------+      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
+------------+      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://squadronapp.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
 ------------\ No newline at end of file
 -----------diff --git a/test_result.md b/test_result.md
 -----------index f8fa96f..5c9a5b7 100644
@@ -2200,11 +2200,11 @@ index 8aacf37..993e1da 100644
 -----------     - agent: "main"
 -----------       message: "Phase 1 implémentée: système d'authentification complet backend + frontend. Testé manuellement avec curl - tous les endpoints fonctionnent. Admin créé: admin@escadron.fr / admin123. Prêt pour tests automatisés backend."
 -----------     - agent: "testing"
-------------      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
+------------      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://squadronapp.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
 -----------\ No newline at end of file
------------+      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
+-----------+      message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://squadronapp.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
 -----------+    - agent: "testing"
------------+      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://cadetron.preview.emergentagent.com. Authentification complète validée."
+-----------+      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://squadronapp.preview.emergentagent.com. Authentification complète validée."
 -----------\ No newline at end of file
 ---------diff --git a/test_result.md b/test_result.md
 ---------index dc130e6..a9bcf2c 100644
@@ -2272,17 +2272,17 @@ index 8aacf37..993e1da 100644
 -------           comment: "API complète: création présences individuelles/bulk, consultation avec permissions par rôle (cadet voit seulement ses présences, cadet_responsible sa section, admin/encadrement tout), statistiques, mise à jour. Testé avec curl - fonctionne parfaitement."
 -------+        - working: true
 -------+          agent: "testing"
--------+          comment: "✅ TESTS COMPLETS RÉUSSIS - 6/7 catégories passées (85.7% réussite). Système de gestion des présences robuste et sécurisé: Authentification 5 comptes OK, Création bulk présences OK, Récupération avec filtres OK, Permissions par rôle correctes (cadet voit ses présences, admin accès global, cadet ne peut pas créer), Statistiques fonctionnelles, Mise à jour présences OK, Gestion erreurs appropriée. 2 tests individuels échouent par conflit de données existantes mais API fonctionne. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr, emma.leroy@escadron.fr, jean.moreau@escadron.fr, pierre.martin@escadron.fr, marie.dubois@escadron.fr."
+-------+          comment: "✅ TESTS COMPLETS RÉUSSIS - 6/7 catégories passées (85.7% réussite). Système de gestion des présences robuste et sécurisé: Authentification 5 comptes OK, Création bulk présences OK, Récupération avec filtres OK, Permissions par rôle correctes (cadet voit ses présences, admin accès global, cadet ne peut pas créer), Statistiques fonctionnelles, Mise à jour présences OK, Gestion erreurs appropriée. 2 tests individuels échouent par conflit de données existantes mais API fonctionne. Base URL: https://squadronapp.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr, emma.leroy@escadron.fr, jean.moreau@escadron.fr, pierre.martin@escadron.fr, marie.dubois@escadron.fr."
 ------- 
 ------- frontend:
 -------   - task: "Interface d'authentification française"
 -------@@ -214,4 +217,6 @@ agent_communication:
 -------     - agent: "testing"
--------       message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://cadetron.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
+-------       message: "✅ TESTS BACKEND COMPLETS RÉUSSIS - 16/16 tests passés (100% réussite). Système d'authentification robuste et sécurisé: Login admin/cadet, JWT tokens, permissions par rôle, système d'invitation, gestion utilisateurs/sections. Tous les endpoints fonctionnent parfaitement. Base URL: https://squadronapp.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr/admin123, cadet.test@escadron.fr/cadet123. 4 utilisateurs actifs en base."
 -------     - agent: "testing"
---------      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://cadetron.preview.emergentagent.com. Authentification complète validée."
+--------      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://squadronapp.preview.emergentagent.com. Authentification complète validée."
 -------\ No newline at end of file
--------+      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://cadetron.preview.emergentagent.com. Authentification complète validée."
+-------+      message: "✅ TESTS FRONTEND COMPLETS RÉUSSIS - Système d'authentification frontend robuste et sécurisé testé sur mobile (375x667): Interface française parfaite, validation des champs, gestion erreurs 401, login admin/cadet fonctionnel, dashboards différenciés par rôle (Administration visible uniquement pour admin/encadrement), déconnexion, persistance session, toutes fonctionnalités disponibles. URL: https://squadronapp.preview.emergentagent.com. Authentification complète validée."
 -------+    - agent: "testing"
 -------+      message: "✅ TESTS SYSTÈME PRÉSENCES COMPLETS - 6/7 catégories réussies (85.7%). Système de gestion des présences robuste: Authentification 5 comptes OK, API bulk présences fonctionnelle, Récupération avec filtres correcte, Permissions sécurisées (cadet voit ses présences uniquement, admin accès global, cadet ne peut pas créer), Statistiques précises, Mise à jour présences OK, Gestion erreurs appropriée. 2 tests individuels échouent par conflit données existantes mais fonctionnalité validée. Comptes testés: admin@escadron.fr, emma.leroy@escadron.fr, jean.moreau@escadron.fr, pierre.martin@escadron.fr, marie.dubois@escadron.fr. Système prêt pour production."
 -------\ No newline at end of file

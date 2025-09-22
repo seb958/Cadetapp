@@ -12,7 +12,7 @@ import sys
 import random
 
 # Configuration
-BASE_URL = "https://cadetron.preview.emergentagent.com/api"
+BASE_URL = "https://squadronapp.preview.emergentagent.com/api"
 
 # Comptes de test fournis
 TEST_ACCOUNTS = {
