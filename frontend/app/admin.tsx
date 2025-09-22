@@ -49,12 +49,15 @@ interface UserFormData {
 
 const GRADES = [
   { value: 'cadet', label: 'Cadet' },
+  { value: 'cadet_air_1re_classe', label: 'Cadet de l\'air 1re classe' },
   { value: 'caporal', label: 'Caporal' },
+  { value: 'caporal_section', label: 'Caporal de section' },
   { value: 'sergent', label: 'Sergent' },
-  { value: 'adjudant', label: 'Adjudant' },
-  { value: 'lieutenant', label: 'Lieutenant' },
-  { value: 'capitaine', label: 'Capitaine' },
-  { value: 'commandant', label: 'Commandant' }
+  { value: 'sergent_section', label: 'Sergent de section' },
+  { value: 'adjudant_2e_classe', label: 'Adjudant de 2e classe' },
+  { value: 'adjudant_1re_classe', label: 'Adjudant de 1re classe' },
+  { value: 'instructeur_civil', label: 'Instructeur civil' },
+  // Note: Liste semble incomplète, ajouter les grades manquants
 ];
 
 const ROLES = [
