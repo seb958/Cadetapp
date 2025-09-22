@@ -423,9 +423,9 @@ export default function Admin() {
     }
 
     // Validation email seulement si fourni
-    if (userForm.email.trim()) {
+    if (userForm.email && userForm.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(userForm.email)) {
+      if (!emailRegex.test(userForm.email.trim())) {
         Alert.alert('Erreur', 'Format d\'email invalide');
         return;
       }
@@ -445,7 +445,7 @@ export default function Admin() {
         const payload = {
           nom: userForm.nom.trim(),
           prenom: userForm.prenom.trim(),
-          email: userForm.email.trim() || null,
+          email: userForm.email && userForm.email.trim() ? userForm.email.trim() : null,
           grade: userForm.grade,
           role: userForm.role,
           section_id: userForm.section_id || null
@@ -464,7 +464,7 @@ export default function Admin() {
           const data = await response.json();
           let message = `Utilisateur créé avec succès: ${userForm.prenom} ${userForm.nom}`;
           
-          if (userForm.email.trim()) {
+          if (userForm.email && userForm.email.trim()) {
             message += `\n\nInvitation envoyée à ${userForm.email}.\nToken d'invitation (pour test): ${data.token.substring(0, 20)}...`;
           } else {
             message += `\n\nAucun email fourni - l'utilisateur devra être configuré plus tard.`;
