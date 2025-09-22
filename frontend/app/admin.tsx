@@ -642,20 +642,29 @@ export default function Admin() {
   };
 
   const deleteSection = async (section: Section) => {
-    Alert.alert(
-      'Confirmer la suppression',
-      `Êtes-vous sûr de vouloir supprimer la section "${section.nom}" ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            Alert.alert('Information', 'La suppression de sections sera disponible prochainement');
-          }
-        }
-      ]
-    );
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sections/${section.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        Alert.alert('Succès', `La section "${section.nom}" a été supprimée définitivement.`);
+        setShowSectionModal(false);
+        setEditingSection(null);
+        await loadSections();
+        await loadUsers(); // Recharger les utilisateurs car leurs sections ont pu changer
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer la section');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+    }
   };
 
   const getResponsableName = (responsableId: string) => {
