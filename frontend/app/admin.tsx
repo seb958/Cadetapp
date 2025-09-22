@@ -1319,10 +1319,18 @@ export default function Admin() {
                   La suppression d'un utilisateur est irréversible. Toutes ses données seront perdues définitivement.
                 </Text>
                 <TouchableOpacity
-                  style={[styles.dangerButton, {backgroundColor: '#ff0000', padding: 20}]}
-                  onPress={() => alert('TEST BOUTON UTILISATEUR!')}
+                  style={styles.dangerButton}
+                  onPress={() => {
+                    const confirmDelete = window.confirm(
+                      `Êtes-vous sûr de vouloir supprimer définitivement "${editingUser.prenom} ${editingUser.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nToutes les données associées (présences, inspections, etc.) seront perdues.`
+                    );
+                    
+                    if (confirmDelete) {
+                      deleteUser(editingUser);
+                    }
+                  }}
                 >
-                  <Text style={[styles.dangerButtonText, {color: 'white', fontSize: 16}]}>TEST - Supprimer utilisateur</Text>
+                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cet utilisateur</Text>
                 </TouchableOpacity>
               </View>
             )}
