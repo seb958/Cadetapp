@@ -626,7 +626,35 @@ export default function Admin() {
           return;
         }
 
-        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/${editingUser.id}`, {
+        // MODIFICATION : Chercher l'utilisateur actuel par nom au lieu d'utiliser l'ID cached
+        console.log('🔍 Recherche utilisateur par nom:', userForm.prenom, userForm.nom);
+        
+        // Étape 1: Chercher l'utilisateur actuel en base par nom
+        const searchResponse = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (!searchResponse.ok) {
+          throw new Error('Impossible de récupérer les utilisateurs');
+        }
+        
+        const allUsers = await searchResponse.json();
+        const currentUser = allUsers.find((u: User) => 
+          u.prenom === editingUser.prenom && u.nom === editingUser.nom
+        );
+        
+        if (!currentUser) {
+          Alert.alert('Erreur', `Utilisateur ${editingUser.prenom} ${editingUser.nom} non trouvé en base`);
+          setSavingUser(false);
+          return;
+        }
+        
+        console.log('✅ Utilisateur trouvé avec ID:', currentUser.id);
+        
+        // Étape 2: Utiliser l'ID actuel pour la modification
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/${currentUser.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
