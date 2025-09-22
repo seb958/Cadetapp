@@ -212,7 +212,8 @@ export default function Admin() {
           
           if (response.ok) {
             setUser(parsedUser);
-            await loadData();
+            // Forcer le rechargement complet des données
+            await forceReloadAllData();
           } else {
             // Token invalide, rediriger vers la connexion
             Alert.alert('Session expirée', 'Veuillez vous reconnecter.');
@@ -234,6 +235,22 @@ export default function Admin() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fonction pour forcer le rechargement complet des données
+  const forceReloadAllData = async () => {
+    console.log('🔄 Rechargement forcé de toutes les données...');
+    
+    // Réinitialiser tous les états
+    setActivities([]);
+    setCadets([]);
+    setUsers([]);
+    setSections([]);
+    
+    // Recharger toutes les données depuis l'API
+    await loadData();
+    
+    console.log('✅ Rechargement complet terminé');
   };
 
   const loadData = async () => {
