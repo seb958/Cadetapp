@@ -1359,7 +1359,14 @@ async def generate_alerts(
                 status=AlertStatus.ACTIVE
             )
             
-            await db.alerts.insert_one(alert_data.dict())
+            # Convertir les dates en string pour MongoDB
+            alert_dict = alert_data.dict()
+            if alert_dict.get("last_absence_date"):
+                alert_dict["last_absence_date"] = alert_dict["last_absence_date"].isoformat()
+            if alert_dict.get("created_at"):
+                alert_dict["created_at"] = alert_dict["created_at"].isoformat()
+            
+            await db.alerts.insert_one(alert_dict)
             new_alerts_count += 1
         else:
             # Mettre à jour l'alerte existante si le nombre d'absences a augmenté
