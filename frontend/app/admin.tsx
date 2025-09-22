@@ -319,14 +319,25 @@ export default function Admin() {
       loadCadets(),
       loadUsers(),
       loadSections(),
-      loadAlerts()
+      loadAlerts(),
+      loadFilterOptions()
     ]);
   };
 
   const loadUsers = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+      
+      // Construire les paramètres de requête pour les filtres
+      const params = new URLSearchParams();
+      if (userFilters.grade) params.append('grade', userFilters.grade);
+      if (userFilters.role) params.append('role', userFilters.role);
+      if (userFilters.section_id) params.append('section_id', userFilters.section_id);
+      
+      const queryString = params.toString();
+      const url = `${EXPO_PUBLIC_BACKEND_URL}/api/users${queryString ? `?${queryString}` : ''}`;
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -338,7 +349,7 @@ export default function Admin() {
         
         // Log détaillé de chaque utilisateur pour débogage
         userData.forEach((user: User, index: number) => {
-          console.log(`${index + 1}. ${user.prenom} ${user.nom} | ID: ${user.id} | Actif: ${user.actif}`);
+          console.log(`${index + 1}. ${user.prenom} ${user.nom} | ID: ${user.id} | Actif: ${user.actif} | Admin: ${user.has_admin_privileges || false}`);
         });
         
         setUsers(userData);
@@ -347,6 +358,24 @@ export default function Admin() {
       }
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error);
+    }
+  };
+
+  const loadFilterOptions = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/filters`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFilterOptions(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des options de filtres:', error);
     }
   };
 
