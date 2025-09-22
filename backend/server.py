@@ -681,6 +681,8 @@ async def update_user(
         update_data["section_id"] = user_update.section_id
     if user_update.actif is not None:
         update_data["actif"] = user_update.actif
+    if user_update.has_admin_privileges is not None:
+        update_data["has_admin_privileges"] = user_update.has_admin_privileges
     
     # Effectuer la mise à jour
     if update_data:
