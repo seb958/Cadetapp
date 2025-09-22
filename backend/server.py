@@ -232,8 +232,8 @@ class ActivityResponse(BaseModel):
     cadet_names: List[str]  # Noms complets des cadets
     recurrence_interval: Optional[int]
     recurrence_unit: Optional[str]
-    next_date: Optional[date]
-    planned_date: Optional[date]
+    next_date: Optional[str]  # Format: YYYY-MM-DD
+    planned_date: Optional[str]  # Format: YYYY-MM-DD
     created_by: str
     created_at: datetime
     active: bool
