@@ -1096,38 +1096,40 @@ export default function Admin() {
               {/* Configuration selon le type */}
               {activityForm.type === 'unique' && (
                 <View>
-                  <Text style={styles.inputLabel}>Date prévue</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerButton}
-                    onPress={() => setShowPlannedDatePicker(true)}
-                  >
-                    <Text style={styles.datePickerText}>
-                      {activityForm.planned_date || '📅 Sélectionner une date'}
-                    </Text>
-                  </TouchableOpacity>
+                  <Text style={styles.inputLabel}>Date prévue *</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={activityForm.planned_date}
+                    onChangeText={(text) => setActivityForm(prev => ({...prev, planned_date: text}))}
+                    placeholder="2025-01-15"
+                    placeholderTextColor="#9CA3AF"
+                  />
+                  <Text style={styles.helperText}>Format: YYYY-MM-DD</Text>
                 </View>
               )}
 
               {activityForm.type === 'recurring' && (
                 <View>
-                  <Text style={styles.inputLabel}>Récurrence (en jours)</Text>
+                  <Text style={styles.inputLabel}>Récurrence (en jours) *</Text>
                   <TextInput
                     style={styles.input}
                     value={activityForm.recurrence_interval}
                     onChangeText={(text) => setActivityForm(prev => ({...prev, recurrence_interval: text}))}
                     placeholder="7"
                     keyboardType="numeric"
+                    placeholderTextColor="#9CA3AF"
                   />
+                  <Text style={styles.helperText}>Ex: 7 pour chaque semaine, 14 pour toutes les 2 semaines</Text>
                   
                   <Text style={styles.inputLabel}>Prochaine occurrence</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerButton}
-                    onPress={() => setShowNextDatePicker(true)}
-                  >
-                    <Text style={styles.datePickerText}>
-                      {activityForm.next_date || '📅 Sélectionner une date'}
-                    </Text>
-                  </TouchableOpacity>
+                  <TextInput
+                    style={styles.input}
+                    value={activityForm.next_date}
+                    onChangeText={(text) => setActivityForm(prev => ({...prev, next_date: text}))}
+                    placeholder="2025-01-15"
+                    placeholderTextColor="#9CA3AF"
+                  />
+                  <Text style={styles.helperText}>Format: YYYY-MM-DD (optionnel)</Text>
                 </View>
               )}
             </View>
