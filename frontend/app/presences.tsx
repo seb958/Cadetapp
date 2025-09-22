@@ -1110,15 +1110,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   selectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 15,
   },
   selectionButtons: {
     flexDirection: 'row',
     gap: 8,
     flexShrink: 0,
+    marginBottom: 15,
+    justifyContent: 'flex-start',
   },
   smallButton: {
     backgroundColor: '#e2e8f0',
