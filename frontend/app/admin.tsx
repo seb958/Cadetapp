@@ -713,18 +713,18 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Alert.alert('Succès', `La section "${section.nom}" a été supprimée définitivement.`);
+        showAlert('Succès', `La section "${section.nom}" a été supprimée définitivement.`);
         setShowSectionModal(false);
         setEditingSection(null);
         await loadSections();
         await loadUsers(); // Recharger les utilisateurs car leurs sections ont pu changer
       } else {
         const errorData = await response.json();
-        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer la section');
+        showAlert('Erreur', errorData.detail || 'Impossible de supprimer la section');
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+      showAlert('Erreur', 'Erreur réseau lors de la suppression');
     }
   };
 
