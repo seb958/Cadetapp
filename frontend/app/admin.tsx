@@ -648,6 +648,12 @@ export default function Admin() {
   };
 
   const deleteSection = async (section: Section) => {
+    const confirmDelete = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer définitivement la section "${section.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets de cette section perdront leur affectation.`
+    );
+    
+    if (!confirmDelete) return;
+
     try {
       const token = await AsyncStorage.getItem('access_token');
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sections/${section.id}`, {
@@ -658,18 +664,18 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Alert.alert('Succès', `La section "${section.nom}" a été supprimée définitivement.`);
+        window.alert(`La section "${section.nom}" a été supprimée définitivement.`);
         setShowSectionModal(false);
         setEditingSection(null);
         await loadSections();
         await loadUsers(); // Recharger les utilisateurs car leurs sections ont pu changer
       } else {
         const errorData = await response.json();
-        Alert.alert('Erreur', errorData.detail || 'Impossible de supprimer la section');
+        window.alert(`Erreur: ${errorData.detail || 'Impossible de supprimer la section'}`);
       }
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
-      Alert.alert('Erreur', 'Erreur réseau lors de la suppression');
+      window.alert('Erreur réseau lors de la suppression');
     }
   };
 
