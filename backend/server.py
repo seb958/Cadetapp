@@ -967,9 +967,9 @@ async def create_activity(
     activity: ActivityCreate,
     current_user: User = Depends(require_admin_or_encadrement)
 ):
-    # Vérifier que tous les cadets existent
+    # Vérifier que tous les cadets existent (peu importe leur statut d'activation)
     for cadet_id in activity.cadet_ids:
-        cadet = await db.users.find_one({"id": cadet_id, "actif": True})
+        cadet = await db.users.find_one({"id": cadet_id})
         if not cadet:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
