@@ -193,8 +193,8 @@ frontend:
           comment: "Interface complète de gestion des présences: navigation depuis dashboard, prise de présence en modal avec tous les cadets, affichage présences récentes, statistiques par cadet, gestion permissions par rôle, interface responsive mobile. Navigation fonctionnelle avec expo-router."
 
   - task: "Administration panel - Amélioration UX suppression sections"
-    implemented: false
-    working: false
+    implemented: true
+    working: true
     file: "admin.tsx"
     stuck_count: 0
     priority: "high"
@@ -203,6 +203,9 @@ frontend:
         - working: false
           agent: "main"
           comment: "Amélioration de l'UX pour la suppression des sections en cours. L'interface existe déjà (zone dangereuse dans le modal), mais la fonction deleteSection n'est pas complètement implémentée - elle affiche juste un placeholder au lieu de faire l'appel API."
+        - working: true
+          agent: "main"
+          comment: "✅ IMPLÉMENTATION TERMINÉE - Fonction deleteSection complètement implémentée côté frontend avec appel API DELETE. Endpoint backend DELETE /api/sections/{id} ajouté avec gestion complète: vérification existence, suppression section, désaffectation utilisateurs, gestion erreurs. UX complète: zone dangereuse dans modal avec double confirmation."
 
 metadata:
   created_by: "main_agent"
