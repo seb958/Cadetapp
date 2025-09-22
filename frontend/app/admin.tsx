@@ -1076,6 +1076,14 @@ export default function Admin() {
             Paramètres
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'alerts' && styles.activeTab]}
+          onPress={() => setActiveTab('alerts')}
+        >
+          <Text style={[styles.tabText, activeTab === 'alerts' && styles.activeTabText]}>
+            Alertes
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView 
