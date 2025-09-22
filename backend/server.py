@@ -328,18 +328,23 @@ async def invite_user(
     invitation: UserInvitation,
     current_user: User = Depends(require_admin_or_encadrement)
 ):
-    # Vérifier si l'utilisateur existe déjà
-    existing_user = await db.users.find_one({"email": invitation.email})
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Un utilisateur avec cet email existe déjà"
-        )
+    # Si email fourni, vérifier qu'il n'existe pas déjà
+    if invitation.email:
+        existing_user = await db.users.find_one({"email": invitation.email})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Un utilisateur avec cet email existe déjà"
+            )
     
-    # Créer le token d'invitation
-    invitation_token = create_invitation_token(invitation.email)
+    # Créer le token d'invitation seulement si email fourni
+    invitation_token = None
+    invitation_expires = None
+    if invitation.email:
+        invitation_token = create_invitation_token(invitation.email)
+        invitation_expires = datetime.utcnow() + timedelta(days=7)
     
-    # Créer l'utilisateur en attente
+    # Créer l'utilisateur
     user_data = UserInDB(
         nom=invitation.nom,
         prenom=invitation.prenom,
@@ -348,22 +353,24 @@ async def invite_user(
         role=invitation.role,
         section_id=invitation.section_id,
         invitation_token=invitation_token,
-        invitation_expires=datetime.utcnow() + timedelta(days=7),
+        invitation_expires=invitation_expires,
         created_by=current_user.id,
-        actif=False  # Sera activé après définition du mot de passe
+        actif=invitation.email is None  # Actif immédiatement si pas d'email
     )
     
     await db.users.insert_one(user_data.dict())
     
-    # Envoyer l'email d'invitation
-    await send_invitation_email(
-        invitation.email, 
-        invitation.nom, 
-        invitation.prenom, 
-        invitation_token
-    )
-    
-    return {"message": "Invitation envoyée avec succès", "token": invitation_token}
+    # Envoyer l'email d'invitation seulement si email fourni
+    if invitation.email and invitation_token:
+        await send_invitation_email(
+            invitation.email, 
+            invitation.nom, 
+            invitation.prenom, 
+            invitation_token
+        )
+        return {"message": "Invitation envoyée avec succès", "token": invitation_token}
+    else:
+        return {"message": "Utilisateur créé avec succès (sans email)", "token": None}
 
 @api_router.post("/auth/set-password")
 async def set_password(request: SetPasswordRequest):
