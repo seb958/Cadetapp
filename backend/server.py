@@ -103,6 +103,15 @@ class SetPasswordRequest(BaseModel):
     token: str
     password: str
 
+class UserUpdate(BaseModel):
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    email: Optional[EmailStr] = None
+    grade: Optional[Grade] = None
+    role: Optional[UserRole] = None
+    section_id: Optional[str] = None
+    actif: Optional[bool] = None
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
