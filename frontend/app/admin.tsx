@@ -2456,30 +2456,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontStyle: 'italic',
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 15,
-  },
-  sectionActions: {
-    flexDirection: 'column',
-    gap: 10,
-    marginBottom: 15,
-  },
-  refreshButton: {
-    backgroundColor: '#059669',
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  refreshButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   // Styles pour les paramètres
   settingsSection: {
     backgroundColor: 'white',
@@ -2496,13 +2472,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   settingItem: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   settingLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: 5,
   },
   switchContainer: {
     flexDirection: 'row',
@@ -2529,16 +2505,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addCriterionButton: {
-    backgroundColor: '#10b981',
-    padding: 12,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderStyle: 'dashed',
     borderRadius: 8,
+    padding: 15,
     alignItems: 'center',
     marginTop: 10,
   },
   addCriterionText: {
-    color: 'white',
+    color: '#6b7280',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -2547,8 +2526,9 @@ const styles = StyleSheet.create({
   },
   backupButton: {
     flex: 1,
-    backgroundColor: '#6366f1',
-    padding: 12,
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
