@@ -164,8 +164,46 @@ export default function Admin() {
   const loadData = async () => {
     await Promise.all([
       loadActivities(),
-      loadCadets()
+      loadCadets(),
+      loadUsers(),
+      loadSections()
     ]);
+  };
+
+  const loadUsers = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+    }
+  };
+
+  const loadSections = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sections`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSections(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des sections:', error);
+    }
   };
 
   const loadActivities = async () => {
