@@ -200,10 +200,10 @@ class Activity(BaseModel):
     # Pour les activités récurrentes
     recurrence_interval: Optional[int] = None  # ex: 14 pour toutes les 2 semaines
     recurrence_unit: Optional[str] = None  # "days", "weeks", "months"
-    next_date: Optional[date] = None
+    next_date: Optional[str] = None  # Format: YYYY-MM-DD
     
     # Pour les activités ponctuelles  
-    planned_date: Optional[date] = None
+    planned_date: Optional[str] = None  # Format: YYYY-MM-DD
     
     created_by: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -218,10 +218,10 @@ class ActivityCreate(BaseModel):
     # Pour récurrence
     recurrence_interval: Optional[int] = None
     recurrence_unit: Optional[str] = None
-    next_date: Optional[date] = None
+    next_date: Optional[str] = None  # Format: YYYY-MM-DD
     
     # Pour ponctuel
-    planned_date: Optional[date] = None
+    planned_date: Optional[str] = None  # Format: YYYY-MM-DD
 
 class ActivityResponse(BaseModel):
     id: str
