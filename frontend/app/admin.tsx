@@ -915,12 +915,20 @@ export default function Admin() {
           <View style={styles.tabContent}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Gestion des Utilisateurs</Text>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => openUserModal()}
-              >
-                <Text style={styles.addButtonText}>+ Inviter Utilisateur</Text>
-              </TouchableOpacity>
+              <View style={styles.sectionHeader}>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => openUserModal()}
+                >
+                  <Text style={styles.addButtonText}>+ Inviter Utilisateur</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.refreshButton}
+                  onPress={forceReloadAllData}
+                >
+                  <Text style={styles.refreshButtonText}>🔄 Actualiser</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {users.length === 0 ? (
