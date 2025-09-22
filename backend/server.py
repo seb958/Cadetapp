@@ -83,6 +83,7 @@ class UserBase(BaseModel):
     section_id: Optional[str] = None
     photo_base64: Optional[str] = None
     actif: bool = True
+    has_admin_privileges: bool = False  # Privilège "cadet admin" en plus du rôle
 
 class UserCreate(UserBase):
     pass
