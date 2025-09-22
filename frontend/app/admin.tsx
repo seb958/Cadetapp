@@ -944,7 +944,7 @@ export default function Admin() {
                 placeholder="Ex: Dupont"
               />
 
-              <Text style={styles.inputLabel}>Email *</Text>
+              <Text style={styles.inputLabel}>Email (optionnel)</Text>
               <TextInput
                 style={styles.input}
                 value={userForm.email}
