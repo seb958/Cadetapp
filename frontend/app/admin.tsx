@@ -493,6 +493,15 @@ export default function Admin() {
     const section = sections.find(s => s.id === sectionId);
     return section ? section.nom : 'Aucune section';
   };
+
+  const toggleCadetSelection = (cadetId: string) => {
+    setActivityForm(prev => ({
+      ...prev,
+      cadet_ids: prev.cadet_ids.includes(cadetId)
+        ? prev.cadet_ids.filter(id => id !== cadetId)
+        : [...prev.cadet_ids, cadetId]
+    }));
+  };
     setActivityForm(prev => ({
       ...prev,
       cadet_ids: prev.cadet_ids.includes(cadetId)
