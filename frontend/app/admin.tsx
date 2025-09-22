@@ -652,9 +652,13 @@ export default function Admin() {
   };
 
   const deleteSection = async (section: Section) => {
+    console.log('FONCTION deleteSection appelée avec:', section.nom);
+    
     const confirmDelete = window.confirm(
       `Êtes-vous sûr de vouloir supprimer définitivement la section "${section.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets de cette section perdront leur affectation.`
     );
+    
+    console.log('Confirmation section:', confirmDelete);
     
     if (!confirmDelete) return;
 
