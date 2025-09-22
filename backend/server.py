@@ -579,6 +579,7 @@ async def create_user(
         "grade": user.grade,
         "section_id": user.section_id,
         "actif": True,  # 🔥 TOUJOURS ACTIF lors de la création par admin
+        "has_admin_privileges": user.has_admin_privileges,
         "created_at": datetime.utcnow()
     }
     
