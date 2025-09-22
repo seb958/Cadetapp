@@ -523,9 +523,13 @@ export default function Admin() {
   };
 
   const deleteUser = async (user: User) => {
+    console.log('FONCTION deleteUser appelée avec:', user.nom, user.prenom);
+    
     const confirmDelete = window.confirm(
       `Êtes-vous sûr de vouloir supprimer définitivement "${user.prenom} ${user.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nToutes les données associées (présences, inspections, etc.) seront perdues.`
     );
+    
+    console.log('Confirmation utilisateur:', confirmDelete);
     
     if (!confirmDelete) return;
 
