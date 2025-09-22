@@ -253,6 +253,17 @@ export default function Admin() {
     console.log('✅ Rechargement complet terminé');
   };
 
+  // Fonction pour reset complet avec déconnexion
+  const forceCompleteReset = async () => {
+    showAlert('Information', 'Réinitialisation complète en cours...');
+    
+    // Vider AsyncStorage complètement
+    await AsyncStorage.clear();
+    
+    // Rediriger vers la connexion
+    router.push('/');
+  };
+
   const loadData = async () => {
     await Promise.all([
       loadActivities(),
