@@ -556,6 +556,54 @@ async def update_user(
     
     return {"message": "Utilisateur mis à jour avec succès"}
 
+@api_router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    # Vérifier que l'utilisateur existe
+    existing_user = await db.users.find_one({"id": user_id, "actif": True})
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Empêcher la suppression de son propre compte
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Vous ne pouvez pas supprimer votre propre compte"
+        )
+    
+    # Supprimer définitivement l'utilisateur et toutes ses données associées
+    try:
+        # Supprimer toutes les présences de cet utilisateur
+        await db.presences.delete_many({"cadet_id": user_id})
+        
+        # Supprimer l'utilisateur des activités
+        await db.activities.update_many(
+            {"cadet_ids": user_id},
+            {"$pull": {"cadet_ids": user_id}}
+        )
+        
+        # Supprimer l'utilisateur
+        result = await db.users.delete_one({"id": user_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Utilisateur non trouvé"
+            )
+        
+        return {"message": f"Utilisateur {existing_user['prenom']} {existing_user['nom']} supprimé définitivement avec toutes ses données"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression: {str(e)}"
+        )
+
 # Routes pour les sections
 @api_router.post("/sections", response_model=Section)
 async def create_section(
