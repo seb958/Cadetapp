@@ -425,9 +425,10 @@ class PresenceTestSuite:
         
         # Test 1: Création présence avec cadet inexistant
         try:
+            future_date = date.today() + timedelta(days=20)
             presence_data = {
                 "cadet_id": "cadet-inexistant-12345",
-                "date": date.today().isoformat(),
+                "presence_date": future_date.isoformat(),
                 "status": "present",
                 "commentaire": "Test cadet inexistant"
             }
