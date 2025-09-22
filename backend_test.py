@@ -9,6 +9,7 @@ import json
 from datetime import datetime, date, timedelta
 from typing import Dict, Any, Optional
 import sys
+import random
 
 # Configuration
 BASE_URL = "https://cadetron.preview.emergentagent.com/api"
