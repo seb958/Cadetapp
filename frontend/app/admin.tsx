@@ -436,10 +436,45 @@ export default function Admin() {
       const token = await AsyncStorage.getItem('access_token');
       
       if (editingUser) {
-        // Modification d'utilisateur existant - pas encore implémenté dans l'API
-        Alert.alert('Information', 'La modification d\'utilisateurs sera disponible prochainement');
-        setSavingUser(false);
-        return;
+        // Modification d'utilisateur existant
+        const payload: any = {};
+        
+        // Seulement inclure les champs modifiés
+        if (userForm.nom !== editingUser.nom) payload.nom = userForm.nom.trim();
+        if (userForm.prenom !== editingUser.prenom) payload.prenom = userForm.prenom.trim();
+        if (userForm.email !== editingUser.email) {
+          payload.email = userForm.email && userForm.email.trim() ? userForm.email.trim() : null;
+        }
+        if (userForm.grade !== editingUser.grade) payload.grade = userForm.grade;
+        if (userForm.role !== editingUser.role) payload.role = userForm.role;
+        if (userForm.section_id !== (editingUser.section_id || '')) {
+          payload.section_id = userForm.section_id || null;
+        }
+
+        // Vérifier s'il y a des modifications
+        if (Object.keys(payload).length === 0) {
+          Alert.alert('Information', 'Aucune modification détectée');
+          setSavingUser(false);
+          return;
+        }
+
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users/${editingUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+          Alert.alert('Succès', 'Modifications enregistrées avec succès!');
+          setShowUserModal(false);
+          await loadUsers();
+        } else {
+          const errorData = await response.json();
+          Alert.alert('Erreur', errorData.detail || 'Erreur lors de la modification');
+        }
       } else {
         // Création d'invitation
         const payload = {
