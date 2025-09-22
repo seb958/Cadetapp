@@ -164,6 +164,21 @@ backend:
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 6/7 catégories passées (85.7% réussite). Système de gestion des présences robuste et sécurisé: Authentification 5 comptes OK, Création bulk présences OK, Récupération avec filtres OK, Permissions par rôle correctes (cadet voit ses présences, admin accès global, cadet ne peut pas créer), Statistiques fonctionnelles, Mise à jour présences OK, Gestion erreurs appropriée. 2 tests individuels échouent par conflit de données existantes mais API fonctionne. Base URL: https://cadetsquad-app.preview.emergentagent.com/api. Comptes validés: admin@escadron.fr, emma.leroy@escadron.fr, jean.moreau@escadron.fr, pierre.martin@escadron.fr, marie.dubois@escadron.fr."
 
+  - task: "Système d'alertes d'absences consécutives"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Système complet d'alertes d'absences consécutives implémenté avec 5 nouveaux endpoints: GET /api/alerts/consecutive-absences (calcul), GET /api/alerts (récupération), POST /api/alerts/generate (génération), PUT /api/alerts/{id} (mise à jour statut), DELETE /api/alerts/{id} (suppression). Permissions admin/encadrement requises. Gestion des statuts: active → contacted → resolved."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS COMPLETS RÉUSSIS - 20/20 tests passés (100% réussite). Système d'alertes d'absences consécutives parfaitement fonctionnel: Calcul absences consécutives OK (seuils 2 et 3), Génération alertes automatique, Mise à jour statuts (active→contacted→resolved) avec commentaires, Suppression alertes, Permissions correctes (admin/encadrement seulement, cadet refusé 403), Compatibilité endpoints existants préservée. Correction bug sérialisation dates MongoDB appliquée. Endpoints testés: GET /api/alerts/consecutive-absences?threshold=3, GET /api/alerts, POST /api/alerts/generate?threshold=3, PUT /api/alerts/{id}, DELETE /api/alerts/{id}. Base URL: https://cadetsquad-app.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
+
 frontend:
   - task: "Interface d'authentification française"
     implemented: true
