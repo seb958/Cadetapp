@@ -1416,14 +1416,10 @@ export default function Admin() {
                   La suppression d'une section est irréversible. Tous les cadets de cette section perdront leur affectation.
                 </Text>
                 <TouchableOpacity
-                  style={styles.dangerButton}
-                  onPress={() => {
-                    alert('BOUTON SECTION MARCHE!');
-                    console.log('BOUTON SECTION CLIQUE!');
-                    deleteSection(editingSection);
-                  }}
+                  style={[styles.dangerButton, {backgroundColor: '#ff0000', padding: 20}]}
+                  onPress={() => alert('TEST BOUTON SECTION!')}
                 >
-                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement cette section</Text>
+                  <Text style={[styles.dangerButtonText, {color: 'white', fontSize: 16}]}>TEST - Supprimer section</Text>
                 </TouchableOpacity>
               </View>
             )}
