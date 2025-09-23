@@ -1351,6 +1351,80 @@ export default function Admin() {
               </View>
             </View>
 
+            {/* Filtres */}
+            <View style={styles.filtersContainer}>
+              <Text style={styles.filtersTitle}>🔍 Filtres</Text>
+              <View style={styles.filtersRow}>
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>Grade</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={userFilters.grade}
+                      style={styles.picker}
+                      onValueChange={(value) => {
+                        setUserFilters(prev => ({...prev, grade: value}));
+                        // Recharger automatiquement les utilisateurs
+                        setTimeout(loadUsers, 100);
+                      }}
+                    >
+                      <Picker.Item label="Tous les grades" value="" />
+                      {filterOptions.grades.map((grade) => (
+                        <Picker.Item key={grade} label={grade} value={grade} />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>Rôle</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={userFilters.role}
+                      style={styles.picker}
+                      onValueChange={(value) => {
+                        setUserFilters(prev => ({...prev, role: value}));
+                        setTimeout(loadUsers, 100);
+                      }}
+                    >
+                      <Picker.Item label="Tous les rôles" value="" />
+                      {filterOptions.roles.map((role) => (
+                        <Picker.Item key={role} label={role} value={role} />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <Text style={styles.filterLabel}>Section</Text>
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={userFilters.section_id}
+                      style={styles.picker}
+                      onValueChange={(value) => {
+                        setUserFilters(prev => ({...prev, section_id: value}));
+                        setTimeout(loadUsers, 100);
+                      }}
+                    >
+                      <Picker.Item label="Toutes les sections" value="" />
+                      {filterOptions.sections.map((section) => (
+                        <Picker.Item key={section.id} label={section.name} value={section.id} />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.resetFiltersButton}
+                onPress={() => {
+                  setUserFilters({grade: '', role: '', section_id: ''});
+                  setTimeout(loadUsers, 100);
+                }}
+              >
+                <Text style={styles.resetFiltersText}>🔄 Réinitialiser les filtres</Text>
+              </TouchableOpacity>
+            </View>
+
             {users.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateText}>Aucun utilisateur trouvé</Text>
