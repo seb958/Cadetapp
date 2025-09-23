@@ -2859,6 +2859,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  // Styles pour les filtres utilisateurs
+  filtersContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  filtersTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2d3748',
+    marginBottom: 12,
+  },
+  filtersRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  filterItem: {
+    flex: 1,
+    minWidth: 150,
+  },
+  filterLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4a5568',
+    marginBottom: 6,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    backgroundColor: '#f7fafc',
+  },
+  picker: {
+    height: 40,
+    color: '#2d3748',
+  },
+  resetFiltersButton: {
+    backgroundColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  resetFiltersText: {
+    color: '#4a5568',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   // Styles pour la gestion des utilisateurs
   userCard: {
     backgroundColor: 'white',
