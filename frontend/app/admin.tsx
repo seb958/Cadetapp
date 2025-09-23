@@ -2368,6 +2368,25 @@ export default function Admin() {
               </View>
             </View>
 
+            {/* Privilèges spéciaux */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Privilèges spéciaux</Text>
+              
+              <View style={styles.settingItem}>
+                <Text style={styles.settingLabel}>Privilèges d'administration</Text>
+                <Switch
+                  value={userForm.has_admin_privileges}
+                  onValueChange={(value) => setUserForm(prev => ({...prev, has_admin_privileges: value}))}
+                  trackColor={{ false: '#d1d5db', true: '#34d399' }}
+                  thumbColor={userForm.has_admin_privileges ? '#10b981' : '#9ca3af'}
+                />
+              </View>
+              
+              <Text style={styles.helperText}>
+                Les privilèges d'administration permettent à ce cadet d'accéder aux fonctions administratives en plus de son rôle principal.
+              </Text>
+            </View>
+
             {/* Information sur l'invitation */}
             {!editingUser && (
               <View style={styles.infoSection}>
