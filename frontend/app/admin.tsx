@@ -317,14 +317,17 @@ export default function Admin() {
   };
 
   const loadData = async () => {
+    // Charger d'abord les données de base
     await Promise.all([
       loadActivities(),
       loadCadets(),
       loadUsers(),
       loadSections(),
-      loadAlerts(),
-      loadFilterOptions()
+      loadAlerts()
     ]);
+    
+    // Puis charger les options de filtres (qui peuvent utiliser les données de fallback)
+    await loadFilterOptions();
   };
 
   const loadUsers = async () => {
