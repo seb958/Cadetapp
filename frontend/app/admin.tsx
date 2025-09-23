@@ -1096,6 +1096,75 @@ export default function Admin() {
     );
   };
 
+  const openRoleModal = (role = null) => {
+    if (role) {
+      setEditingRole(role);
+      setRoleForm({
+        name: role.name,
+        description: role.description || '',
+        permissions: role.permissions || []
+      });
+    } else {
+      setEditingRole(null);
+      setRoleForm({
+        name: '',
+        description: '',
+        permissions: []
+      });
+    }
+    setShowRoleModal(true);
+  };
+
+  const saveRole = async () => {
+    if (!roleForm.name.trim()) {
+      showAlert('Erreur', 'Le nom du rôle est requis');
+      return;
+    }
+
+    setSavingRole(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      const payload = {
+        name: roleForm.name.trim(),
+        description: roleForm.description.trim() || null,
+        permissions: roleForm.permissions
+      };
+
+      const url = editingRole 
+        ? `${EXPO_PUBLIC_BACKEND_URL}/api/roles/${editingRole.id}`
+        : `${EXPO_PUBLIC_BACKEND_URL}/api/roles`;
+      
+      const method = editingRole ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        showAlert(
+          'Succès', 
+          editingRole ? 'Rôle modifié avec succès' : 'Rôle créé avec succès'
+        );
+        setShowRoleModal(false);
+        // Recharger les rôles ici si on avait la fonction
+      } else {
+        const errorData = await response.json();
+        showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      showAlert('Erreur', 'Impossible de sauvegarder le rôle');
+    } finally {
+      setSavingRole(false);
+    }
+  };
+
   const getResponsableName = (responsableId: string) => {
     const responsable = users.find(u => u.id === responsableId);
     return responsable ? `${responsable.prenom} ${responsable.nom}` : 'Aucun responsable';
