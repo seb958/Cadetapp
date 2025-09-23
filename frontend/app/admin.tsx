@@ -2989,6 +2989,12 @@ const styles = StyleSheet.create({
     color: '#1a365d',
     marginBottom: 2,
   },
+  adminBadge: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#dc2626',
+    textTransform: 'uppercase',
+  },
   userEmail: {
     fontSize: 14,
     color: '#4a5568',
