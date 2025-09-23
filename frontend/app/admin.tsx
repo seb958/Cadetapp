@@ -1701,7 +1701,134 @@ export default function Admin() {
             )}
           </View>
         )}
+
+        {/* Gestion des Rôles */}
+        {activeTab === 'roles' && (
+          <View style={styles.tabContent}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Gestion des Rôles et Permissions</Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => openRoleModal()}
+              >
+                <Text style={styles.addButtonText}>+ Nouveau Rôle</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.helperText}>
+              Créez des rôles personnalisés avec des permissions spécifiques
+            </Text>
+
+            {roles.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>Aucun rôle personnalisé créé</Text>
+                <Text style={styles.emptyStateSubtext}>
+                  Les rôles système (Cadet, Cadet Responsable, etc.) sont gérés automatiquement
+                </Text>
+              </View>
+            ) : (
+              roles.map((role) => (
+                <View key={role.id} style={styles.roleCard}>
+                  <View style={styles.roleHeader}>
+                    <Text style={styles.roleName}>{role.name}</Text>
+                    {role.is_system_role && (
+                      <View style={styles.systemRoleBadge}>
+                        <Text style={styles.systemRoleText}>Système</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {role.description && (
+                    <Text style={styles.roleDescription}>{role.description}</Text>
+                  )}
+
+                  <Text style={styles.permissionsTitle}>Permissions :</Text>
+                  <View style={styles.permissionsList}>
+                    {role.permissions.map((permission, index) => (
+                      <View key={index} style={styles.permissionTag}>
+                        <Text style={styles.permissionText}>{permission.replace(/_/g, ' ')}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {!role.is_system_role && (
+                    <View style={styles.roleActions}>
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => openRoleModal(role)}
+                      >
+                        <Text style={styles.editButtonText}>Modifier</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              ))
+            )}
+          </View>
+        )}
       </ScrollView>
+
+      {/* Modal pour créer/modifier un rôle */}
+      <Modal
+        visible={showRoleModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {editingRole ? 'Modifier le Rôle' : 'Nouveau Rôle'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowRoleModal(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <View style={styles.formSection}>
+              <Text style={styles.inputLabel}>Nom du rôle *</Text>
+              <TextInput
+                style={styles.input}
+                value={roleForm.name}
+                onChangeText={(text) => setRoleForm(prev => ({...prev, name: text}))}
+                placeholder="Ex: Responsable Matériel"
+              />
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={roleForm.description}
+                onChangeText={(text) => setRoleForm(prev => ({...prev, description: text}))}
+                placeholder="Description des responsabilités de ce rôle"
+                multiline
+                numberOfLines={3}
+              />
+
+              <Text style={styles.inputLabel}>Permissions</Text>
+              <Text style={styles.helperText}>
+                Sélectionnez les actions autorisées pour ce rôle
+              </Text>
+              
+              {/* Ici on devrait avoir la liste des permissions disponibles */}
+              <View style={styles.comingSoonBox}>
+                <Text style={styles.comingSoonText}>
+                  Interface de sélection des permissions - En développement
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveButton, savingRole && styles.saveButtonDisabled]}
+              onPress={saveRole}
+              disabled={savingRole}
+            >
+              <Text style={styles.saveButtonText}>
+                {savingRole ? 'Sauvegarde...' : '💾 Sauvegarder le rôle'}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
 
       {/* Modal pour marquer une alerte comme contactée */}
       <Modal
