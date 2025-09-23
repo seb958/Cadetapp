@@ -276,7 +276,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système d'alertes d'absences consécutives"
+    - "Système de gestion des rôles et permissions"
+    - "Système de filtres utilisateurs"
+    - "Support privilèges administrateur utilisateurs"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
