@@ -613,6 +613,32 @@ async def create_user(
     
     return {"message": "Utilisateur créé avec succès", "user_id": new_user["id"]}
 
+@api_router.get("/users/filters")
+async def get_user_filters(current_user: User = Depends(require_admin_or_encadrement)):
+    """Récupérer les options de filtres pour les utilisateurs"""
+    
+    # Récupérer tous les utilisateurs pour extraire les filtres
+    users = await db.users.find({"actif": True}).to_list(1000)
+    sections = await db.sections.find().to_list(1000)
+    
+    # Extraire les grades uniques
+    grades = list(set([user.get("grade") for user in users if user.get("grade")]))
+    grades.sort()
+    
+    # Extraire les rôles uniques
+    roles = list(set([user.get("role") for user in users if user.get("role")]))
+    roles.sort()
+    
+    # Formatter les sections
+    section_options = [{"id": section["id"], "name": section["nom"]} for section in sections]
+    section_options.sort(key=lambda x: x["name"])
+    
+    return {
+        "grades": grades,
+        "roles": roles,
+        "sections": section_options
+    }
+
 @api_router.get("/users/{user_id}", response_model=User)
 async def get_user(user_id: str, current_user: User = Depends(get_current_user)):
     # Les utilisateurs peuvent voir leur propre profil
