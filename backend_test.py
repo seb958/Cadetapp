@@ -91,6 +91,339 @@ class CadetSquadTester:
             self.log_test("Authentication", "Admin login", False, f"Exception: {str(e)}")
             return False
     
+    def test_get_roles(self):
+        """Test de récupération des rôles"""
+        try:
+            response = self.session.get(f"{BASE_URL}/roles")
+            
+            if response.status_code == 200:
+                roles = response.json()
+                self.log_test("Role Management", "GET /api/roles", True, f"Récupéré {len(roles)} rôles")
+                
+                # Vérifier la structure des rôles
+                if roles and len(roles) > 0:
+                    first_role = roles[0]
+                    required_fields = ["id", "name", "permissions", "is_system_role", "created_at"]
+                    missing_fields = [field for field in required_fields if field not in first_role]
+                    
+                    if not missing_fields:
+                        self.log_test("Role Management", "Role data structure", True, "Structure des rôles correcte")
+                    else:
+                        self.log_test("Role Management", "Role data structure", False, f"Champs manquants: {missing_fields}")
+                else:
+                    self.log_test("Role Management", "Role data structure", True, "Aucun rôle trouvé (base vide)")
+                    
+            else:
+                self.log_test("Role Management", "GET /api/roles", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Role Management", "GET /api/roles", False, f"Exception: {str(e)}")
+    
+    def test_create_role(self):
+        """Test de création d'un rôle"""
+        try:
+            role_data = {
+                "name": "Test Role Manager",
+                "description": "Rôle de test pour la gestion des permissions",
+                "permissions": ["view_users", "create_users", "view_sections"]
+            }
+            
+            response = self.session.post(f"{BASE_URL}/roles", json=role_data)
+            
+            if response.status_code == 200:
+                role = response.json()
+                self.created_role_id = role["id"]  # Stocker pour les tests suivants
+                self.log_test("Role Management", "POST /api/roles", True, f"Rôle créé avec ID: {role['id']}")
+                
+                # Vérifier que le rôle a été créé avec les bonnes données
+                if (role["name"] == role_data["name"] and 
+                    role["description"] == role_data["description"] and
+                    set(role["permissions"]) == set(role_data["permissions"])):
+                    self.log_test("Role Management", "Role creation data validation", True, "Données du rôle correctes")
+                else:
+                    self.log_test("Role Management", "Role creation data validation", False, "Données du rôle incorrectes")
+                    
+            else:
+                self.log_test("Role Management", "POST /api/roles", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Role Management", "POST /api/roles", False, f"Exception: {str(e)}")
+    
+    def test_update_role(self):
+        """Test de mise à jour d'un rôle"""
+        if not hasattr(self, 'created_role_id'):
+            self.log_test("Role Management", "PUT /api/roles/{role_id}", False, "Aucun rôle créé pour le test")
+            return
+            
+        try:
+            update_data = {
+                "name": "Test Role Manager Updated",
+                "description": "Rôle de test mis à jour",
+                "permissions": ["view_users", "create_users", "edit_users", "view_sections"]
+            }
+            
+            response = self.session.put(f"{BASE_URL}/roles/{self.created_role_id}", json=update_data)
+            
+            if response.status_code == 200:
+                self.log_test("Role Management", "PUT /api/roles/{role_id}", True, "Rôle mis à jour avec succès")
+                
+                # Vérifier la mise à jour en récupérant le rôle
+                get_response = self.session.get(f"{BASE_URL}/roles")
+                if get_response.status_code == 200:
+                    roles = get_response.json()
+                    updated_role = next((r for r in roles if r["id"] == self.created_role_id), None)
+                    
+                    if updated_role and updated_role["name"] == update_data["name"]:
+                        self.log_test("Role Management", "Role update validation", True, "Mise à jour confirmée")
+                    else:
+                        self.log_test("Role Management", "Role update validation", False, "Mise à jour non confirmée")
+                        
+            else:
+                self.log_test("Role Management", "PUT /api/roles/{role_id}", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Role Management", "PUT /api/roles/{role_id}", False, f"Exception: {str(e)}")
+    
+    def test_delete_role(self):
+        """Test de suppression d'un rôle"""
+        if not hasattr(self, 'created_role_id'):
+            self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, "Aucun rôle créé pour le test")
+            return
+            
+        try:
+            response = self.session.delete(f"{BASE_URL}/roles/{self.created_role_id}")
+            
+            if response.status_code == 200:
+                self.log_test("Role Management", "DELETE /api/roles/{role_id}", True, "Rôle supprimé avec succès")
+                
+                # Vérifier que le rôle a été supprimé
+                get_response = self.session.get(f"{BASE_URL}/roles")
+                if get_response.status_code == 200:
+                    roles = get_response.json()
+                    deleted_role = next((r for r in roles if r["id"] == self.created_role_id), None)
+                    
+                    if not deleted_role:
+                        self.log_test("Role Management", "Role deletion validation", True, "Suppression confirmée")
+                    else:
+                        self.log_test("Role Management", "Role deletion validation", False, "Rôle toujours présent")
+                        
+            else:
+                self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, f"Exception: {str(e)}")
+    
+    def test_get_user_filters(self):
+        """Test de récupération des filtres utilisateurs"""
+        try:
+            response = self.session.get(f"{BASE_URL}/users/filters")
+            
+            if response.status_code == 200:
+                filters = response.json()
+                self.log_test("User Filters", "GET /api/users/filters", True, "Filtres récupérés avec succès")
+                
+                # Vérifier la structure des filtres
+                required_keys = ["grades", "roles", "sections"]
+                missing_keys = [key for key in required_keys if key not in filters]
+                
+                if not missing_keys:
+                    grades_count = len(filters["grades"])
+                    roles_count = len(filters["roles"])
+                    sections_count = len(filters["sections"])
+                    
+                    self.log_test("User Filters", "Filter structure validation", True, 
+                                f"Structure correcte: {grades_count} grades, {roles_count} rôles, {sections_count} sections")
+                else:
+                    self.log_test("User Filters", "Filter structure validation", False, f"Clés manquantes: {missing_keys}")
+                    
+            else:
+                self.log_test("User Filters", "GET /api/users/filters", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("User Filters", "GET /api/users/filters", False, f"Exception: {str(e)}")
+    
+    def test_user_filtering(self):
+        """Test de filtrage des utilisateurs"""
+        try:
+            # Test 1: Filtrer par rôle
+            response = self.session.get(f"{BASE_URL}/users?role=cadet")
+            if response.status_code == 200:
+                cadets = response.json()
+                self.log_test("User Filters", "Filter by role (cadet)", True, f"Trouvé {len(cadets)} cadets")
+                
+                # Vérifier que tous les utilisateurs retournés ont bien le rôle cadet
+                if cadets:
+                    all_cadets = all(user.get("role") == "cadet" for user in cadets)
+                    if all_cadets:
+                        self.log_test("User Filters", "Role filter accuracy", True, "Tous les utilisateurs ont le bon rôle")
+                    else:
+                        self.log_test("User Filters", "Role filter accuracy", False, "Certains utilisateurs n'ont pas le bon rôle")
+            else:
+                self.log_test("User Filters", "Filter by role (cadet)", False, f"Status: {response.status_code}")
+            
+            # Test 2: Filtrer par grade
+            response = self.session.get(f"{BASE_URL}/users?grade=cadet")
+            if response.status_code == 200:
+                users_with_grade = response.json()
+                self.log_test("User Filters", "Filter by grade (cadet)", True, f"Trouvé {len(users_with_grade)} utilisateurs avec grade cadet")
+                
+                # Vérifier l'exactitude du filtre
+                if users_with_grade:
+                    all_correct_grade = all(user.get("grade") == "cadet" for user in users_with_grade)
+                    if all_correct_grade:
+                        self.log_test("User Filters", "Grade filter accuracy", True, "Tous les utilisateurs ont le bon grade")
+                    else:
+                        self.log_test("User Filters", "Grade filter accuracy", False, "Certains utilisateurs n'ont pas le bon grade")
+            else:
+                self.log_test("User Filters", "Filter by grade (cadet)", False, f"Status: {response.status_code}")
+            
+            # Test 3: Filtrer par section
+            sections_response = self.session.get(f"{BASE_URL}/sections")
+            if sections_response.status_code == 200:
+                sections = sections_response.json()
+                if sections:
+                    section_id = sections[0]["id"]
+                    response = self.session.get(f"{BASE_URL}/users?section_id={section_id}")
+                    if response.status_code == 200:
+                        users_in_section = response.json()
+                        self.log_test("User Filters", "Filter by section", True, f"Trouvé {len(users_in_section)} utilisateurs dans la section")
+                        
+                        # Vérifier l'exactitude du filtre
+                        if users_in_section:
+                            all_correct_section = all(user.get("section_id") == section_id for user in users_in_section)
+                            if all_correct_section:
+                                self.log_test("User Filters", "Section filter accuracy", True, "Tous les utilisateurs sont dans la bonne section")
+                            else:
+                                self.log_test("User Filters", "Section filter accuracy", False, "Certains utilisateurs ne sont pas dans la bonne section")
+                    else:
+                        self.log_test("User Filters", "Filter by section", False, f"Status: {response.status_code}")
+                else:
+                    self.log_test("User Filters", "Filter by section", True, "Aucune section disponible pour le test")
+            
+            # Test 4: Filtres combinés
+            response = self.session.get(f"{BASE_URL}/users?role=cadet&grade=cadet")
+            if response.status_code == 200:
+                filtered_users = response.json()
+                self.log_test("User Filters", "Combined filters (role + grade)", True, f"Trouvé {len(filtered_users)} utilisateurs avec filtres combinés")
+                
+                # Vérifier l'exactitude des filtres combinés
+                if filtered_users:
+                    all_correct = all(user.get("role") == "cadet" and user.get("grade") == "cadet" for user in filtered_users)
+                    if all_correct:
+                        self.log_test("User Filters", "Combined filters accuracy", True, "Tous les utilisateurs correspondent aux filtres combinés")
+                    else:
+                        self.log_test("User Filters", "Combined filters accuracy", False, "Certains utilisateurs ne correspondent pas aux filtres")
+            else:
+                self.log_test("User Filters", "Combined filters (role + grade)", False, f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("User Filters", "User filtering tests", False, f"Exception: {str(e)}")
+    
+    def test_admin_privileges_field(self):
+        """Test du support du champ has_admin_privileges"""
+        try:
+            # Test 1: Créer un utilisateur avec privilèges admin
+            user_data = {
+                "nom": "Test",
+                "prenom": "Admin Privileges",
+                "email": "test.admin.privileges@escadron.fr",
+                "grade": "cadet",
+                "role": "cadet",
+                "has_admin_privileges": True
+            }
+            
+            response = self.session.post(f"{BASE_URL}/users", json=user_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                user_id = result["user_id"]
+                self.test_user_id = user_id  # Stocker pour nettoyage
+                self.log_test("Admin Privileges", "Create user with admin privileges", True, f"Utilisateur créé avec ID: {user_id}")
+                
+                # Test 2: Vérifier que l'utilisateur a bien les privilèges admin
+                get_response = self.session.get(f"{BASE_URL}/users/{user_id}")
+                if get_response.status_code == 200:
+                    user = get_response.json()
+                    if user.get("has_admin_privileges") == True:
+                        self.log_test("Admin Privileges", "Verify admin privileges field", True, "Champ has_admin_privileges correctement défini")
+                    else:
+                        self.log_test("Admin Privileges", "Verify admin privileges field", False, f"has_admin_privileges = {user.get('has_admin_privileges')}")
+                else:
+                    self.log_test("Admin Privileges", "Verify admin privileges field", False, f"Impossible de récupérer l'utilisateur: {get_response.status_code}")
+                
+                # Test 3: Mettre à jour les privilèges admin
+                update_data = {"has_admin_privileges": False}
+                update_response = self.session.put(f"{BASE_URL}/users/{user_id}", json=update_data)
+                
+                if update_response.status_code == 200:
+                    self.log_test("Admin Privileges", "Update admin privileges", True, "Privilèges admin mis à jour")
+                    
+                    # Vérifier la mise à jour
+                    verify_response = self.session.get(f"{BASE_URL}/users/{user_id}")
+                    if verify_response.status_code == 200:
+                        updated_user = verify_response.json()
+                        if updated_user.get("has_admin_privileges") == False:
+                            self.log_test("Admin Privileges", "Verify admin privileges update", True, "Mise à jour des privilèges confirmée")
+                        else:
+                            self.log_test("Admin Privileges", "Verify admin privileges update", False, "Privilèges non mis à jour")
+                else:
+                    self.log_test("Admin Privileges", "Update admin privileges", False, f"Status: {update_response.status_code}")
+                
+            else:
+                self.log_test("Admin Privileges", "Create user with admin privileges", False, f"Status: {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_test("Admin Privileges", "Admin privileges tests", False, f"Exception: {str(e)}")
+    
+    def test_permissions_protection(self):
+        """Test de la protection des endpoints (permissions admin/encadrement)"""
+        try:
+            # Créer une session sans token admin pour tester les permissions
+            test_session = requests.Session()
+            
+            # Test 1: Accès aux rôles sans authentification
+            response = test_session.get(f"{BASE_URL}/roles")
+            if response.status_code == 401:
+                self.log_test("Permissions", "Roles access without auth", True, "Accès refusé sans authentification")
+            else:
+                self.log_test("Permissions", "Roles access without auth", False, f"Status inattendu: {response.status_code}")
+            
+            # Test 2: Accès aux filtres utilisateurs sans authentification
+            response = test_session.get(f"{BASE_URL}/users/filters")
+            if response.status_code == 401:
+                self.log_test("Permissions", "User filters access without auth", True, "Accès refusé sans authentification")
+            else:
+                self.log_test("Permissions", "User filters access without auth", False, f"Status inattendu: {response.status_code}")
+            
+            # Test 3: Création de rôle sans authentification
+            role_data = {"name": "Test Role", "permissions": []}
+            response = test_session.post(f"{BASE_URL}/roles", json=role_data)
+            if response.status_code == 401:
+                self.log_test("Permissions", "Create role without auth", True, "Création refusée sans authentification")
+            else:
+                self.log_test("Permissions", "Create role without auth", False, f"Status inattendu: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Permissions", "Permissions protection tests", False, f"Exception: {str(e)}")
+    
+    def cleanup_test_data(self):
+        """Nettoyer les données de test créées"""
+        # Nettoyer l'utilisateur de test s'il existe
+        if hasattr(self, 'test_user_id'):
+            try:
+                self.session.delete(f"{BASE_URL}/users/{self.test_user_id}")
+                print(f"🧹 Nettoyage: Utilisateur de test {self.test_user_id} supprimé")
+            except:
+                pass
+        
+        # Nettoyer le rôle de test s'il existe
+        if hasattr(self, 'created_role_id'):
+            try:
+                self.session.delete(f"{BASE_URL}/roles/{self.created_role_id}")
+                print(f"🧹 Nettoyage: Rôle de test {self.created_role_id} supprimé")
+            except:
+                pass
+
     def test_consecutive_absences_calculation(self):
         """Test du calcul des absences consécutives"""
         try:
