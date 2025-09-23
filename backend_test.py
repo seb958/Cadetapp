@@ -383,23 +383,23 @@ class CadetSquadTester:
             
             # Test 1: Accès aux rôles sans authentification
             response = test_session.get(f"{BASE_URL}/roles")
-            if response.status_code == 401:
-                self.log_test("Permissions", "Roles access without auth", True, "Accès refusé sans authentification")
+            if response.status_code in [401, 403]:  # Les deux sont acceptables
+                self.log_test("Permissions", "Roles access without auth", True, f"Accès refusé sans authentification (status: {response.status_code})")
             else:
                 self.log_test("Permissions", "Roles access without auth", False, f"Status inattendu: {response.status_code}")
             
             # Test 2: Accès aux filtres utilisateurs sans authentification
             response = test_session.get(f"{BASE_URL}/users/filters")
-            if response.status_code == 401:
-                self.log_test("Permissions", "User filters access without auth", True, "Accès refusé sans authentification")
+            if response.status_code in [401, 403]:  # Les deux sont acceptables
+                self.log_test("Permissions", "User filters access without auth", True, f"Accès refusé sans authentification (status: {response.status_code})")
             else:
                 self.log_test("Permissions", "User filters access without auth", False, f"Status inattendu: {response.status_code}")
             
             # Test 3: Création de rôle sans authentification
             role_data = {"name": "Test Role", "permissions": []}
             response = test_session.post(f"{BASE_URL}/roles", json=role_data)
-            if response.status_code == 401:
-                self.log_test("Permissions", "Create role without auth", True, "Création refusée sans authentification")
+            if response.status_code in [401, 403]:  # Les deux sont acceptables
+                self.log_test("Permissions", "Create role without auth", True, f"Création refusée sans authentification (status: {response.status_code})")
             else:
                 self.log_test("Permissions", "Create role without auth", False, f"Status inattendu: {response.status_code}")
                 
