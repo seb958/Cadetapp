@@ -730,15 +730,41 @@ class CadetSquadTester:
     
     def run_all_tests(self):
         """Exécuter tous les tests"""
-        print("🚀 DÉBUT DES TESTS - Système d'alertes d'absences consécutives")
+        print("🚀 DÉBUT DES TESTS - Système de gestion des rôles et filtres utilisateurs")
         print("=" * 80)
+        print(f"📍 Base URL: {BASE_URL}")
+        print(f"👤 Admin: {ADMIN_EMAIL}")
         
         # Authentification
         if not self.authenticate_admin():
             print("❌ Impossible de s'authentifier - Arrêt des tests")
             return
         
-        # Tests du système d'alertes
+        # Tests de gestion des rôles
+        print("\n📋 TESTS DE GESTION DES RÔLES")
+        print("-" * 40)
+        self.test_get_roles()
+        self.test_create_role()
+        self.test_update_role()
+        self.test_delete_role()
+        
+        # Tests des filtres utilisateurs
+        print("\n🔍 TESTS DES FILTRES UTILISATEURS")
+        print("-" * 40)
+        self.test_get_user_filters()
+        self.test_user_filtering()
+        
+        # Tests des privilèges administrateur
+        print("\n👑 TESTS DES PRIVILÈGES ADMINISTRATEUR")
+        print("-" * 40)
+        self.test_admin_privileges_field()
+        
+        # Tests de protection des permissions
+        print("\n🔒 TESTS DE PROTECTION DES PERMISSIONS")
+        print("-" * 40)
+        self.test_permissions_protection()
+        
+        # Tests du système d'alertes (existants)
         print("\n📋 TESTS DU SYSTÈME D'ALERTES")
         print("-" * 40)
         self.test_consecutive_absences_calculation()
@@ -752,6 +778,11 @@ class CadetSquadTester:
         print("\n🔄 TESTS DE COMPATIBILITÉ")
         print("-" * 40)
         self.test_existing_endpoints_compatibility()
+        
+        # Nettoyage des données de test
+        print("\n🧹 NETTOYAGE")
+        print("-" * 40)
+        self.cleanup_test_data()
         
         # Résumé
         self.print_summary()
