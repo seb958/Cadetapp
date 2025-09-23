@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 """
 Tests complets pour l'API Gestion Escadron Cadets
-Focus sur le nouveau système d'alertes d'absences consécutives
+Focus sur le nouveau système de gestion des rôles et filtres utilisateurs
+
+Nouveaux endpoints testés:
+- GET /api/roles - Récupérer tous les rôles
+- POST /api/roles - Créer un nouveau rôle
+- PUT /api/roles/{role_id} - Mettre à jour un rôle
+- DELETE /api/roles/{role_id} - Supprimer un rôle
+- GET /api/users/filters - Récupérer les options de filtres
+- GET /api/users?grade=...&role=...&section_id=... - Filtrer les utilisateurs
+
+Modifications utilisateurs:
+- Support du champ has_admin_privileges dans POST/PUT /users
 """
 
 import requests
