@@ -1460,7 +1460,12 @@ export default function Admin() {
                 <View key={user.id} style={styles.userCard}>
                   <View style={styles.userHeader}>
                     <View style={styles.userInfo}>
-                      <Text style={styles.userName}>{user.prenom} {user.nom}</Text>
+                      <Text style={styles.userName}>
+                        {user.prenom} {user.nom}
+                        {user.has_admin_privileges && (
+                          <Text style={styles.adminBadge}> • ADMIN</Text>
+                        )}
+                      </Text>
                       <Text style={styles.userEmail}>{user.email || 'Pas d\'email'}</Text>
                     <Text style={[
                       styles.userStatus,
