@@ -376,9 +376,29 @@ export default function Admin() {
       if (response.ok) {
         const data = await response.json();
         setFilterOptions(data);
+      } else {
+        console.warn('Erreur lors du chargement des filtres:', response.status);
+        // Utiliser des données de fallback basées sur les utilisateurs existants
+        const grades = [...new Set(users.map(u => u.grade))].sort();
+        const roles = [...new Set(users.map(u => u.role))].sort();
+        const sectionOptions = sections.map(s => ({id: s.id, name: s.nom}));
+        setFilterOptions({
+          grades,
+          roles,
+          sections: sectionOptions
+        });
       }
     } catch (error) {
       console.error('Erreur lors du chargement des options de filtres:', error);
+      // Utiliser des données de fallback
+      const grades = [...new Set(users.map(u => u.grade))].sort();
+      const roles = [...new Set(users.map(u => u.role))].sort();
+      const sectionOptions = sections.map(s => ({id: s.id, name: s.nom}));
+      setFilterOptions({
+        grades,
+        roles,
+        sections: sectionOptions
+      });
     }
   };
 
