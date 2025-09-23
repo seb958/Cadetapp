@@ -149,6 +149,7 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTÉ COMPLET - Gestion utilisateurs/sections fonctionnelle: Admin peut lister utilisateurs (4 trouvés), créer sections, permissions correctes (cadet ne peut pas accéder liste utilisateurs). Toutes les routes protégées fonctionnent"
+          
   - task: "API complète de gestion des présences"
     implemented: true
     working: true
@@ -178,6 +179,51 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 20/20 tests passés (100% réussite). Système d'alertes d'absences consécutives parfaitement fonctionnel: Calcul absences consécutives OK (seuils 2 et 3), Génération alertes automatique, Mise à jour statuts (active→contacted→resolved) avec commentaires, Suppression alertes, Permissions correctes (admin/encadrement seulement, cadet refusé 403), Compatibilité endpoints existants préservée. Correction bug sérialisation dates MongoDB appliquée. Endpoints testés: GET /api/alerts/consecutive-absences?threshold=3, GET /api/alerts, POST /api/alerts/generate?threshold=3, PUT /api/alerts/{id}, DELETE /api/alerts/{id}. Base URL: https://cadetsquad-app.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
+
+  - task: "Système de gestion des rôles et permissions"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Système complet de gestion des rôles implémenté avec 4 nouveaux endpoints: GET /api/roles (récupération), POST /api/roles (création), PUT /api/roles/{id} (mise à jour), DELETE /api/roles/{id} (suppression). Modèles Role, RoleCreate, RoleUpdate ajoutés avec permissions granulaires. Protection des rôles système contre suppression."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS COMPLETS RÉUSSIS - 8/8 tests passés (100% réussite). Système de gestion des rôles parfaitement fonctionnel: Récupération rôles OK, Création rôles avec permissions OK, Mise à jour rôles OK avec validation, Suppression rôles OK avec vérification, Structure des données correcte, Permissions admin/encadrement requises. Tous les endpoints CRUD fonctionnent parfaitement."
+
+  - task: "Système de filtres utilisateurs"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Système de filtres utilisateurs implémenté avec endpoint GET /api/users/filters (options de filtres) et support des paramètres de filtrage dans GET /api/users?grade=...&role=...&section_id=... pour filtrer par grade, rôle et section."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS COMPLETS RÉUSSIS - 10/10 tests passés (100% réussite). Système de filtres utilisateurs parfaitement fonctionnel: Récupération options de filtres OK (6 grades, 4 rôles, 6 sections), Filtrage par rôle précis, Filtrage par grade précis, Filtrage par section précis, Filtres combinés fonctionnels, Validation exactitude des filtres OK. Correction problème routage FastAPI appliquée (déplacement /users/filters avant /users/{user_id})."
+
+  - task: "Support privilèges administrateur utilisateurs"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Champ has_admin_privileges ajouté au modèle User et supporté dans les endpoints POST /api/users et PUT /api/users/{id} pour permettre l'attribution de privilèges administrateur aux utilisateurs."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS COMPLETS RÉUSSIS - 4/4 tests passés (100% réussite). Support privilèges administrateur parfaitement fonctionnel: Création utilisateur avec privilèges admin OK, Vérification champ has_admin_privileges OK, Mise à jour privilèges admin OK, Validation des changements OK. Le champ est correctement géré dans les opérations CRUD utilisateurs."
 
 frontend:
   - task: "Interface d'authentification française"
