@@ -92,6 +92,14 @@ export default function Presences() {
   const [selectedCadetStats, setSelectedCadetStats] = useState<string | null>(null);
   const [stats, setStats] = useState<PresenceStats | null>(null);
 
+  // États pour les groupements collapsibles
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showActivityDetail, setShowActivityDetail] = useState(false);
+  const [selectedActivityDetail, setSelectedActivityDetail] = useState<{activite: string, date: string, presences: Presence[]} | null>(null);
+
+  // Constantes pour l'affichage
+  const MAX_CADETS_PREVIEW = 5;
+
   useEffect(() => {
     loadUserAndData();
   }, []);
