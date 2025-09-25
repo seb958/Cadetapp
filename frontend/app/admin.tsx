@@ -3040,6 +3040,9 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 10,
   },
+  scrollContent: {
+    paddingRight: 20, // Espace à droite pour le scroll
+  },
   optionButton: {
     borderWidth: 2,
     borderColor: '#e2e8f0',
