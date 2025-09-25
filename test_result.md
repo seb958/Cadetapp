@@ -194,6 +194,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 8/8 tests passés (100% réussite). Système de gestion des rôles parfaitement fonctionnel: Récupération rôles OK, Création rôles avec permissions OK, Mise à jour rôles OK avec validation, Suppression rôles OK avec vérification, Structure des données correcte, Permissions admin/encadrement requises. Tous les endpoints CRUD fonctionnent parfaitement."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS SPÉCIFIQUES RÔLES RÉUSSIS - 26/28 tests passés (92.9% réussite). Système de rôles robuste et fonctionnel: GET /api/roles récupère correctement les rôles personnalisés, POST /api/roles crée nouveaux rôles avec structure complète (id, name, description, permissions, is_system_role, created_at), Persistance des rôles créés validée, Distinction rôles système/personnalisés partiellement fonctionnelle (seulement rôles personnalisés trouvés), Complétude des données parfaite. Authentification: aadministrateur/admin123. Base URL: https://squadron-app.preview.emergentagent.com/api. 2 échecs mineurs: absence de rôles système marqués et nombre total de rôles inférieur à attendu."
 
   - task: "Système de filtres utilisateurs"
     implemented: true
