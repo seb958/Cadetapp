@@ -210,7 +210,6 @@ export default function Presences() {
     switch (status) {
       case 'present': return 'Présent';
       case 'absent': return 'Absent';
-      case 'absent_excuse': return 'Absent Excusé';
       case 'retard': return 'Retard';
       default: return status;
     }
