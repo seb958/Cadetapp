@@ -451,68 +451,107 @@ export default function Presences() {
 
               return Object.values(groupedPresences)
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((group, groupIndex) => (
-                  <View key={groupIndex} style={styles.activityGroup}>
-                    {/* En-tête de l'activité */}
-                    <View style={styles.activityGroupHeader}>
-                      <View style={styles.activityInfo}>
-                        <Text style={styles.activityGroupTitle}>{group.activite}</Text>
-                        <Text style={styles.activityGroupDate}>
-                          {new Date(group.date).toLocaleDateString('fr-FR', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </Text>
-                      </View>
-                      <View style={styles.activityStats}>
-                        <Text style={styles.participantCount}>{group.presences.length} cadets</Text>
-                        <Text style={styles.presenceStats}>
-                          {group.presences.filter(p => p.status === 'present').length} présents • {' '}
-                          {group.presences.filter(p => p.status === 'absent').length} absents
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Liste des cadets pour cette activité */}
-                    <View style={styles.cadetsGrid}>
-                      {group.presences.map((presence) => (
-                        <View key={presence.id} style={styles.cadetPresenceCard}>
-                          <View style={styles.cadetHeader}>
-                            <Text style={styles.cadetName}>
-                              {presence.cadet_prenom} {presence.cadet_nom}
-                            </Text>
-                            <View style={[
-                              styles.statusBadge,
-                              { backgroundColor: getStatusColor(presence.status) }
-                            ]}>
-                              <Text style={styles.statusText}>
-                                {getStatusDisplayName(presence.status)}
+                .map((group, groupIndex) => {
+                  const groupKey = `${group.activite}_${group.date}`;
+                  const isExpanded = expandedGroups.has(groupKey);
+                  const shouldShowPreview = group.presences.length > MAX_CADETS_PREVIEW;
+                  const displayedPresences = shouldShowPreview && !isExpanded 
+                    ? group.presences.slice(0, MAX_CADETS_PREVIEW)
+                    : group.presences;
+                  
+                  return (
+                    <View key={groupIndex} style={styles.activityGroup}>
+                      {/* En-tête de l'activité avec boutons d'action */}
+                      <TouchableOpacity 
+                        style={styles.activityGroupHeader}
+                        onPress={() => shouldShowPreview && toggleGroupExpansion(groupKey)}
+                      >
+                        <View style={styles.activityInfo}>
+                          <View style={styles.activityTitleRow}>
+                            <Text style={styles.activityGroupTitle}>{group.activite}</Text>
+                            {shouldShowPreview && (
+                              <Text style={styles.expandIcon}>
+                                {isExpanded ? '▼' : '▶'}
                               </Text>
-                            </View>
+                            )}
                           </View>
-                          
-                          {presence.commentaire && (
-                            <Text style={styles.presenceComment}>
-                              💬 {presence.commentaire}
-                            </Text>
-                          )}
-
-                          {/* Bouton stats pour admin/encadrement */}
-                          {user && ['cadet_admin', 'encadrement'].includes(user.role) && (
-                            <TouchableOpacity 
-                              style={styles.statsButton}
-                              onPress={() => loadStats(presence.cadet_id)}
-                            >
-                              <Text style={styles.statsButtonText}>Stats</Text>
-                            </TouchableOpacity>
-                          )}
+                          <Text style={styles.activityGroupDate}>
+                            {new Date(group.date).toLocaleDateString('fr-FR', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </Text>
                         </View>
-                      ))}
+                        <View style={styles.activityActions}>
+                          <View style={styles.activityStats}>
+                            <Text style={styles.participantCount}>{group.presences.length} cadets</Text>
+                            <Text style={styles.presenceStats}>
+                              {group.presences.filter(p => p.status === 'present').length} présents • {' '}
+                              {group.presences.filter(p => p.status === 'absent').length} absents
+                            </Text>
+                          </View>
+                          <TouchableOpacity
+                            style={styles.detailButton}
+                            onPress={() => openActivityDetail(group.activite, group.date, group.presences)}
+                          >
+                            <Text style={styles.detailButtonText}>Détail</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+
+                      {/* Liste des cadets (compacte ou complète) */}
+                      <View style={styles.cadetsGrid}>
+                        {displayedPresences.map((presence) => (
+                          <View key={presence.id} style={styles.cadetPresenceCard}>
+                            <View style={styles.cadetHeader}>
+                              <Text style={styles.cadetName}>
+                                {presence.cadet_prenom} {presence.cadet_nom}
+                              </Text>
+                              <View style={[
+                                styles.statusBadge,
+                                { backgroundColor: getStatusColor(presence.status) }
+                              ]}>
+                                <Text style={styles.statusText}>
+                                  {getStatusDisplayName(presence.status)}
+                                </Text>
+                              </View>
+                            </View>
+                            
+                            {presence.commentaire && (
+                              <Text style={styles.presenceComment}>
+                                💬 {presence.commentaire}
+                              </Text>
+                            )}
+
+                            {/* Bouton stats pour admin/encadrement */}
+                            {user && ['cadet_admin', 'encadrement'].includes(user.role) && (
+                              <TouchableOpacity 
+                                style={styles.statsButton}
+                                onPress={() => loadStats(presence.cadet_id)}
+                              >
+                                <Text style={styles.statsButtonText}>Stats</Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        ))}
+
+                        {/* Indicateur "Voir plus" si nécessaire */}
+                        {shouldShowPreview && !isExpanded && (
+                          <TouchableOpacity 
+                            style={styles.showMoreButton}
+                            onPress={() => toggleGroupExpansion(groupKey)}
+                          >
+                            <Text style={styles.showMoreText}>
+                              ▼ Voir {group.presences.length - MAX_CADETS_PREVIEW} cadets de plus
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     </View>
-                  </View>
-                ))
+                  )
+                })
             })()
           )}
         </View>
