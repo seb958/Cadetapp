@@ -1518,4 +1518,135 @@ const styles = StyleSheet.create({
     color: '#2d3748',
     flex: 1,
   },
+  // Nouveaux styles pour l'interface collapsible
+  activityTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  expandIcon: {
+    fontSize: 16,
+    color: '#4a5568',
+    marginLeft: 10,
+    fontWeight: 'bold',
+  },
+  activityActions: {
+    alignItems: 'flex-end',
+  },
+  detailButton: {
+    backgroundColor: '#3182ce',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 5,
+  },
+  detailButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  showMoreButton: {
+    backgroundColor: '#f7fafc',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  showMoreText: {
+    color: '#4a5568',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  // Styles pour la vue détaillée
+  detailHeader: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    marginBottom: 20,
+  },
+  detailDate: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a365d',
+    marginBottom: 15,
+    textTransform: 'capitalize',
+  },
+  detailStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#f7fafc',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a365d',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#4a5568',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statusSection: {
+    marginBottom: 20,
+  },
+  statusSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    paddingHorizontal: 5,
+  },
+  detailCadetCard: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#e2e8f0',
+  },
+  detailCadetInfo: {
+    marginBottom: 8,
+  },
+  detailCadetName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a365d',
+  },
+  detailCadetSection: {
+    fontSize: 13,
+    color: '#4a5568',
+    marginTop: 2,
+  },
+  detailCommentBox: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 8,
+  },
+  detailComment: {
+    fontSize: 14,
+    color: '#374151',
+    fontStyle: 'italic',
+  },
+  detailStatsButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#e2e8f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  detailStatsButtonText: {
+    fontSize: 12,
+    color: '#2d3748',
+    fontWeight: '600',
+  },
 });
