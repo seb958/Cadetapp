@@ -219,7 +219,6 @@ export default function Presences() {
     switch (status) {
       case 'present': return '#10b981';
       case 'absent': return '#ef4444';
-      case 'absent_excuse': return '#f59e0b';
       case 'retard': return '#8b5cf6';
       default: return '#6b7280';
     }
