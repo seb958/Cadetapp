@@ -767,7 +767,7 @@ export default function Presences() {
                       
                       {/* Boutons de statut */}
                       <View style={styles.statusButtons}>
-                        {['present', 'absent', 'absent_excuse', 'retard'].map((status) => (
+                        {['present', 'absent', 'retard'].map((status) => (
                           <TouchableOpacity
                             key={status}
                             style={[
