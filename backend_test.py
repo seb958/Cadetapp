@@ -22,7 +22,7 @@ import uuid
 import sys
 
 # Configuration
-BASE_URL = "https://cadetsquad-app.preview.emergentagent.com/api"
+BASE_URL = "https://squadron-app.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@escadron.fr"
 ADMIN_PASSWORD = "admin123"
 
