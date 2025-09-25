@@ -915,13 +915,6 @@ export default function Presences() {
                     </Text>
                     <Text style={styles.statLabel}>Absents</Text>
                   </View>
-                  
-                  <View style={styles.statCard}>
-                    <Text style={[styles.statNumber, {color: '#f59e0b'}]}>
-                      {selectedActivityDetail.presences.filter(p => p.status === 'absent_excuse').length}
-                    </Text>
-                    <Text style={styles.statLabel}>Excusés</Text>
-                  </View>
                 </View>
               </View>
 
