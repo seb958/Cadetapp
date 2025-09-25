@@ -28,6 +28,55 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Fonctions utilitaires pour la gestion des usernames
+def normalize_text(text: str) -> str:
+    """Normalise le texte en supprimant les accents et caractères spéciaux"""
+    # Normaliser les caractères Unicode (décomposer les accents)
+    normalized = unicodedata.normalize('NFD', text)
+    # Supprimer les caractères de catégorie "Mark" (accents)
+    ascii_text = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    # Convertir en minuscules et supprimer les caractères non alphanumériques
+    return re.sub(r'[^a-z0-9]', '', ascii_text.lower())
+
+def generate_base_username(prenom: str, nom: str) -> str:
+    """Génère un username de base à partir du prénom et nom"""
+    # Prendre la première lettre du prénom + nom complet
+    prenom_normalized = normalize_text(prenom)
+    nom_normalized = normalize_text(nom)
+    
+    if prenom_normalized and nom_normalized:
+        return f"{prenom_normalized[0]}{nom_normalized}"
+    elif nom_normalized:
+        return nom_normalized
+    else:
+        return "user"
+
+async def generate_unique_username(prenom: str, nom: str) -> str:
+    """Génère un username unique en ajoutant un chiffre si nécessaire"""
+    base_username = generate_base_username(prenom, nom)
+    
+    # Vérifier si le username de base existe déjà
+    existing_user = await db.users.find_one({"username": base_username})
+    
+    if not existing_user:
+        return base_username
+    
+    # Si le username existe, ajouter un chiffre
+    counter = 2
+    while True:
+        new_username = f"{base_username}{counter}"
+        existing_user = await db.users.find_one({"username": new_username})
+        
+        if not existing_user:
+            return new_username
+        
+        counter += 1
+        
+        # Éviter les boucles infinies
+        if counter > 100:
+            # Utiliser un UUID aléatoire en dernier recours
+            return f"{base_username}{secrets.randbelow(10000)}"
+
 # Security
 SECRET_KEY = os.environ.get("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
