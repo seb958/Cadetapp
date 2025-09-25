@@ -42,7 +42,7 @@ export default function Index() {
   const [loading, setLoading] = useState(true);
   
   // États pour la connexion
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
