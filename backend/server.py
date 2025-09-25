@@ -76,6 +76,7 @@ class ActivityType(str, Enum):
 class UserBase(BaseModel):
     nom: str
     prenom: str
+    username: Optional[str] = None  # Nom d'utilisateur pour connexion (ex: sdesy)
     email: Optional[EmailStr] = None
     grade: Grade
     role: UserRole
