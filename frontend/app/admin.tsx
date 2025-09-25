@@ -1210,7 +1210,14 @@ export default function Admin() {
           editingRole ? 'Rôle modifié avec succès' : 'Rôle créé avec succès'
         );
         setShowRoleModal(false);
-        // Recharger les rôles ici si on avait la fonction
+        setEditingRole(null);
+        setRoleForm({ name: '', description: '', permissions: [] });
+        
+        // Recharger les rôles et les données dépendantes
+        await Promise.all([
+          loadRoles(),
+          loadFilterOptions() // Recharger les filtres pour inclure les nouveaux rôles
+        ]);
       } else {
         const errorData = await response.json();
         showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
