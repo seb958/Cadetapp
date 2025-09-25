@@ -361,6 +361,21 @@ export default function Presences() {
 
   const canTakeAttendance = user && ['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role);
 
+  const toggleGroupExpansion = (groupKey: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupKey)) {
+      newExpanded.delete(groupKey);
+    } else {
+      newExpanded.add(groupKey);
+    }
+    setExpandedGroups(newExpanded);
+  };
+
+  const openActivityDetail = (activite: string, date: string, presences: Presence[]) => {
+    setSelectedActivityDetail({ activite, date, presences });
+    setShowActivityDetail(true);
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
