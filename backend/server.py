@@ -66,7 +66,6 @@ class Grade(str, Enum):
 class PresenceStatus(str, Enum):
     PRESENT = "present"
     ABSENT = "absent"
-    ABSENT_EXCUSE = "absent_excuse"
     RETARD = "retard"
 
 class ActivityType(str, Enum):
