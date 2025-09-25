@@ -402,58 +402,95 @@ export default function Presences() {
           </TouchableOpacity>
         )}
 
-        {/* Liste des présences récentes */}
+        {/* Liste des présences récentes organisées par activité */}
         <View style={styles.presencesContainer}>
-          <Text style={styles.sectionTitle}>Présences Récentes</Text>
+          <Text style={styles.sectionTitle}>Présences par Activité</Text>
           
           {presences.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyStateText}>Aucune présence enregistrée</Text>
             </View>
           ) : (
-            presences.map((presence) => (
-              <View key={presence.id} style={styles.presenceCard}>
-                <View style={styles.presenceHeader}>
-                  <Text style={styles.presenceName}>
-                    {presence.cadet_prenom} {presence.cadet_nom}
-                  </Text>
-                  <View style={[
-                    styles.statusBadge,
-                    { backgroundColor: getStatusColor(presence.status) }
-                  ]}>
-                    <Text style={styles.statusText}>
-                      {getStatusDisplayName(presence.status)}
-                    </Text>
-                  </View>
-                </View>
-                
-                <Text style={styles.presenceDate}>
-                  {new Date(presence.date).toLocaleDateString('fr-FR')}
-                </Text>
-                
-                {presence.activite && (
-                  <Text style={styles.presenceActivity}>
-                    Activité: {presence.activite}
-                  </Text>
-                )}
-                
-                {presence.commentaire && (
-                  <Text style={styles.presenceComment}>
-                    📝 {presence.commentaire}
-                  </Text>
-                )}
+            (() => {
+              // Grouper les présences par activité et date
+              const groupedPresences = presences.reduce((acc, presence) => {
+                const key = `${presence.activite || 'Activité générale'}_${presence.date}`;
+                if (!acc[key]) {
+                  acc[key] = {
+                    activite: presence.activite || 'Activité générale',
+                    date: presence.date,
+                    presences: []
+                  };
+                }
+                acc[key].presences.push(presence);
+                return acc;
+              }, {} as Record<string, {activite: string, date: string, presences: Presence[]}>);
 
-                {/* Bouton stats pour admin/encadrement */}
-                {user && ['cadet_admin', 'encadrement'].includes(user.role) && (
-                  <TouchableOpacity 
-                    style={styles.statsButton}
-                    onPress={() => loadStats(presence.cadet_id)}
-                  >
-                    <Text style={styles.statsButtonText}>Voir stats</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            ))
+              return Object.values(groupedPresences)
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((group, groupIndex) => (
+                  <View key={groupIndex} style={styles.activityGroup}>
+                    {/* En-tête de l'activité */}
+                    <View style={styles.activityGroupHeader}>
+                      <View style={styles.activityInfo}>
+                        <Text style={styles.activityGroupTitle}>{group.activite}</Text>
+                        <Text style={styles.activityGroupDate}>
+                          {new Date(group.date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </Text>
+                      </View>
+                      <View style={styles.activityStats}>
+                        <Text style={styles.participantCount}>{group.presences.length} cadets</Text>
+                        <Text style={styles.presenceStats}>
+                          {group.presences.filter(p => p.status === 'present').length} présents • {' '}
+                          {group.presences.filter(p => p.status === 'absent').length} absents
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Liste des cadets pour cette activité */}
+                    <View style={styles.cadetsGrid}>
+                      {group.presences.map((presence) => (
+                        <View key={presence.id} style={styles.cadetPresenceCard}>
+                          <View style={styles.cadetHeader}>
+                            <Text style={styles.cadetName}>
+                              {presence.cadet_prenom} {presence.cadet_nom}
+                            </Text>
+                            <View style={[
+                              styles.statusBadge,
+                              { backgroundColor: getStatusColor(presence.status) }
+                            ]}>
+                              <Text style={styles.statusText}>
+                                {getStatusDisplayName(presence.status)}
+                              </Text>
+                            </View>
+                          </View>
+                          
+                          {presence.commentaire && (
+                            <Text style={styles.presenceComment}>
+                              💬 {presence.commentaire}
+                            </Text>
+                          )}
+
+                          {/* Bouton stats pour admin/encadrement */}
+                          {user && ['cadet_admin', 'encadrement'].includes(user.role) && (
+                            <TouchableOpacity 
+                              style={styles.statsButton}
+                              onPress={() => loadStats(presence.cadet_id)}
+                            >
+                              <Text style={styles.statsButtonText}>Stats</Text>
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ))
+            })()
           )}
         </View>
       </ScrollView>
