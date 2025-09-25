@@ -459,19 +459,19 @@ async def send_invitation_email(email: str, nom: str, prenom: str, token: str):
 # Routes d'authentification
 @api_router.post("/auth/login", response_model=Token)
 async def login(request: LoginRequest):
-    # Trouver l'utilisateur par email
-    user_data = await db.users.find_one({"email": request.email})
+    # Trouver l'utilisateur par username
+    user_data = await db.users.find_one({"username": request.username})
     if not user_data or not user_data.get("hashed_password"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect"
+            detail="Nom d'utilisateur ou mot de passe incorrect"
         )
     
     # Vérifier le mot de passe
     if not verify_password(request.password, user_data["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect"
+            detail="Nom d'utilisateur ou mot de passe incorrect"
         )
     
     # Créer le token d'accès
