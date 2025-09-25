@@ -1127,7 +1127,6 @@ async def get_presence_stats(
     total_seances = len(presences)
     presences_count = len([p for p in presences if p["status"] == "present"])
     absences = len([p for p in presences if p["status"] == "absent"])
-    absences_excusees = len([p for p in presences if p["status"] == "absent_excuse"])
     retards = len([p for p in presences if p["status"] == "retard"])
     
     taux_presence = (presences_count / total_seances * 100) if total_seances > 0 else 0
@@ -1136,7 +1135,7 @@ async def get_presence_stats(
         total_seances=total_seances,
         presences=presences_count,
         absences=absences,
-        absences_excusees=absences_excusees,
+        absences_excusees=0,  # Maintenu à 0 pour compatibilité
         retards=retards,
         taux_presence=round(taux_presence, 2)
     )
