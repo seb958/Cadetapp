@@ -861,9 +861,42 @@ export default function Admin() {
     }
   };
 
+  // Fonction pour charger les rôles depuis l'API
+  const loadRoles = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/roles`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const customRoles = await response.json();
+        setRoles(customRoles);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des rôles:', error);
+    }
+  };
+
+  // Fonction pour obtenir tous les rôles (système + personnalisés)
+  const getAllRoles = () => {
+    const systemRoles = ROLES.map(r => ({ value: r.value, label: r.label, isSystem: true }));
+    const customRoles = roles.map(r => ({ value: r.name, label: r.name, isSystem: false }));
+    return [...systemRoles, ...customRoles];
+  };
+
   const getRoleDisplayName = (role: string) => {
-    const roleObj = ROLES.find(r => r.value === role);
-    return roleObj ? roleObj.label : role;
+    // D'abord chercher dans les rôles système
+    const systemRole = ROLES.find(r => r.value === role);
+    if (systemRole) return systemRole.label;
+    
+    // Ensuite chercher dans les rôles personnalisés
+    const customRole = roles.find(r => r.name === role);
+    if (customRole) return customRole.name;
+    
+    return role;
   };
 
   const getGradeDisplayName = (grade: string) => {
