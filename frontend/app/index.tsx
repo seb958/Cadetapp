@@ -214,16 +214,15 @@ export default function Index() {
               <Text style={styles.subtitle}>Connexion</Text>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Email</Text>
+                <Text style={styles.inputLabel}>Nom d'utilisateur</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="votre.email@exemple.com"
+                  placeholder="Ex: sdesy, pmartin..."
                   placeholderTextColor="#999"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
+                  value={username}
+                  onChangeText={setUsername}
                   autoCapitalize="none"
-                  autoCorrect={false}
+                  keyboardType="default"
                 />
               </View>
 
