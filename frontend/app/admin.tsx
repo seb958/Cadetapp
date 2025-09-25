@@ -323,7 +323,8 @@ export default function Admin() {
       loadCadets(),
       loadUsers(),
       loadSections(),
-      loadAlerts()
+      loadAlerts(),
+      loadRoles()
     ]);
     
     // Puis charger les options de filtres (qui peuvent utiliser les données de fallback)
