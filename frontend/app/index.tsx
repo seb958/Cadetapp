@@ -90,8 +90,8 @@ export default function Index() {
   };
 
   const login = async () => {
-    if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez saisir votre email et mot de passe');
+    if (!username || !password) {
+      Alert.alert('Erreur', 'Veuillez saisir votre nom d\'utilisateur et mot de passe');
       return;
     }
 
@@ -103,7 +103,7 @@ export default function Index() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email.toLowerCase().trim(),
+          username: username.toLowerCase().trim(),
           password,
         }),
       });
