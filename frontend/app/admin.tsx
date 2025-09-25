@@ -2355,7 +2355,7 @@ export default function Admin() {
                 contentContainerStyle={styles.scrollContent}
               >
                 <View style={styles.optionsRow}>
-                  {ROLES.map((role) => (
+                  {getAllRoles().map((role) => (
                     <TouchableOpacity
                       key={role.value}
                       style={[
@@ -2369,6 +2369,9 @@ export default function Admin() {
                         userForm.role === role.value && styles.optionButtonTextActive
                       ]}>
                         {role.label}
+                        {!role.isSystem && (
+                          <Text style={{ fontSize: 10, color: '#6b7280' }}> (Personnalisé)</Text>
+                        )}
                       </Text>
                     </TouchableOpacity>
                   ))}
