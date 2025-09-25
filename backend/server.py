@@ -176,7 +176,7 @@ class UserUpdate(BaseModel):
     has_admin_privileges: Optional[bool] = None
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    username: str  # Maintenant on utilise username au lieu d'email
     password: str
 
 class Token(BaseModel):
