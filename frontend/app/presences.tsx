@@ -1273,4 +1273,75 @@ const styles = StyleSheet.create({
     color: '#718096',
     fontWeight: '500',
   },
+  // Nouveaux styles pour l'affichage par activité
+  activityGroup: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  activityGroupHeader: {
+    backgroundColor: '#f8fafc',
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  activityInfo: {
+    marginBottom: 8,
+  },
+  activityGroupTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1a365d',
+    marginBottom: 4,
+  },
+  activityGroupDate: {
+    fontSize: 14,
+    color: '#4a5568',
+    textTransform: 'capitalize',
+  },
+  activityStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  participantCount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2d3748',
+  },
+  presenceStats: {
+    fontSize: 12,
+    color: '#718096',
+    fontWeight: '500',
+  },
+  cadetsGrid: {
+    padding: 16,
+    gap: 12,
+  },
+  cadetPresenceCard: {
+    backgroundColor: '#f7fafc',
+    borderRadius: 10,
+    padding: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#e2e8f0',
+  },
+  cadetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  cadetName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2d3748',
+    flex: 1,
+  },
 });
