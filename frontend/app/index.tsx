@@ -117,7 +117,7 @@ export default function Index() {
         
         setUser(data.user);
         setIsAuthenticated(true);
-        setEmail('');
+        setUsername('');
         setPassword('');
         
         Alert.alert('Succès', `Bienvenue ${data.user.prenom} ${data.user.nom}!`);
