@@ -868,6 +868,118 @@ export default function Presences() {
           )}
         </SafeAreaView>
       </Modal>
+
+      {/* Modal pour la vue détaillée d'une activité */}
+      <Modal
+        visible={showActivityDetail}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {selectedActivityDetail?.activite || 'Détail de l\'Activité'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowActivityDetail(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          {selectedActivityDetail && (
+            <ScrollView style={styles.modalContent}>
+              {/* En-tête avec statistiques */}
+              <View style={styles.detailHeader}>
+                <Text style={styles.detailDate}>
+                  {new Date(selectedActivityDetail.date).toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </Text>
+                
+                <View style={styles.detailStats}>
+                  <View style={styles.statCard}>
+                    <Text style={styles.statNumber}>{selectedActivityDetail.presences.length}</Text>
+                    <Text style={styles.statLabel}>Participants</Text>
+                  </View>
+                  
+                  <View style={styles.statCard}>
+                    <Text style={[styles.statNumber, {color: '#10b981'}]}>
+                      {selectedActivityDetail.presences.filter(p => p.status === 'present').length}
+                    </Text>
+                    <Text style={styles.statLabel}>Présents</Text>
+                  </View>
+                  
+                  <View style={styles.statCard}>
+                    <Text style={[styles.statNumber, {color: '#ef4444'}]}>
+                      {selectedActivityDetail.presences.filter(p => p.status === 'absent').length}
+                    </Text>
+                    <Text style={styles.statLabel}>Absents</Text>
+                  </View>
+                  
+                  <View style={styles.statCard}>
+                    <Text style={[styles.statNumber, {color: '#f59e0b'}]}>
+                      {selectedActivityDetail.presences.filter(p => p.status === 'absent_excuse').length}
+                    </Text>
+                    <Text style={styles.statLabel}>Excusés</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Liste complète des cadets */}
+              <Text style={styles.sectionTitle}>Liste des Participants</Text>
+              
+              {['present', 'retard', 'absent_excuse', 'absent'].map(status => {
+                const cadetsWithStatus = selectedActivityDetail.presences.filter(p => p.status === status);
+                if (cadetsWithStatus.length === 0) return null;
+                
+                return (
+                  <View key={status} style={styles.statusSection}>
+                    <Text style={[styles.statusSectionTitle, {color: getStatusColor(status)}]}>
+                      {getStatusDisplayName(status)} ({cadetsWithStatus.length})
+                    </Text>
+                    
+                    {cadetsWithStatus.map((presence) => (
+                      <View key={presence.id} style={styles.detailCadetCard}>
+                        <View style={styles.detailCadetInfo}>
+                          <Text style={styles.detailCadetName}>
+                            {presence.cadet_prenom} {presence.cadet_nom}
+                          </Text>
+                          {presence.section_nom && (
+                            <Text style={styles.detailCadetSection}>
+                              Section: {presence.section_nom}
+                            </Text>
+                          )}
+                        </View>
+                        
+                        {presence.commentaire && (
+                          <View style={styles.detailCommentBox}>
+                            <Text style={styles.detailComment}>{presence.commentaire}</Text>
+                          </View>
+                        )}
+
+                        {/* Bouton stats */}
+                        {user && ['cadet_admin', 'encadrement'].includes(user.role) && (
+                          <TouchableOpacity 
+                            style={styles.detailStatsButton}
+                            onPress={() => {
+                              setShowActivityDetail(false);
+                              loadStats(presence.cadet_id);
+                            }}
+                          >
+                            <Text style={styles.detailStatsButtonText}>Voir Statistiques</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
