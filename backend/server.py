@@ -1494,7 +1494,7 @@ async def calculate_consecutive_absences(
         for presence in presences:
             presence_date = datetime.fromisoformat(presence["date"]).date()
             
-            if presence["status"] in ["absent", "absent_excuse"]:
+            if presence["status"] == "absent":
                 consecutive_count += 1
                 if last_absence_date is None:
                     last_absence_date = presence_date
