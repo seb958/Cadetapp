@@ -2285,8 +2285,13 @@ export default function Admin() {
             <View style={styles.formSection}>
               <Text style={styles.formSectionTitle}>Grade et rôle</Text>
               
-              <Text style={styles.inputLabel}>Grade</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <Text style={styles.inputLabel}>Grade *</Text>
+              <Text style={styles.helperText}>Faites défiler horizontalement pour voir tous les grades</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.scrollContent}
+              >
                 <View style={styles.optionsRow}>
                   {GRADES.map((grade) => (
                     <TouchableOpacity
@@ -2308,8 +2313,13 @@ export default function Admin() {
                 </View>
               </ScrollView>
 
-              <Text style={styles.inputLabel}>Rôle</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <Text style={styles.inputLabel}>Rôle *</Text>
+              <Text style={styles.helperText}>Faites défiler horizontalement pour voir tous les rôles</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.scrollContent}
+              >
                 <View style={styles.optionsRow}>
                   {ROLES.map((role) => (
                     <TouchableOpacity
