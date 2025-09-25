@@ -629,19 +629,24 @@ async def create_user(
     user: UserCreate, 
     current_user: User = Depends(require_admin_or_encadrement)
 ):
-    # Vérifier si l'utilisateur existe déjà
-    existing_user = await db.users.find_one({"email": user.email}) if user.email else None
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Un utilisateur avec cet email existe déjà"
-        )
+    # Vérifier si l'utilisateur existe déjà par email
+    if user.email:
+        existing_user = await db.users.find_one({"email": user.email})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Un utilisateur avec cet email existe déjà"
+            )
+    
+    # Générer un username unique automatiquement
+    username = await generate_unique_username(user.prenom, user.nom)
     
     # Créer l'utilisateur - TOUJOURS ACTIF lors de la création par admin
     new_user = {
         "id": str(uuid.uuid4()),
         "prenom": user.prenom,
         "nom": user.nom,
+        "username": username,  # Username généré automatiquement
         "email": user.email,
         "password_hash": None,  # Pas de mot de passe initial
         "role": user.role,
@@ -663,7 +668,11 @@ async def create_user(
         except Exception as e:
             print(f"⚠️ Erreur lors de l'envoi de l'email: {e}")
     
-    return {"message": "Utilisateur créé avec succès", "user_id": new_user["id"]}
+    return {
+        "message": "Utilisateur créé avec succès", 
+        "user_id": new_user["id"],
+        "username": username  # Retourner le username généré
+    }
 
 @api_router.get("/users/filters")
 async def get_user_filters(current_user: User = Depends(require_admin_or_encadrement)):
