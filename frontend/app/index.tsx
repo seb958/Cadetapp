@@ -20,6 +20,7 @@ interface User {
   id: string;
   nom: string;
   prenom: string;
+  username: string;  // Ajout du username
   email: string;
   grade: string;
   role: string;
