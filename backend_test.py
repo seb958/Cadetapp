@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
-Tests complets pour l'API Gestion Escadron Cadets
-Focus sur le nouveau système de gestion des rôles et filtres utilisateurs
+Tests pour le système de gestion des rôles - Escadron Cadets
+Test spécifique pour vérifier le système de rôles et permissions
 
-Nouveaux endpoints testés:
-- GET /api/roles - Récupérer tous les rôles
-- POST /api/roles - Créer un nouveau rôle
-- PUT /api/roles/{role_id} - Mettre à jour un rôle
-- DELETE /api/roles/{role_id} - Supprimer un rôle
-- GET /api/users/filters - Récupérer les options de filtres
-- GET /api/users?grade=...&role=...&section_id=... - Filtrer les utilisateurs
+Tests demandés:
+1. Les rôles personnalisés créés sont bien récupérés par GET /api/roles
+2. Un nouveau rôle peut être créé avec POST /api/roles 
+3. Les rôles créés contiennent les bonnes données (id, name, description, permissions, is_system_role, created_at)
+4. Les rôles système vs personnalisés sont bien distingués
+5. Vérifier que les rôles créés dans les tests précédents sont toujours présents
 
-Modifications utilisateurs:
-- Support du champ has_admin_privileges dans POST/PUT /users
+Credentials: admin@escadron.fr / admin123 ou aadministrateur / admin123
 """
 
 import requests
