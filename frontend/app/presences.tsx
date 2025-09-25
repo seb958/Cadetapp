@@ -51,7 +51,7 @@ interface Presence {
   cadet_nom: string;
   cadet_prenom: string;
   date: string;
-  status: 'present' | 'absent' | 'absent_excuse' | 'retard';
+  status: 'present' | 'absent' | 'retard';
   commentaire?: string;
   enregistre_par: string;
   heure_enregistrement: string;
