@@ -921,7 +921,7 @@ export default function Presences() {
               {/* Liste complète des cadets */}
               <Text style={styles.sectionTitle}>Liste des Participants</Text>
               
-              {['present', 'retard', 'absent_excuse', 'absent'].map(status => {
+              {['present', 'retard', 'absent'].map(status => {
                 const cadetsWithStatus = selectedActivityDetail.presences.filter(p => p.status === status);
                 if (cadetsWithStatus.length === 0) return null;
                 
