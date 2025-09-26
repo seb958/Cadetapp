@@ -1762,7 +1762,7 @@ export default function Admin() {
         {activeTab === 'sections' && (
           <View style={styles.tabContent}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Gestion des Sections</Text>
+              <Text style={styles.sectionTitle}>Gestion des Sections et Sous-groupes</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => openSectionModal()}
@@ -1779,38 +1779,122 @@ export default function Admin() {
                 </Text>
               </View>
             ) : (
-              sections.map((section) => (
-                <View key={section.id} style={styles.sectionCard}>
-                  <View style={styles.sectionCardHeader}>
-                    <Text style={styles.sectionCardName}>{section.nom}</Text>
-                    <View style={styles.sectionActions}>
-                      <TouchableOpacity
-                        style={styles.editButton}
-                        onPress={() => openSectionModal(section)}
-                      >
-                        <Text style={styles.editButtonText}>Modifier</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  
-                  {section.description && (
-                    <Text style={styles.sectionCardDescription}>{section.description}</Text>
-                  )}
-                  
-                  <Text style={styles.sectionCardInfo}>
-                    Responsable: {section.responsable_id ? getResponsableName(section.responsable_id) : 'Aucun'}
-                  </Text>
-                  
-                  <Text style={styles.sectionCardInfo}>
-                    Créée le: {new Date(section.created_at).toLocaleDateString('fr-FR')}
-                  </Text>
+              sections.map((section) => {
+                const sectionSubGroups = getSubGroupsForSection(section.id);
+                const isExpanded = expandedSections.has(section.id);
+                const totalMembers = getUserCountForSection(section.id);
+                
+                return (
+                  <View key={section.id} style={styles.sectionCard}>
+                    {/* En-tête de section avec bouton d'expansion */}
+                    <TouchableOpacity 
+                      style={styles.sectionCardHeader}
+                      onPress={() => toggleSectionExpansion(section.id)}
+                    >
+                      <View style={styles.sectionMainInfo}>
+                        <View style={styles.sectionTitleRow}>
+                          <Text style={styles.sectionCardName}>{section.nom}</Text>
+                          <Text style={styles.expandIcon}>{isExpanded ? '▼' : '▶'}</Text>
+                        </View>
+                        <Text style={styles.sectionCardMemberCount}>
+                          {totalMembers} membre(s) {sectionSubGroups.length > 0 && `• ${sectionSubGroups.length} sous-groupe(s)`}
+                        </Text>
+                      </View>
+                      <View style={styles.sectionActions}>
+                        <TouchableOpacity
+                          style={styles.editButton}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            openSectionModal(section);
+                          }}
+                        >
+                          <Text style={styles.editButtonText}>Modifier</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+                    
+                    {/* Contenu déployable */}
+                    {isExpanded && (
+                      <View style={styles.sectionExpandedContent}>
+                        {section.description && (
+                          <Text style={styles.sectionCardDescription}>{section.description}</Text>
+                        )}
+                        
+                        <Text style={styles.sectionCardInfo}>
+                          Responsable: {section.responsable_id ? getResponsableName(section.responsable_id) : 'Aucun'}
+                        </Text>
+                        
+                        <Text style={styles.sectionCardInfo}>
+                          Créée le: {new Date(section.created_at).toLocaleDateString('fr-FR')}
+                        </Text>
 
-                  {/* Nombre de membres */}
-                  <Text style={styles.sectionCardInfo}>
-                    Membres: {users.filter(u => u.section_id === section.id).length} cadet(s)
-                  </Text>
-                </View>
-              ))
+                        {/* Sous-groupes */}
+                        <View style={styles.subGroupsContainer}>
+                          <View style={styles.subGroupsHeader}>
+                            <Text style={styles.subGroupsTitle}>Sous-groupes</Text>
+                            <TouchableOpacity
+                              style={styles.addSubGroupButton}
+                              onPress={() => openSubGroupModal(null, section.id)}
+                            >
+                              <Text style={styles.addSubGroupButtonText}>+ Sous-groupe</Text>
+                            </TouchableOpacity>
+                          </View>
+
+                          {sectionSubGroups.length === 0 ? (
+                            <Text style={styles.noSubGroupsText}>
+                              Aucun sous-groupe. Les cadets sont directement dans la section.
+                            </Text>
+                          ) : (
+                            sectionSubGroups.map((subGroup) => (
+                              <View key={subGroup.id} style={styles.subGroupCard}>
+                                <View style={styles.subGroupHeader}>
+                                  <View style={styles.subGroupInfo}>
+                                    <Text style={styles.subGroupName}>{subGroup.nom}</Text>
+                                    <Text style={styles.subGroupMemberCount}>
+                                      {getUserCountForSubGroup(subGroup.id)} membre(s)
+                                    </Text>
+                                  </View>
+                                  <View style={styles.subGroupActions}>
+                                    <TouchableOpacity
+                                      style={styles.editSubGroupButton}
+                                      onPress={() => openSubGroupModal(subGroup)}
+                                    >
+                                      <Text style={styles.editSubGroupButtonText}>Modifier</Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                                
+                                {subGroup.description && (
+                                  <Text style={styles.subGroupDescription}>{subGroup.description}</Text>
+                                )}
+                                
+                                <Text style={styles.subGroupResponsable}>
+                                  Commandant: {subGroup.responsable_id ? getResponsableName(subGroup.responsable_id) : 'Aucun'}
+                                </Text>
+                              </View>
+                            ))
+                          )}
+                        </View>
+
+                        {/* Membres directs de la section (sans sous-groupe) */}
+                        {(() => {
+                          const directMembers = users.filter(u => u.section_id === section.id && !u.subgroup_id && u.actif).length;
+                          if (directMembers > 0) {
+                            return (
+                              <View style={styles.directMembersInfo}>
+                                <Text style={styles.directMembersText}>
+                                  {directMembers} membre(s) directement dans la section
+                                </Text>
+                              </View>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </View>
+                    )}
+                  </View>
+                );
+              })
             )}
           </View>
         )}
