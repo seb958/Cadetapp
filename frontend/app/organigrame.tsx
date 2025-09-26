@@ -187,9 +187,11 @@ export default function Organigrame() {
 
     const hierarchy: HierarchyNode[] = [];
 
-    // Niveau 0: Commandant (role = 'encadrement' ou grade = 'commandant')
+    // Niveau 0: Commandant
     const commandants = filteredUsers.filter(u => 
-      u.grade === 'commandant' || (u.role === 'encadrement' && u.grade !== 'lieutenant')
+      u.grade === 'commandant' || 
+      u.role === 'encadrement' || 
+      u.role === 'Commandant'
     );
     
     commandants.forEach(commandant => {
@@ -197,50 +199,44 @@ export default function Organigrame() {
         user: commandant,
         level: 0,
         type: 'user',
-        children: []
+        children: buildLevel1AndBelow(filteredUsers)
       };
-
-      // Niveau 1: Officiers (lieutenants)
-      const officiers = filteredUsers.filter(u => 
-        u.grade === 'lieutenant' || (u.role === 'encadrement' && u.grade === 'lieutenant')
-      );
-      
-      officiers.forEach(officier => {
-        commandantNode.children.push({
-          user: officier,
-          level: 1,
-          type: 'user',
-          children: buildLevel2AndBelow(filteredUsers)
-        });
-      });
-
-      // Si pas d'officiers, directement les niveaux inférieurs
-      if (officiers.length === 0) {
-        commandantNode.children = buildLevel2AndBelow(filteredUsers);
-      }
 
       hierarchy.push(commandantNode);
     });
 
-    // S'il n'y a pas de commandant, commencer par les officiers
+    // S'il n'y a pas de commandant, commencer par les officiers/niveau 1
     if (commandants.length === 0) {
-      const officiers = filteredUsers.filter(u => u.grade === 'lieutenant');
-      officiers.forEach(officier => {
-        hierarchy.push({
-          user: officier,
-          level: 0, // Devient le niveau 0 s'il n'y a pas de commandant
-          type: 'user',
-          children: buildLevel2AndBelow(filteredUsers)
-        });
-      });
-
-      // S'il n'y a ni commandant ni officier, commencer par les adjudants
-      if (officiers.length === 0) {
-        hierarchy.push(...buildLevel2AndBelow(filteredUsers));
-      }
+      hierarchy.push(...buildLevel1AndBelow(filteredUsers));
     }
 
     setHierarchyData(hierarchy);
+  };
+
+  const buildLevel1AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
+    const nodes: HierarchyNode[] = [];
+
+    // Niveau 1: Officiers
+    const officiers = filteredUsers.filter(u => 
+      u.grade === 'lieutenant' || 
+      u.role === 'Officier'
+    );
+    
+    officiers.forEach(officier => {
+      nodes.push({
+        user: officier,
+        level: 1,
+        type: 'user',
+        children: buildLevel2AndBelow(filteredUsers)
+      });
+    });
+
+    // S'il n'y a pas d'officiers, directement niveau 2
+    if (officiers.length === 0) {
+      nodes.push(...buildLevel2AndBelow(filteredUsers));
+    }
+
+    return nodes;
   };
 
   const buildLevel2AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
@@ -248,7 +244,8 @@ export default function Organigrame() {
 
     // Niveau 2: Adjudant-Chef d'escadron
     const adjudantChefs = filteredUsers.filter(u => 
-      u.role.toLowerCase().includes('adjudant-chef') || u.role.toLowerCase().includes('adjudant_chef')
+      u.role.toLowerCase().includes('adjudant-chef') || 
+      u.role === 'Adjudant-Chef d\'escadron'
     );
     
     adjudantChefs.forEach(adjudantChef => {
@@ -260,24 +257,9 @@ export default function Organigrame() {
       });
     });
 
-    // Niveau 3: Adjudant d'escadron + Cadet Senior à l'administration
-    const level3Users = filteredUsers.filter(u => 
-      u.role.toLowerCase().includes('adjudant') && !u.role.toLowerCase().includes('chef') ||
-      u.role.toLowerCase().includes('senior') && u.role.toLowerCase().includes('administration')
-    );
-
-    level3Users.forEach(level3User => {
-      nodes.push({
-        user: level3User,
-        level: 3,
-        type: 'user',
-        children: buildSectionsAndLevel4(filteredUsers)
-      });
-    });
-
-    // Si pas de niveau 2 et 3, directement les sections
-    if (adjudantChefs.length === 0 && level3Users.length === 0) {
-      nodes.push(...buildSectionsAndLevel4(filteredUsers));
+    // S'il n'y a pas d'adjudant-chef, directement niveau 3
+    if (adjudantChefs.length === 0) {
+      nodes.push(...buildLevel3AndBelow(filteredUsers));
     }
 
     return nodes;
