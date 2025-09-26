@@ -230,6 +230,18 @@ export default function Admin() {
   });
   const [savingSection, setSavingSection] = useState(false);
 
+  // Gestion des sous-groupes
+  const [showSubGroupModal, setShowSubGroupModal] = useState(false);
+  const [editingSubGroup, setEditingSubGroup] = useState<SubGroup | null>(null);
+  const [subGroupForm, setSubGroupForm] = useState({
+    nom: '',
+    description: '',
+    section_id: '',
+    responsable_id: ''
+  });
+  const [savingSubGroup, setSavingSubGroup] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());  // Pour les sections expandues
+
   // Gestion des paramètres
   const [settings, setSettings] = useState({
     escadronName: '',
