@@ -111,10 +111,44 @@ export default function Organigrame() {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
-  // Vérifier l'authentification
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  // Gestionnaires de gestes pour zoom et pan
+  const pinchGestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      context.startScale = scale.value;
+    },
+    onActive: (event, context) => {
+      scale.value = Math.max(0.5, Math.min(3, context.startScale * event.scale));
+    },
+  });
+
+  const panGestureHandler = useAnimatedGestureHandler({
+    onStart: (_, context) => {
+      context.startX = translateX.value;
+      context.startY = translateY.value;
+    },
+    onActive: (event, context) => {
+      translateX.value = context.startX + event.translationX;
+      translateY.value = context.startY + event.translationY;
+    },
+  });
+
+  // Style animé pour la transformation
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+    };
+  });
+
+  // Fonction pour réinitialiser le zoom et la position
+  const resetTransform = () => {
+    scale.value = withSpring(1);
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+  };
 
   // Charger les données quand l'utilisateur est authentifié
   useEffect(() => {
