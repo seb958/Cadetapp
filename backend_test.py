@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """
-Test de création d'utilisateur avec rôle personnalisé
-Test spécifique pour vérifier la création d'utilisateurs avec des rôles personnalisés
+Tests pour l'assignation des responsables de section et vérification de l'organigrame
 """
 
 import requests
 import json
-import uuid
 from datetime import datetime
 
 # Configuration
@@ -14,261 +12,329 @@ BASE_URL = "https://squadron-app.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class CustomRoleUserTest:
+# IDs spécifiques mentionnés dans la demande
+CADET_COMMANDANT_ID = "434b7d13-f0d8-469a-aeec-f25b2e2fd3b7"
+SECTION_2_ID = "1f06b8a5-462a-457b-88c7-6cebf7a00bee"
+
+class TestResults:
     def __init__(self):
-        self.session = requests.Session()
-        self.auth_token = None
-        self.created_user_ids = []  # Pour nettoyer après les tests
+        self.tests_passed = 0
+        self.tests_failed = 0
+        self.errors = []
         
-    def authenticate(self):
-        """Authentification avec les credentials admin"""
-        print("🔐 Authentification en cours...")
+    def log_success(self, test_name):
+        print(f"✅ {test_name}")
+        self.tests_passed += 1
         
-        login_data = {
+    def log_error(self, test_name, error):
+        print(f"❌ {test_name}: {error}")
+        self.errors.append(f"{test_name}: {error}")
+        self.tests_failed += 1
+        
+    def summary(self):
+        total = self.tests_passed + self.tests_failed
+        print(f"\n📊 RÉSULTATS: {self.tests_passed}/{total} tests réussis")
+        if self.errors:
+            print("\n🔍 ERREURS DÉTAILLÉES:")
+            for error in self.errors:
+                print(f"  - {error}")
+
+def authenticate():
+    """Authentification avec les credentials admin"""
+    try:
+        response = requests.post(f"{BASE_URL}/auth/login", json={
             "username": ADMIN_USERNAME,
             "password": ADMIN_PASSWORD
-        }
-        
-        response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
+        })
         
         if response.status_code == 200:
             data = response.json()
-            self.auth_token = data["access_token"]
-            self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
-            print(f"✅ Authentification réussie pour {data['user']['prenom']} {data['user']['nom']}")
-            return True
+            return data["access_token"]
         else:
             print(f"❌ Échec authentification: {response.status_code} - {response.text}")
-            return False
+            return None
+    except Exception as e:
+        print(f"❌ Erreur authentification: {e}")
+        return None
+
+def get_headers(token):
+    """Retourne les headers avec le token d'authentification"""
+    return {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+def test_section_assignment(token, results):
+    """Test 1: Assignation responsable de section"""
+    print("\n🔧 TEST 1: ASSIGNATION RESPONSABLE DE SECTION")
     
-    def create_user_with_custom_role(self, nom, prenom, grade, role, email=None):
-        """Créer un utilisateur avec un rôle personnalisé"""
-        print(f"\n👤 Création utilisateur: {prenom} {nom} - Rôle: {role} - Grade: {grade}")
-        
-        # Générer un email unique si non fourni
-        if not email:
-            unique_id = str(uuid.uuid4())[:8]
-            email = f"{prenom.lower()}.{nom.lower()}.{unique_id}@test-escadron.fr"
-        
-        user_data = {
-            "nom": nom,
-            "prenom": prenom,
-            "email": email,
-            "grade": grade,
-            "role": role,
-            "section_id": None,
-            "subgroup_id": None,
-            "has_admin_privileges": False
-        }
-        
-        response = self.session.post(f"{BASE_URL}/users", json=user_data)
-        
-        if response.status_code == 200:
-            result = response.json()
-            user_id = result["user_id"]
-            username = result["username"]
-            self.created_user_ids.append(user_id)
-            print(f"✅ Utilisateur créé avec succès:")
-            print(f"   - ID: {user_id}")
-            print(f"   - Username: {username}")
-            print(f"   - Email: {email}")
-            return user_id, username
-        else:
-            print(f"❌ Échec création utilisateur: {response.status_code}")
-            print(f"   Réponse: {response.text}")
-            return None, None
+    headers = get_headers(token)
     
-    def get_users_list(self):
-        """Récupérer la liste des utilisateurs"""
-        print(f"\n📋 Récupération de la liste des utilisateurs...")
-        
-        response = self.session.get(f"{BASE_URL}/users")
-        
+    # Vérifier que le cadet commandant existe
+    try:
+        response = requests.get(f"{BASE_URL}/users", headers=headers)
         if response.status_code == 200:
             users = response.json()
-            print(f"✅ Liste récupérée: {len(users)} utilisateurs trouvés")
-            return users
+            cadet_commandant = next((u for u in users if u["id"] == CADET_COMMANDANT_ID), None)
+            
+            if cadet_commandant:
+                results.log_success(f"Cadet Commandant trouvé: {cadet_commandant['prenom']} {cadet_commandant['nom']}")
+            else:
+                results.log_error("Vérification Cadet Commandant", f"Utilisateur avec ID {CADET_COMMANDANT_ID} non trouvé")
+                return
         else:
-            print(f"❌ Échec récupération liste: {response.status_code} - {response.text}")
-            return []
+            results.log_error("Récupération utilisateurs", f"Status {response.status_code}")
+            return
+    except Exception as e:
+        results.log_error("Vérification Cadet Commandant", str(e))
+        return
     
-    def verify_user_in_list(self, user_id, expected_role, expected_grade):
-        """Vérifier qu'un utilisateur apparaît dans la liste avec le bon rôle et grade"""
-        print(f"\n🔍 Vérification utilisateur {user_id} dans la liste...")
-        
-        users = self.get_users_list()
-        
-        for user in users:
-            if user["id"] == user_id:
-                print(f"✅ Utilisateur trouvé:")
-                print(f"   - Nom: {user['prenom']} {user['nom']}")
-                print(f"   - Rôle: {user['role']}")
-                print(f"   - Grade: {user['grade']}")
-                
-                # Vérifications
-                role_ok = user["role"] == expected_role
-                grade_ok = user["grade"] == expected_grade
-                
-                if role_ok and grade_ok:
-                    print(f"✅ Rôle et grade corrects")
-                    return True
-                else:
-                    print(f"❌ Rôle ou grade incorrect:")
-                    print(f"   - Rôle attendu: {expected_role}, trouvé: {user['role']}")
-                    print(f"   - Grade attendu: {expected_grade}, trouvé: {user['grade']}")
-                    return False
-        
-        print(f"❌ Utilisateur {user_id} non trouvé dans la liste")
-        return False
+    # Vérifier que la section 2 existe
+    try:
+        response = requests.get(f"{BASE_URL}/sections", headers=headers)
+        if response.status_code == 200:
+            sections = response.json()
+            section_2 = next((s for s in sections if s["id"] == SECTION_2_ID), None)
+            
+            if section_2:
+                results.log_success(f"Section 2 trouvée: {section_2['nom']}")
+            else:
+                results.log_error("Vérification Section 2", f"Section avec ID {SECTION_2_ID} non trouvée")
+                return
+        else:
+            results.log_error("Récupération sections", f"Status {response.status_code}")
+            return
+    except Exception as e:
+        results.log_error("Vérification Section 2", str(e))
+        return
     
-    def delete_user(self, user_id):
-        """Supprimer un utilisateur de test"""
-        print(f"\n🗑️ Suppression utilisateur {user_id}...")
+    # Assigner le responsable à la section
+    try:
+        update_data = {
+            "nom": section_2["nom"],
+            "description": section_2.get("description"),
+            "responsable_id": CADET_COMMANDANT_ID
+        }
         
-        response = self.session.delete(f"{BASE_URL}/users/{user_id}")
+        response = requests.put(f"{BASE_URL}/sections/{SECTION_2_ID}", 
+                              json=update_data, headers=headers)
         
         if response.status_code == 200:
-            print(f"✅ Utilisateur supprimé avec succès")
-            return True
+            results.log_success("Assignation responsable de section réussie")
         else:
-            print(f"❌ Échec suppression: {response.status_code} - {response.text}")
-            return False
+            results.log_error("Assignation responsable", f"Status {response.status_code} - {response.text}")
+            return
+    except Exception as e:
+        results.log_error("Assignation responsable", str(e))
+        return
     
-    def cleanup_test_users(self):
-        """Nettoyer tous les utilisateurs de test créés"""
-        print(f"\n🧹 Nettoyage des utilisateurs de test...")
-        
-        deleted_count = 0
-        for user_id in self.created_user_ids:
-            if self.delete_user(user_id):
-                deleted_count += 1
-        
-        print(f"✅ Nettoyage terminé: {deleted_count}/{len(self.created_user_ids)} utilisateurs supprimés")
-        self.created_user_ids.clear()
+    # Vérifier l'assignation
+    try:
+        response = requests.get(f"{BASE_URL}/sections", headers=headers)
+        if response.status_code == 200:
+            sections = response.json()
+            section_2_updated = next((s for s in sections if s["id"] == SECTION_2_ID), None)
+            
+            if section_2_updated and section_2_updated.get("responsable_id") == CADET_COMMANDANT_ID:
+                results.log_success("Vérification assignation: Cadet Commandant bien assigné à Section 2")
+            else:
+                results.log_error("Vérification assignation", "L'assignation n'a pas été sauvegardée correctement")
+        else:
+            results.log_error("Vérification assignation", f"Status {response.status_code}")
+    except Exception as e:
+        results.log_error("Vérification assignation", str(e))
+
+def test_organizational_chart(token, results):
+    """Test 2: Récupération données organigrame"""
+    print("\n📊 TEST 2: RÉCUPÉRATION DONNÉES ORGANIGRAME")
     
-    def run_tests(self):
-        """Exécuter tous les tests"""
-        print("=" * 80)
-        print("🧪 TESTS DE CRÉATION D'UTILISATEUR AVEC RÔLE PERSONNALISÉ")
-        print("=" * 80)
-        
-        # Authentification
-        if not self.authenticate():
-            print("❌ Impossible de continuer sans authentification")
-            return False
-        
-        test_results = []
-        
-        # Test 1: Création utilisateur avec rôle "Adjudant-Chef d'escadron"
-        print("\n" + "=" * 60)
-        print("TEST 1: Création utilisateur avec rôle 'Adjudant-Chef d'escadron'")
-        print("=" * 60)
-        
-        user_id_1, username_1 = self.create_user_with_custom_role(
-            nom="Dupont",
-            prenom="Jean-Pierre",
-            grade="adjudant_1re_classe",
-            role="Adjudant-Chef d'escadron"
-        )
-        
-        if user_id_1:
-            # Vérifier que l'utilisateur apparaît dans la liste
-            verification_ok = self.verify_user_in_list(
-                user_id_1, 
-                "Adjudant-Chef d'escadron", 
-                "adjudant_1re_classe"
-            )
-            test_results.append(("Test 1 - Création + Vérification", verification_ok))
+    headers = get_headers(token)
+    
+    # Récupérer tous les utilisateurs
+    try:
+        response = requests.get(f"{BASE_URL}/users", headers=headers)
+        if response.status_code == 200:
+            users = response.json()
+            results.log_success(f"Récupération utilisateurs: {len(users)} utilisateurs trouvés")
+            
+            # Analyser la hiérarchie
+            hierarchy_analysis = {
+                "niveau_0_admin": [],
+                "niveau_2_commandant": [],
+                "niveau_3_sergents": [],
+                "autres": []
+            }
+            
+            for user in users:
+                role = user.get("role", "")
+                grade = user.get("grade", "")
+                
+                # Niveau 0: Admin/Encadrement
+                if role in ["cadet_admin", "encadrement"] or "admin" in role.lower():
+                    hierarchy_analysis["niveau_0_admin"].append({
+                        "nom": f"{user['prenom']} {user['nom']}",
+                        "role": role,
+                        "grade": grade
+                    })
+                # Niveau 2: Adjudant-Chef d'escadron
+                elif "adjudant_chef" in role.lower() or "commandant" in role.lower():
+                    hierarchy_analysis["niveau_2_commandant"].append({
+                        "nom": f"{user['prenom']} {user['nom']}",
+                        "role": role,
+                        "grade": grade
+                    })
+                # Niveau 3: Sergents/Adjudant d'escadron
+                elif "sergent" in role.lower() or "adjudant_escadron" in role.lower():
+                    hierarchy_analysis["niveau_3_sergents"].append({
+                        "nom": f"{user['prenom']} {user['nom']}",
+                        "role": role,
+                        "grade": grade
+                    })
+                else:
+                    hierarchy_analysis["autres"].append({
+                        "nom": f"{user['prenom']} {user['nom']}",
+                        "role": role,
+                        "grade": grade
+                    })
+            
+            # Afficher l'analyse
+            print(f"  📋 Niveau 0 (Admin/Encadrement): {len(hierarchy_analysis['niveau_0_admin'])} utilisateurs")
+            for user in hierarchy_analysis["niveau_0_admin"]:
+                print(f"    - {user['nom']} ({user['role']}, {user['grade']})")
+            
+            print(f"  📋 Niveau 2 (Commandant): {len(hierarchy_analysis['niveau_2_commandant'])} utilisateurs")
+            for user in hierarchy_analysis["niveau_2_commandant"]:
+                print(f"    - {user['nom']} ({user['role']}, {user['grade']})")
+            
+            print(f"  📋 Niveau 3 (Sergents): {len(hierarchy_analysis['niveau_3_sergents'])} utilisateurs")
+            for user in hierarchy_analysis["niveau_3_sergents"]:
+                print(f"    - {user['nom']} ({user['role']}, {user['grade']})")
+            
+            print(f"  📋 Autres: {len(hierarchy_analysis['autres'])} utilisateurs")
+            for user in hierarchy_analysis["autres"]:
+                print(f"    - {user['nom']} ({user['role']}, {user['grade']})")
+            
+            results.log_success("Analyse hiérarchique complétée")
+            
         else:
-            test_results.append(("Test 1 - Création", False))
-        
-        # Test 2: Création utilisateur avec rôle "Adjudant d'escadron"
-        print("\n" + "=" * 60)
-        print("TEST 2: Création utilisateur avec rôle 'Adjudant d'escadron'")
-        print("=" * 60)
-        
-        user_id_2, username_2 = self.create_user_with_custom_role(
-            nom="Martin",
-            prenom="Sophie",
-            grade="adjudant_1re_classe",
-            role="Adjudant d'escadron"
-        )
-        
-        if user_id_2:
-            # Vérifier que l'utilisateur apparaît dans la liste
-            verification_ok = self.verify_user_in_list(
-                user_id_2, 
-                "Adjudant d'escadron", 
-                "adjudant_1re_classe"
-            )
-            test_results.append(("Test 2 - Création + Vérification", verification_ok))
+            results.log_error("Récupération utilisateurs", f"Status {response.status_code}")
+            return
+    except Exception as e:
+        results.log_error("Récupération utilisateurs", str(e))
+        return
+    
+    # Récupérer toutes les sections
+    try:
+        response = requests.get(f"{BASE_URL}/sections", headers=headers)
+        if response.status_code == 200:
+            sections = response.json()
+            results.log_success(f"Récupération sections: {len(sections)} sections trouvées")
+            
+            # Analyser les sections et leurs responsables
+            print(f"  📋 Analyse des sections:")
+            for section in sections:
+                responsable_info = "Aucun responsable"
+                if section.get("responsable_id"):
+                    # Trouver le responsable dans la liste des utilisateurs
+                    responsable = next((u for u in users if u["id"] == section["responsable_id"]), None)
+                    if responsable:
+                        responsable_info = f"{responsable['prenom']} {responsable['nom']} ({responsable['role']})"
+                
+                print(f"    - {section['nom']} (ID: {section['id']}) - Responsable: {responsable_info}")
+            
+            results.log_success("Analyse des sections complétée")
+            
         else:
-            test_results.append(("Test 2 - Création", False))
-        
-        # Test 3: Vérification que les deux utilisateurs sont bien dans la liste
-        print("\n" + "=" * 60)
-        print("TEST 3: Vérification présence des deux utilisateurs")
-        print("=" * 60)
-        
-        users = self.get_users_list()
-        custom_role_users = [
-            user for user in users 
-            if user["role"] in ["Adjudant-Chef d'escadron", "Adjudant d'escadron"]
-        ]
-        
-        print(f"📊 Utilisateurs avec rôles personnalisés trouvés: {len(custom_role_users)}")
-        for user in custom_role_users:
-            print(f"   - {user['prenom']} {user['nom']} ({user['role']})")
-        
-        both_found = len(custom_role_users) >= 2
-        test_results.append(("Test 3 - Présence des deux utilisateurs", both_found))
-        
-        # Résumé des tests
-        print("\n" + "=" * 80)
-        print("📊 RÉSUMÉ DES TESTS")
-        print("=" * 80)
-        
-        passed_tests = 0
-        total_tests = len(test_results)
-        
-        for test_name, result in test_results:
-            status = "✅ RÉUSSI" if result else "❌ ÉCHOUÉ"
-            print(f"{status} - {test_name}")
-            if result:
-                passed_tests += 1
-        
-        success_rate = (passed_tests / total_tests) * 100
-        print(f"\n🎯 Taux de réussite: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
-        
-        # Nettoyage
-        self.cleanup_test_users()
-        
-        return success_rate == 100.0
+            results.log_error("Récupération sections", f"Status {response.status_code}")
+    except Exception as e:
+        results.log_error("Récupération sections", str(e))
+
+def test_structure_validation(token, results):
+    """Test 3: Validation structure"""
+    print("\n✅ TEST 3: VALIDATION STRUCTURE")
+    
+    headers = get_headers(token)
+    
+    # Vérifier que Section 1 a Emma Leroy comme responsable
+    try:
+        response = requests.get(f"{BASE_URL}/sections", headers=headers)
+        if response.status_code == 200:
+            sections = response.json()
+            section_1 = next((s for s in sections if "1" in s["nom"]), None)
+            
+            if section_1:
+                if section_1.get("responsable_id"):
+                    # Récupérer les infos du responsable
+                    users_response = requests.get(f"{BASE_URL}/users", headers=headers)
+                    if users_response.status_code == 200:
+                        users = users_response.json()
+                        responsable = next((u for u in users if u["id"] == section_1["responsable_id"]), None)
+                        
+                        if responsable:
+                            if "emma" in responsable["prenom"].lower() and "leroy" in responsable["nom"].lower():
+                                results.log_success(f"Section 1 a bien Emma Leroy comme responsable")
+                            else:
+                                results.log_error("Validation Section 1", f"Responsable trouvé: {responsable['prenom']} {responsable['nom']} (attendu: Emma Leroy)")
+                        else:
+                            results.log_error("Validation Section 1", "Responsable non trouvé dans la liste des utilisateurs")
+                    else:
+                        results.log_error("Validation Section 1", "Impossible de récupérer la liste des utilisateurs")
+                else:
+                    results.log_error("Validation Section 1", "Section 1 n'a pas de responsable assigné")
+            else:
+                results.log_error("Validation Section 1", "Section 1 non trouvée")
+        else:
+            results.log_error("Validation Section 1", f"Status {response.status_code}")
+    except Exception as e:
+        results.log_error("Validation Section 1", str(e))
+    
+    # Vérifier que les utilisateurs créés sont actifs
+    try:
+        response = requests.get(f"{BASE_URL}/users", headers=headers)
+        if response.status_code == 200:
+            users = response.json()
+            active_users = [u for u in users if u.get("actif", False)]
+            inactive_users = [u for u in users if not u.get("actif", False)]
+            
+            results.log_success(f"Utilisateurs actifs: {len(active_users)}/{len(users)}")
+            
+            if inactive_users:
+                print(f"  ⚠️ Utilisateurs inactifs trouvés:")
+                for user in inactive_users:
+                    print(f"    - {user['prenom']} {user['nom']} ({user.get('role', 'N/A')})")
+            
+        else:
+            results.log_error("Validation utilisateurs actifs", f"Status {response.status_code}")
+    except Exception as e:
+        results.log_error("Validation utilisateurs actifs", str(e))
 
 def main():
-    """Fonction principale"""
-    tester = CustomRoleUserTest()
+    """Fonction principale de test"""
+    print("🚀 DÉBUT DES TESTS - ASSIGNATION RESPONSABLES ET ORGANIGRAME")
+    print(f"📡 Base URL: {BASE_URL}")
+    print(f"👤 Utilisateur: {ADMIN_USERNAME}")
     
-    try:
-        success = tester.run_tests()
-        
-        if success:
-            print("\n🎉 TOUS LES TESTS SONT PASSÉS!")
-            print("✅ Le système de création d'utilisateurs avec rôles personnalisés fonctionne correctement")
-        else:
-            print("\n⚠️ CERTAINS TESTS ONT ÉCHOUÉ")
-            print("❌ Des problèmes ont été détectés dans le système")
-            
-    except Exception as e:
-        print(f"\n💥 ERREUR CRITIQUE: {str(e)}")
-        # Essayer de nettoyer même en cas d'erreur
-        try:
-            tester.cleanup_test_users()
-        except:
-            pass
-        return False
+    results = TestResults()
     
-    return success
+    # Authentification
+    print("\n🔐 AUTHENTIFICATION")
+    token = authenticate()
+    if not token:
+        print("❌ Impossible de continuer sans authentification")
+        return
+    
+    results.log_success("Authentification réussie")
+    
+    # Exécuter les tests
+    test_section_assignment(token, results)
+    test_organizational_chart(token, results)
+    test_structure_validation(token, results)
+    
+    # Résumé final
+    results.summary()
+    
+    return results.tests_failed == 0
 
 if __name__ == "__main__":
-    main()
+    success = main()
+    exit(0 if success else 1)
