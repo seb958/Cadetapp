@@ -87,13 +87,6 @@ export default function Organigrame() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [hierarchyData, setHierarchyData] = useState<HierarchyNode[]>([]);
 
-  // Variables pour le zoom et pan
-  const scale = useSharedValue(1);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const originX = useSharedValue(0);
-  const originY = useSharedValue(0);
-
   // Obtenir les dimensions de l'écran
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
