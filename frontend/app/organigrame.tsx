@@ -483,11 +483,11 @@ export default function Organigrame() {
 
   // Nouvelle fonction de rendu horizontal
   function renderHorizontalOrganigrame() {
-    const orgWidth = Math.max(screenWidth * 2, hierarchyData.length * 250);
-    const orgHeight = Math.max(screenHeight, 600);
+    const orgWidth = Math.max(800, hierarchyData.length * 250);
+    const orgHeight = 600;
 
     return (
-      <View style={[styles.organigrammeContent, { width: orgWidth, height: orgHeight }]}>
+      <View style={[{ width: orgWidth, height: orgHeight, position: 'relative', backgroundColor: 'white' }]}>
         {/* Lignes de connexion */}
         {renderConnectionLines()}
         
