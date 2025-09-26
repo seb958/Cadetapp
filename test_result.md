@@ -294,9 +294,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système de gestion des rôles et permissions"
-    - "Système de filtres utilisateurs"
-    - "Support privilèges administrateur utilisateurs"
+    - "Système de gestion des sous-groupes"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
