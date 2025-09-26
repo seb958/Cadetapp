@@ -295,11 +295,12 @@ export default function Organigrame() {
   const buildSectionsAndLevel4 = (filteredUsers: User[]): HierarchyNode[] => {
     const nodes: HierarchyNode[] = [];
 
-    // Niveau 4: Sections + Cadet à l'administration
+    // Niveau 4: Cadet à l'administration (pas senior ni adjoint)
     const adminLevel4 = filteredUsers.filter(u => 
-      u.role.toLowerCase().includes('administration') && 
-      !u.role.toLowerCase().includes('senior') &&
-      !u.role.toLowerCase().includes('adjoint')
+      (u.role.toLowerCase().includes('administration') && 
+       !u.role.toLowerCase().includes('senior') &&
+       !u.role.toLowerCase().includes('adjoint')) ||
+      u.role === 'cadet_responsible' // Ancien système pour les responsables
     );
 
     adminLevel4.forEach(adminUser => {
@@ -311,7 +312,7 @@ export default function Organigrame() {
       });
     });
 
-    // Sections avec leurs sous-groupes
+    // Sections avec leurs sous-groupes et responsables
     sections.forEach(section => {
       const sectionUsers = filteredUsers.filter(u => u.section_id === section.id);
       const sectionSubGroups = subGroups.filter(sg => sg.section_id === section.id);
@@ -326,10 +327,12 @@ export default function Organigrame() {
         children: []
       };
 
+      // Construire les enfants seulement si expandé ou pour forcer l'affichage
       if (sectionNode.isExpanded) {
-        // Niveau 5: Sous-groupes + Cadet adjoint à l'administration
+        // Niveau 5: Cadet adjoint à l'administration
         const adminLevel5 = filteredUsers.filter(u => 
-          u.role.toLowerCase().includes('adjoint') && u.role.toLowerCase().includes('administration')
+          (u.role.toLowerCase().includes('adjoint') && u.role.toLowerCase().includes('administration')) ||
+          u.role === 'Cadet Adjoint a l\'Administration'
         );
 
         adminLevel5.forEach(adminUser => {
@@ -341,7 +344,7 @@ export default function Organigrame() {
           });
         });
 
-        // Sous-groupes
+        // Sous-groupes dans cette section
         sectionSubGroups.forEach(subgroup => {
           const subgroupUsers = sectionUsers.filter(u => u.subgroup_id === subgroup.id);
           const subgroupNode: HierarchyNode = {
@@ -353,8 +356,8 @@ export default function Organigrame() {
             children: []
           };
 
+          // Niveau 6: Cadets individuels dans le sous-groupe
           if (subgroupNode.isExpanded) {
-            // Niveau 6: Cadets individuels
             subgroupUsers.forEach(cadet => {
               subgroupNode.children.push({
                 user: cadet,
