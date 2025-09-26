@@ -352,7 +352,7 @@ export default function Admin() {
       loadRoles()
     ]);
     
-    // Charger les sous-groupes après les sections
+    // Charger les sous-groupes APRÈS les sections (dépendance)
     await loadSubGroups();
     
     // Puis charger les options de filtres (qui peuvent utiliser les données de fallback)
