@@ -2915,7 +2915,24 @@ export default function Admin() {
                 </Text>
               </TouchableOpacity>
 
-              {users.filter(u => ['cadet_responsible', 'cadet_admin', 'encadrement'].includes(u.role)).map((user) => (
+              {users.filter(u => {
+                // Inclure les anciens rôles système
+                if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(u.role)) {
+                  return true;
+                }
+                // Inclure les nouveaux rôles de responsables de section
+                const responsableRoles = [
+                  'sergent de section',
+                  'commandant de section', 
+                  'adjudant-chef d\'escadron',
+                  'adjudant d\'escadron',
+                  'officier'
+                ];
+                return responsableRoles.some(role => 
+                  u.role.toLowerCase().includes(role.toLowerCase()) || 
+                  u.role.toLowerCase() === role.toLowerCase()
+                );
+              }).map((user) => (
                 <TouchableOpacity
                   key={user.id}
                   style={[
