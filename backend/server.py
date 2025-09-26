@@ -160,6 +160,7 @@ class UserInvitation(BaseModel):
     grade: Grade
     role: UserRole
     section_id: Optional[str] = None
+    subgroup_id: Optional[str] = None
     has_admin_privileges: bool = False
 
 class SetPasswordRequest(BaseModel):
@@ -173,6 +174,7 @@ class UserUpdate(BaseModel):
     grade: Optional[Grade] = None
     role: Optional[UserRole] = None
     section_id: Optional[str] = None
+    subgroup_id: Optional[str] = None
     actif: Optional[bool] = None
     has_admin_privileges: Optional[bool] = None
 
