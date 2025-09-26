@@ -165,9 +165,9 @@ export default function Organigrame() {
   // Reconstruire la hiérarchie quand les données changent
   useEffect(() => {
     if (users.length > 0) {
-      buildHierarchy();
+      buildHorizontalHierarchy();
     }
-  }, [users, sections, subGroups, searchText, expandedNodes]); // Ajouter expandedNodes comme dépendance
+  }, [users, sections, subGroups, searchText, expandedNodes]);
 
   const checkAuth = async () => {
     try {
