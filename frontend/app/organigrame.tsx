@@ -203,7 +203,7 @@ export default function Organigrame() {
       );
     }
 
-    const levels: LevelData[] = [];
+    const allNodes: HierarchyNode[] = [];
     const cardWidth = 200;
     const cardHeight = 80;
     const horizontalSpacing = 250;
@@ -216,19 +216,18 @@ export default function Organigrame() {
       u.role === 'Commandant'
     );
     
-    if (commandants.length > 0) {
-      const level0Nodes = commandants.map((commandant, index) => ({
+    commandants.forEach((commandant, index) => {
+      allNodes.push({
         user: commandant,
         level: 0,
-        type: 'user' as const,
+        type: 'user',
         children: [],
         x: index * horizontalSpacing,
         y: 0,
         width: cardWidth,
         height: cardHeight
-      }));
-      levels.push({ level: 0, nodes: level0Nodes });
-    }
+      });
+    });
 
     // Niveau 1: Officiers
     const officiers = filteredUsers.filter(u => 
@@ -236,19 +235,18 @@ export default function Organigrame() {
       u.role === 'Officier'
     );
     
-    if (officiers.length > 0) {
-      const level1Nodes = officiers.map((officier, index) => ({
+    officiers.forEach((officier, index) => {
+      allNodes.push({
         user: officier,
         level: 1,
-        type: 'user' as const,
+        type: 'user',
         children: [],
         x: index * horizontalSpacing,
         y: verticalSpacing,
         width: cardWidth,
         height: cardHeight
-      }));
-      levels.push({ level: 1, nodes: level1Nodes });
-    }
+      });
+    });
 
     // Niveau 2: Adjudant-Chef d'escadron
     const adjudantChefs = filteredUsers.filter(u => 
@@ -256,52 +254,48 @@ export default function Organigrame() {
       u.role === 'Adjudant-Chef d\'escadron'
     );
     
-    if (adjudantChefs.length > 0) {
-      const level2Nodes = adjudantChefs.map((adjudantChef, index) => ({
+    adjudantChefs.forEach((adjudantChef, index) => {
+      allNodes.push({
         user: adjudantChef,
         level: 2,
-        type: 'user' as const,
+        type: 'user',
         children: [],
         x: index * horizontalSpacing,
         y: verticalSpacing * 2,
         width: cardWidth,
         height: cardHeight
-      }));
-      levels.push({ level: 2, nodes: level2Nodes });
-    }
+      });
+    });
 
-    // Niveau 3: Adjudant d'escadron + Cadet Senior à l'administration
+    // Niveau 3: Adjudant d'escadron + Cadet Admin (ancien système)
     const level3Users = filteredUsers.filter(u => 
       (u.role.toLowerCase().includes('adjudant') && !u.role.toLowerCase().includes('chef')) ||
       u.role === 'Adjudant d\'escadron' ||
       (u.role.toLowerCase().includes('senior') && u.role.toLowerCase().includes('administration')) ||
-      u.role === 'cadet_admin'
+      u.role === 'cadet_admin' // Important: inclure les anciens cadet_admin
     );
 
-    if (level3Users.length > 0) {
-      const level3Nodes = level3Users.map((level3User, index) => ({
+    level3Users.forEach((level3User, index) => {
+      allNodes.push({
         user: level3User,
         level: 3,
-        type: 'user' as const,
+        type: 'user',
         children: [],
         x: index * horizontalSpacing,
         y: verticalSpacing * 3,
         width: cardWidth,
         height: cardHeight
-      }));
-      levels.push({ level: 3, nodes: level3Nodes });
-    }
+      });
+    });
 
-    // Niveau 4: Sections (boîtes expandables)
-    const level4Nodes: HierarchyNode[] = [];
+    // Niveau 4: Sections (TOUJOURS afficher toutes les sections)
     let level4X = 0;
-
     sections.forEach((section, sectionIndex) => {
       const sectionUsers = filteredUsers.filter(u => u.section_id === section.id);
       const sectionSubGroups = subGroups.filter(sg => sg.section_id === section.id);
       const totalMembers = sectionUsers.length;
 
-      const sectionNode: HierarchyNode = {
+      allNodes.push({
         section: section,
         level: 4,
         type: 'section',
@@ -312,23 +306,12 @@ export default function Organigrame() {
         y: verticalSpacing * 4,
         width: cardWidth + 50, // Un peu plus large pour les sections
         height: cardHeight
-      };
+      });
 
       level4X += horizontalSpacing;
-      level4Nodes.push(sectionNode);
     });
 
-    if (level4Nodes.length > 0) {
-      levels.push({ level: 4, nodes: level4Nodes });
-    }
-
-    // Convertir en structure plate pour l'affichage
-    const flatHierarchy: HierarchyNode[] = [];
-    levels.forEach(level => {
-      flatHierarchy.push(...level.nodes);
-    });
-
-    setHierarchyData(flatHierarchy);
+    setHierarchyData(allNodes);
   };
 
   const toggleNode = (nodeId: string) => {
