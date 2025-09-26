@@ -196,6 +196,26 @@ class SectionCreate(BaseModel):
     description: Optional[str] = None
     responsable_id: Optional[str] = None
 
+# Modèles pour les sous-groupes
+class SubGroup(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    section_id: str  # ID de la section parente
+    responsable_id: Optional[str] = None  # Commandant de section
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SubGroupCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    section_id: str
+    responsable_id: Optional[str] = None
+
+class SubGroupUpdate(BaseModel):
+    nom: Optional[str] = None
+    description: Optional[str] = None
+    responsable_id: Optional[str] = None
+
 # Modèles pour les présences
 class Presence(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
