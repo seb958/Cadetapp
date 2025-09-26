@@ -177,6 +177,10 @@ export default function Index() {
     Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
   };
 
+  const navigateToOrganigrame = () => {
+    router.push('/organigrame');
+  };
+
   const navigateToReports = () => {
     // TODO: Implémenter plus tard
     Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
