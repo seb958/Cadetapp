@@ -244,7 +244,8 @@ export default function Organigrame() {
     }
   };
 
-  const buildHierarchy = () => {
+  // Nouvelle fonction pour construire une hiérarchie horizontale par niveaux
+  const buildHorizontalHierarchy = () => {
     let filteredUsers = users;
     
     // Filtrer par recherche si nécessaire
@@ -258,7 +259,11 @@ export default function Organigrame() {
       );
     }
 
-    const hierarchy: HierarchyNode[] = [];
+    const levels: LevelData[] = [];
+    const cardWidth = 200;
+    const cardHeight = 80;
+    const horizontalSpacing = 250;
+    const verticalSpacing = 120;
 
     // Niveau 0: Commandant
     const commandants = filteredUsers.filter(u => 
@@ -267,27 +272,19 @@ export default function Organigrame() {
       u.role === 'Commandant'
     );
     
-    commandants.forEach(commandant => {
-      const commandantNode: HierarchyNode = {
+    if (commandants.length > 0) {
+      const level0Nodes = commandants.map((commandant, index) => ({
         user: commandant,
         level: 0,
-        type: 'user',
-        children: buildLevel1AndBelow(filteredUsers)
-      };
-
-      hierarchy.push(commandantNode);
-    });
-
-    // S'il n'y a pas de commandant, commencer par les officiers/niveau 1
-    if (commandants.length === 0) {
-      hierarchy.push(...buildLevel1AndBelow(filteredUsers));
+        type: 'user' as const,
+        children: [],
+        x: index * horizontalSpacing,
+        y: 0,
+        width: cardWidth,
+        height: cardHeight
+      }));
+      levels.push({ level: 0, nodes: level0Nodes });
     }
-
-    setHierarchyData(hierarchy);
-  };
-
-  const buildLevel1AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
-    const nodes: HierarchyNode[] = [];
 
     // Niveau 1: Officiers
     const officiers = filteredUsers.filter(u => 
@@ -295,25 +292,19 @@ export default function Organigrame() {
       u.role === 'Officier'
     );
     
-    officiers.forEach(officier => {
-      nodes.push({
+    if (officiers.length > 0) {
+      const level1Nodes = officiers.map((officier, index) => ({
         user: officier,
         level: 1,
-        type: 'user',
-        children: buildLevel2AndBelow(filteredUsers)
-      });
-    });
-
-    // S'il n'y a pas d'officiers, directement niveau 2
-    if (officiers.length === 0) {
-      nodes.push(...buildLevel2AndBelow(filteredUsers));
+        type: 'user' as const,
+        children: [],
+        x: index * horizontalSpacing,
+        y: verticalSpacing,
+        width: cardWidth,
+        height: cardHeight
+      }));
+      levels.push({ level: 1, nodes: level1Nodes });
     }
-
-    return nodes;
-  };
-
-  const buildLevel2AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
-    const nodes: HierarchyNode[] = [];
 
     // Niveau 2: Adjudant-Chef d'escadron
     const adjudantChefs = filteredUsers.filter(u => 
@@ -321,72 +312,47 @@ export default function Organigrame() {
       u.role === 'Adjudant-Chef d\'escadron'
     );
     
-    adjudantChefs.forEach(adjudantChef => {
-      nodes.push({
+    if (adjudantChefs.length > 0) {
+      const level2Nodes = adjudantChefs.map((adjudantChef, index) => ({
         user: adjudantChef,
         level: 2,
-        type: 'user',
-        children: buildLevel3AndBelow(filteredUsers)
-      });
-    });
-
-    // S'il n'y a pas d'adjudant-chef, directement niveau 3
-    if (adjudantChefs.length === 0) {
-      nodes.push(...buildLevel3AndBelow(filteredUsers));
+        type: 'user' as const,
+        children: [],
+        x: index * horizontalSpacing,
+        y: verticalSpacing * 2,
+        width: cardWidth,
+        height: cardHeight
+      }));
+      levels.push({ level: 2, nodes: level2Nodes });
     }
 
-    return nodes;
-  };
-
-  const buildLevel3AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
-    const nodes: HierarchyNode[] = [];
-
-    // Niveau 3: Adjudant d'escadron + Cadet Senior à l'administration  
+    // Niveau 3: Adjudant d'escadron + Cadet Senior à l'administration
     const level3Users = filteredUsers.filter(u => 
       (u.role.toLowerCase().includes('adjudant') && !u.role.toLowerCase().includes('chef')) ||
       u.role === 'Adjudant d\'escadron' ||
       (u.role.toLowerCase().includes('senior') && u.role.toLowerCase().includes('administration')) ||
-      u.role === 'cadet_admin' // Ancien système
+      u.role === 'cadet_admin'
     );
 
-    level3Users.forEach(level3User => {
-      nodes.push({
+    if (level3Users.length > 0) {
+      const level3Nodes = level3Users.map((level3User, index) => ({
         user: level3User,
         level: 3,
-        type: 'user',
-        children: buildSectionsAndLevel4(filteredUsers)
-      });
-    });
-
-    // S'il n'y a pas de niveau 3, directement les sections
-    if (level3Users.length === 0) {
-      nodes.push(...buildSectionsAndLevel4(filteredUsers));
+        type: 'user' as const,
+        children: [],
+        x: index * horizontalSpacing,
+        y: verticalSpacing * 3,
+        width: cardWidth,
+        height: cardHeight
+      }));
+      levels.push({ level: 3, nodes: level3Nodes });
     }
 
-    return nodes;
-  };
-  const buildSectionsAndLevel4 = (filteredUsers: User[]): HierarchyNode[] => {
-    const nodes: HierarchyNode[] = [];
+    // Niveau 4: Sections (boîtes expandables)
+    const level4Nodes: HierarchyNode[] = [];
+    let level4X = 0;
 
-    // Niveau 4: Cadet à l'administration (pas senior ni adjoint)
-    const adminLevel4 = filteredUsers.filter(u => 
-      (u.role.toLowerCase().includes('administration') && 
-       !u.role.toLowerCase().includes('senior') &&
-       !u.role.toLowerCase().includes('adjoint')) ||
-      u.role === 'cadet_responsible' // Ancien système pour les responsables
-    );
-
-    adminLevel4.forEach(adminUser => {
-      nodes.push({
-        user: adminUser,
-        level: 4,
-        type: 'user',
-        children: []
-      });
-    });
-
-    // Sections avec leurs sous-groupes et responsables
-    sections.forEach(section => {
+    sections.forEach((section, sectionIndex) => {
       const sectionUsers = filteredUsers.filter(u => u.section_id === section.id);
       const sectionSubGroups = subGroups.filter(sg => sg.section_id === section.id);
       const totalMembers = sectionUsers.length;
@@ -397,69 +363,28 @@ export default function Organigrame() {
         type: 'section',
         memberCount: totalMembers,
         isExpanded: expandedNodes.has(`section-${section.id}`),
-        children: []
+        children: [],
+        x: level4X,
+        y: verticalSpacing * 4,
+        width: cardWidth + 50, // Un peu plus large pour les sections
+        height: cardHeight
       };
 
-      // Construire les enfants seulement si expandé ou pour forcer l'affichage
-      if (sectionNode.isExpanded) {
-        // Niveau 5: Cadet adjoint à l'administration
-        const adminLevel5 = filteredUsers.filter(u => 
-          (u.role.toLowerCase().includes('adjoint') && u.role.toLowerCase().includes('administration')) ||
-          u.role === 'Cadet Adjoint a l\'Administration'
-        );
-
-        adminLevel5.forEach(adminUser => {
-          sectionNode.children.push({
-            user: adminUser,
-            level: 5,
-            type: 'user',
-            children: []
-          });
-        });
-
-        // Sous-groupes dans cette section
-        sectionSubGroups.forEach(subgroup => {
-          const subgroupUsers = sectionUsers.filter(u => u.subgroup_id === subgroup.id);
-          const subgroupNode: HierarchyNode = {
-            subgroup: subgroup,
-            level: 5,
-            type: 'subgroup',
-            memberCount: subgroupUsers.length,
-            isExpanded: expandedNodes.has(`subgroup-${subgroup.id}`),
-            children: []
-          };
-
-          // Niveau 6: Cadets individuels dans le sous-groupe
-          if (subgroupNode.isExpanded) {
-            subgroupUsers.forEach(cadet => {
-              subgroupNode.children.push({
-                user: cadet,
-                level: 6,
-                type: 'user',
-                children: []
-              });
-            });
-          }
-
-          sectionNode.children.push(subgroupNode);
-        });
-
-        // Cadets directement dans la section (sans sous-groupe)
-        const directSectionUsers = sectionUsers.filter(u => !u.subgroup_id);
-        directSectionUsers.forEach(cadet => {
-          sectionNode.children.push({
-            user: cadet,
-            level: 5,
-            type: 'user',
-            children: []
-          });
-        });
-      }
-
-      nodes.push(sectionNode);
+      level4X += horizontalSpacing;
+      level4Nodes.push(sectionNode);
     });
 
-    return nodes;
+    if (level4Nodes.length > 0) {
+      levels.push({ level: 4, nodes: level4Nodes });
+    }
+
+    // Convertir en structure plate pour l'affichage
+    const flatHierarchy: HierarchyNode[] = [];
+    levels.forEach(level => {
+      flatHierarchy.push(...level.nodes);
+    });
+
+    setHierarchyData(flatHierarchy);
   };
 
   const toggleNode = (nodeId: string) => {
