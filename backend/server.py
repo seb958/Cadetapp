@@ -675,6 +675,7 @@ async def create_user(
         "role": user.role,
         "grade": user.grade,
         "section_id": user.section_id,
+        "subgroup_id": user.subgroup_id,  # Sous-groupe optionnel
         "actif": True,  # 🔥 TOUJOURS ACTIF lors de la création par admin
         "has_admin_privileges": user.has_admin_privileges,
         "created_at": datetime.utcnow()
