@@ -302,10 +302,10 @@ export default function Organigrame() {
       const sectionSubGroups = subGroups.filter(sg => sg.section_id === section.id);
       const totalMembers = sectionUsers.length;
 
-      allNodes.push({
+      const sectionNode = {
         section: section,
         level: 4,
-        type: 'section',
+        type: 'section' as const,
         memberCount: totalMembers,
         isExpanded: expandedNodes.has(`section-${section.id}`),
         children: [],
@@ -313,11 +313,18 @@ export default function Organigrame() {
         y: verticalSpacing * 4,
         width: cardWidth + 50, // Un peu plus large pour les sections
         height: cardHeight
-      });
-
+      };
+      
+      // Debug log pour voir si les sections sont ajoutées
+      console.log(`DEBUG: Ajout section "${section.nom}" à la position x=${level4X}, y=${verticalSpacing * 4}, membres=${totalMembers}`);
+      
+      allNodes.push(sectionNode);
       level4X += horizontalSpacing;
     });
 
+    console.log(`DEBUG: Total nœuds dans hierarchyData: ${allNodes.length}`);
+    console.log(`DEBUG: Sections trouvées: ${sections.length}`);
+    
     setHierarchyData(allNodes);
   };
 
