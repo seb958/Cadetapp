@@ -808,6 +808,24 @@ async def update_user(
                     detail="Section non trouvée"
                 )
         update_data["section_id"] = user_update.section_id
+    if user_update.subgroup_id is not None:
+        # Vérifier que le sous-groupe existe si fourni
+        if user_update.subgroup_id:
+            subgroup = await db.subgroups.find_one({"id": user_update.subgroup_id})
+            if not subgroup:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Sous-groupe non trouvé"
+                )
+            # Vérifier que le sous-groupe appartient à la section de l'utilisateur
+            if update_data.get("section_id") or existing_user.get("section_id"):
+                expected_section_id = update_data.get("section_id") or existing_user.get("section_id")
+                if subgroup["section_id"] != expected_section_id:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Le sous-groupe doit appartenir à la section de l'utilisateur"
+                    )
+        update_data["subgroup_id"] = user_update.subgroup_id
     if user_update.actif is not None:
         update_data["actif"] = user_update.actif
     if user_update.has_admin_privileges is not None:
