@@ -437,6 +437,31 @@ export default function Admin() {
     }
   };
 
+  const loadSubGroups = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      // Charger tous les sous-groupes de toutes les sections
+      let allSubGroups: SubGroup[] = [];
+      
+      for (const section of sections) {
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sections/${section.id}/subgroups`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          allSubGroups = [...allSubGroups, ...data];
+        }
+      }
+      
+      setSubGroups(allSubGroups);
+    } catch (error) {
+      console.error('Erreur lors du chargement des sous-groupes:', error);
+    }
+  };
+
   const loadActivities = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
