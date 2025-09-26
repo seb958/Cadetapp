@@ -441,12 +441,17 @@ export default function Organigrame() {
   };
 
   const renderHierarchyNode = (node: HierarchyNode, index: number) => {
-    const indentLevel = node.level * 20;
+    const indentLevel = node.level * 30; // Augmenter l'indentation pour plus de clarté
 
     if (node.type === 'section') {
       const sectionId = `section-${node.section!.id}`;
       return (
         <View key={sectionId} style={[styles.nodeContainer, { marginLeft: indentLevel }]}>
+          {/* Ligne de connexion verticale */}
+          {node.level > 0 && (
+            <View style={[styles.connectionLine, { left: indentLevel - 15 }]} />
+          )}
+          
           <TouchableOpacity
             style={styles.sectionCard}
             onPress={() => toggleNode(sectionId)}
@@ -463,9 +468,11 @@ export default function Organigrame() {
                   {node.memberCount} membre(s)
                 </Text>
               </View>
-              <Text style={styles.expandIcon}>
-                {node.isExpanded ? '▼' : '▶'}
-              </Text>
+              <View style={styles.expandIconContainer}>
+                <Text style={styles.expandIcon}>
+                  {node.isExpanded ? '▼' : '▶'}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
           
@@ -480,6 +487,9 @@ export default function Organigrame() {
       const subgroupId = `subgroup-${node.subgroup!.id}`;
       return (
         <View key={subgroupId} style={[styles.nodeContainer, { marginLeft: indentLevel }]}>
+          {/* Ligne de connexion verticale */}
+          <View style={[styles.connectionLine, { left: indentLevel - 15 }]} />
+          
           <TouchableOpacity
             style={styles.subgroupCard}
             onPress={() => toggleNode(subgroupId)}
@@ -496,9 +506,11 @@ export default function Organigrame() {
                   {node.memberCount} membre(s)
                 </Text>
               </View>
-              <Text style={styles.expandIcon}>
-                {node.isExpanded ? '▼' : '▶'}
-              </Text>
+              <View style={styles.expandIconContainer}>
+                <Text style={styles.expandIcon}>
+                  {node.isExpanded ? '▼' : '▶'}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
           
@@ -513,6 +525,16 @@ export default function Organigrame() {
     if (node.user) {
       return (
         <View key={node.user.id} style={[styles.nodeContainer, { marginLeft: indentLevel }]}>
+          {/* Ligne de connexion verticale pour les utilisateurs */}
+          {node.level > 0 && (
+            <View style={[styles.connectionLine, { left: indentLevel - 15 }]} />
+          )}
+          
+          {/* Ligne de connexion horizontale */}
+          {node.level > 0 && (
+            <View style={[styles.horizontalLine, { left: indentLevel - 15, width: 15 }]} />
+          )}
+          
           <TouchableOpacity 
             style={[styles.userCard, getCardStyleByLevel(node.level)]}
             onPress={() => showUserDetails(node.user!)}
@@ -533,8 +555,12 @@ export default function Organigrame() {
             </View>
           </TouchableOpacity>
           
-          {node.children.map((child, childIndex) => 
-            renderHierarchyNode(child, childIndex)
+          {node.children.length > 0 && (
+            <View style={styles.childrenContainer}>
+              {node.children.map((child, childIndex) => 
+                renderHierarchyNode(child, childIndex)
+              )}
+            </View>
           )}
         </View>
       );
