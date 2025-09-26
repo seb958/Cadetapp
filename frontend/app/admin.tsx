@@ -2915,24 +2915,32 @@ export default function Admin() {
                 </Text>
               </TouchableOpacity>
 
-              {users.filter(u => {
-                // Inclure les anciens rôles système
-                if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(u.role)) {
-                  return true;
-                }
-                // Inclure les nouveaux rôles de responsables de section
-                const responsableRoles = [
-                  'sergent de section',
-                  'commandant de section', 
-                  'adjudant-chef d\'escadron',
-                  'adjudant d\'escadron',
-                  'officier'
-                ];
-                return responsableRoles.some(role => 
-                  u.role.toLowerCase().includes(role.toLowerCase()) || 
-                  u.role.toLowerCase() === role.toLowerCase()
-                );
-              }).map((user) => (
+              {(() => {
+                const eligibleUsers = users.filter(u => {
+                  // Inclure les anciens rôles système
+                  if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(u.role)) {
+                    return true;
+                  }
+                  // Inclure les nouveaux rôles de responsables de section
+                  const responsableRoles = [
+                    'sergent de section',
+                    'commandant de section', 
+                    'adjudant-chef d\'escadron',
+                    'adjudant d\'escadron',
+                    'officier'
+                  ];
+                  return responsableRoles.some(role => 
+                    u.role.toLowerCase().includes(role.toLowerCase()) || 
+                    u.role.toLowerCase() === role.toLowerCase()
+                  );
+                });
+                
+                console.log('DEBUG: Utilisateurs éligibles comme responsables:', eligibleUsers.length);
+                eligibleUsers.forEach(u => {
+                  console.log(`- ${u.prenom} ${u.nom}: "${u.role}"`);
+                });
+                
+                return eligibleUsers.map((user) => (
                 <TouchableOpacity
                   key={user.id}
                   style={[
