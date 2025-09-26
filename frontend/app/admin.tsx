@@ -205,6 +205,7 @@ export default function Admin() {
   // Gestion des utilisateurs
   const [users, setUsers] = useState<User[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [subGroups, setSubGroups] = useState<SubGroup[]>([]);  // Nouveau état pour les sous-groupes
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userForm, setUserForm] = useState<UserFormData>({
@@ -214,6 +215,7 @@ export default function Admin() {
     grade: 'cadet',
     role: 'cadet',
     section_id: '',
+    subgroup_id: '',  // Nouveau champ
     has_admin_privileges: false
   });
   const [savingUser, setSavingUser] = useState(false);
