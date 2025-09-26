@@ -829,18 +829,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#1a365d',
     textAlign: 'center',
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resetButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginRight: 8,
+  },
+  resetButtonText: {
+    fontSize: 18,
+  },
   exportButton: {
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   exportButtonText: {
-    fontSize: 20,
+    fontSize: 18,
   },
   loadingContainer: {
     flex: 1,
@@ -854,7 +866,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 10,
     backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
@@ -864,176 +876,113 @@ const styles = StyleSheet.create({
     borderColor: '#d1d5db',
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
+    paddingVertical: 8,
+    fontSize: 14,
     backgroundColor: '#f9fafb',
   },
   content: {
     flex: 1,
+    backgroundColor: '#f8fafc',
   },
-  hierarchyContainer: {
-    padding: 20,
-  },
-  sectionSubtitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#4a5568',
-    marginBottom: 20,
+  instructions: {
     textAlign: 'center',
+    fontSize: 12,
+    color: '#6b7280',
+    paddingVertical: 8,
+    backgroundColor: '#f0f9ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0f2fe',
   },
-  nodeContainer: {
-    marginVertical: 4,
+  gestureContainer: {
+    flex: 1,
+  },
+  organigrammeContainer: {
+    flex: 1,
+    minHeight: 600,
+  },
+  organigrammeContent: {
     position: 'relative',
+    backgroundColor: 'white',
   },
   
-  // Lignes de connexion pour l'organigrame
-  connectionLine: {
+  // Lignes de connexion
+  verticalLine: {
     position: 'absolute',
     width: 2,
     backgroundColor: '#cbd5e0',
-    top: 0,
-    bottom: 0,
   },
   horizontalLine: {
     position: 'absolute',
     height: 2,
     backgroundColor: '#cbd5e0',
-    top: '50%',
-  },
-  childrenContainer: {
-    marginLeft: 30,
   },
   
-  // Styles pour les sections
-  sectionCard: {
-    backgroundColor: '#edf2f7',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 5,
-    borderLeftColor: '#3182ce',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4,
-    marginRight: 10,
-    minWidth: 250,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  // Nœuds de l'organigrame
+  orgNode: {
+    position: 'absolute',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 2,
+    backgroundColor: 'white',
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  sectionInfo: {
-    flex: 1,
-  },
-  sectionName: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#2d3748',
-    marginBottom: 6,
-  },
-  sectionDetails: {
-    fontSize: 14,
-    color: '#4a5568',
-    marginBottom: 3,
-  },
-  expandIconContainer: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(49, 130, 206, 0.1)',
-  },
-  expandIcon: {
-    fontSize: 16,
-    color: '#3182ce',
-    fontWeight: 'bold',
-  },
-  
-  // Styles pour les sous-groupes
-  subgroupCard: {
-    backgroundColor: '#f0fff4',
-    borderRadius: 10,
-    padding: 14,
-    borderLeftWidth: 4,
-    borderLeftColor: '#48bb78',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-    marginRight: 10,
-    minWidth: 220,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  subgroupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  subgroupInfo: {
-    flex: 1,
-  },
-  subgroupName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#2d3748',
-    marginBottom: 4,
-  },
-  subgroupDetails: {
+  nodeName: {
     fontSize: 13,
-    color: '#4a5568',
+    fontWeight: '600',
+    textAlign: 'center',
     marginBottom: 2,
   },
-  
-  // Styles pour les utilisateurs
-  userCard: {
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 3,
-    borderWidth: 2,
-    minWidth: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
-    marginRight: 10,
-  },
-  userInfo: {
-    flexDirection: 'column',
-  },
-  userName: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 3,
-  },
-  userRole: {
-    fontSize: 13,
+  nodeRole: {
+    fontSize: 11,
     color: '#6b7280',
+    textAlign: 'center',
     fontStyle: 'italic',
   },
   adminBadge: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#059669',
     fontWeight: 'bold',
-    marginTop: 3,
+    marginTop: 2,
   },
   inactiveBadge: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#dc2626',
     fontWeight: 'bold',
-    marginTop: 3,
+    marginTop: 2,
+  },
+  sectionNodeName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#2d3748',
+  },
+  sectionNodeInfo: {
+    fontSize: 11,
+    color: '#4a5568',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  sectionNodeResponsable: {
+    fontSize: 10,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 2,
   },
   
   // Styles par niveau hiérarchique
   commandantCard: {
     backgroundColor: '#fef5e7',
     borderColor: '#f6ad55',
-    borderWidth: 2,
   },
   officierCard: {
     backgroundColor: '#e6fffa',
     borderColor: '#4fd1c7',
-    borderWidth: 2,
   },
   adjudantChefCard: {
     backgroundColor: '#f0fff4',
@@ -1059,32 +1008,29 @@ const styles = StyleSheet.create({
   // Styles de texte par niveau
   commandantText: {
     color: '#744210',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   officierText: {
     color: '#234e52',
-    fontSize: 15,
     fontWeight: 'bold',
   },
   adjudantChefText: {
     color: '#22543d',
-    fontSize: 15,
     fontWeight: '600',
   },
   adjudantText: {
     color: '#2d3748',
-    fontSize: 14,
     fontWeight: '600',
   },
   normalText: {
     color: '#4a5568',
-    fontSize: 14,
   },
   
   emptyState: {
     padding: 40,
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
   emptyStateText: {
     fontSize: 16,
