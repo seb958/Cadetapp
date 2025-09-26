@@ -735,6 +735,7 @@ export default function Admin() {
           role: currentUser.role,
           grade: currentUser.grade,
           section_id: currentUser.section_id || '',
+          subgroup_id: currentUser.subgroup_id || '', // Ajouter le sous-groupe
           has_admin_privileges: currentUser.has_admin_privileges || false
         });
       } else {
