@@ -62,6 +62,7 @@ interface User {
   grade: string;
   role: string;
   section_id?: string;
+  subgroup_id?: string;  // Nouveau champ pour les sous-groupes
   actif: boolean;
   has_admin_privileges: boolean;
   created_at: string;
@@ -75,6 +76,15 @@ interface Section {
   created_at: string;
 }
 
+interface SubGroup {
+  id: string;
+  nom: string;
+  description?: string;
+  section_id: string;
+  responsable_id?: string;
+  created_at: string;
+}
+
 interface UserFormData {
   nom: string;
   prenom: string;
@@ -82,6 +92,7 @@ interface UserFormData {
   grade: string;
   role: string;
   section_id: string;
+  subgroup_id: string;  // Nouveau champ pour les sous-groupes
   has_admin_privileges: boolean;
 }
 
