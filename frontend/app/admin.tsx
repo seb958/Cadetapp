@@ -860,7 +860,9 @@ export default function Admin() {
           email: userForm.email && userForm.email.trim() ? userForm.email.trim() : null,
           grade: userForm.grade,
           role: userForm.role,
-          section_id: userForm.section_id || null
+          section_id: userForm.section_id || null,
+          subgroup_id: userForm.subgroup_id || null, // Ajouter le sous-groupe
+          has_admin_privileges: userForm.has_admin_privileges || false
         };
 
         const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/invite`, {
