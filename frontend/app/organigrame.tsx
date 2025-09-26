@@ -460,7 +460,7 @@ export default function Organigrame() {
       </View>
 
       <ScrollView style={styles.content} horizontal={true} showsHorizontalScrollIndicator={true}>
-        <ScrollView vertical={true} showsVerticalScrollIndicator={true}>
+        <ScrollView showsVerticalScrollIndicator={true}>
           <Text style={styles.instructions}>
             Glisser horizontalement et verticalement pour naviguer • Toucher une boîte pour plus d'infos
           </Text>
