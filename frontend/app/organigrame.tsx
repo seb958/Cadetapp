@@ -94,7 +94,7 @@ export default function Organigrame() {
     if (users.length > 0) {
       buildHierarchy();
     }
-  }, [users, sections, subGroups, searchText]);
+  }, [users, sections, subGroups, searchText, expandedNodes]); // Ajouter expandedNodes comme dépendance
 
   const checkAuth = async () => {
     try {
