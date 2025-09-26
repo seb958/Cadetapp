@@ -1283,6 +1283,148 @@ export default function Admin() {
     }
   };
 
+  // Fonctions de gestion des sous-groupes
+  const openSubGroupModal = (subGroup: SubGroup | null = null, sectionId: string = '') => {
+    if (subGroup) {
+      setEditingSubGroup(subGroup);
+      setSubGroupForm({
+        nom: subGroup.nom,
+        description: subGroup.description || '',
+        section_id: subGroup.section_id,
+        responsable_id: subGroup.responsable_id || ''
+      });
+    } else {
+      setEditingSubGroup(null);
+      setSubGroupForm({
+        nom: '',
+        description: '',
+        section_id: sectionId,
+        responsable_id: ''
+      });
+    }
+    setShowSubGroupModal(true);
+  };
+
+  const saveSubGroup = async () => {
+    if (!subGroupForm.nom.trim()) {
+      showAlert('Erreur', 'Le nom du sous-groupe est requis');
+      return;
+    }
+
+    if (!subGroupForm.section_id) {
+      showAlert('Erreur', 'La section est requise');
+      return;
+    }
+
+    setSavingSubGroup(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      const payload = {
+        nom: subGroupForm.nom.trim(),
+        description: subGroupForm.description.trim() || null,
+        section_id: subGroupForm.section_id,
+        responsable_id: subGroupForm.responsable_id || null
+      };
+
+      const url = editingSubGroup 
+        ? `${EXPO_PUBLIC_BACKEND_URL}/api/subgroups/${editingSubGroup.id}`
+        : `${EXPO_PUBLIC_BACKEND_URL}/api/subgroups`;
+      
+      const method = editingSubGroup ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        showAlert(
+          'Succès', 
+          editingSubGroup ? 'Sous-groupe modifié avec succès' : 'Sous-groupe créé avec succès'
+        );
+        setShowSubGroupModal(false);
+        setEditingSubGroup(null);
+        setSubGroupForm({ nom: '', description: '', section_id: '', responsable_id: '' });
+        
+        // Recharger les sous-groupes
+        await loadSubGroups();
+      } else {
+        const errorData = await response.json();
+        showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      showAlert('Erreur', 'Impossible de sauvegarder le sous-groupe');
+    } finally {
+      setSavingSubGroup(false);
+    }
+  };
+
+  const deleteSubGroup = async (subGroup: SubGroup) => {
+    showConfirmation(
+      'Supprimer le sous-groupe',
+      `Êtes-vous sûr de vouloir supprimer définitivement le sous-groupe "${subGroup.nom}" ?\n\nTous les cadets affectés à ce sous-groupe seront désaffectés.`,
+      async () => {
+        try {
+          const token = await AsyncStorage.getItem('access_token');
+          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/subgroups/${subGroup.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            showAlert('Succès', `Le sous-groupe "${subGroup.nom}" a été supprimé définitivement.`);
+            await loadSubGroups();
+            await loadUsers(); // Recharger les utilisateurs car leurs sous-groupes ont pu changer
+          } else {
+            const errorData = await response.json();
+            showAlert('Erreur', errorData.detail || 'Impossible de supprimer le sous-groupe');
+          }
+        } catch (error) {
+          console.error('Erreur lors de la suppression:', error);
+          showAlert('Erreur', 'Erreur réseau lors de la suppression');
+        }
+      }
+    );
+  };
+
+  const toggleSectionExpansion = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(sectionId)) {
+        newExpanded.delete(sectionId);
+      } else {
+        newExpanded.add(sectionId);
+      }
+      return newExpanded;
+    });
+  };
+
+  const getSubGroupsForSection = (sectionId: string) => {
+    return subGroups.filter(sg => sg.section_id === sectionId);
+  };
+
+  const getUserCountForSubGroup = (subGroupId: string) => {
+    return users.filter(u => u.subgroup_id === subGroupId && u.actif).length;
+  };
+
+  const getUserCountForSection = (sectionId: string) => {
+    // Compter les utilisateurs directement dans la section + ceux dans les sous-groupes de cette section
+    const directUsers = users.filter(u => u.section_id === sectionId && !u.subgroup_id && u.actif).length;
+    const subGroupUsers = users.filter(u => {
+      const userSubGroup = subGroups.find(sg => sg.id === u.subgroup_id);
+      return userSubGroup && userSubGroup.section_id === sectionId && u.actif;
+    }).length;
+    return directUsers + subGroupUsers;
+  };
+
   const getResponsableName = (responsableId: string) => {
     const responsable = users.find(u => u.id === responsableId);
     return responsable ? `${responsable.prenom} ${responsable.nom}` : 'Aucun responsable';
