@@ -474,58 +474,47 @@ export default function Organigrame() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>← Retour</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Organigrame de l'Escadron</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.resetButton} onPress={resetTransform}>
-              <Text style={styles.resetButtonText}>🔍</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.exportButton} onPress={exportOrganigrame}>
-              <Text style={styles.exportButtonText}>📤</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>← Retour</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Organigrame de l'Escadron</Text>
+        <TouchableOpacity style={styles.exportButton} onPress={exportOrganigrame}>
+          <Text style={styles.exportButtonText}>📤</Text>
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Rechercher une personne, grade, rôle..."
-            value={searchText}
-            onChangeText={setSearchText}
-            clearButtonMode="while-editing"
-          />
-        </View>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Rechercher une personne, grade, rôle..."
+          value={searchText}
+          onChangeText={setSearchText}
+          clearButtonMode="while-editing"
+        />
+      </View>
 
-        <View style={styles.content}>
+      <ScrollView style={styles.content} horizontal={true} showsHorizontalScrollIndicator={true}>
+        <ScrollView vertical={true} showsVerticalScrollIndicator={true}>
           <Text style={styles.instructions}>
-            Pincer pour zoomer • Glisser pour se déplacer • Toucher une boîte pour plus d'infos
+            Glisser horizontalement et verticalement pour naviguer • Toucher une boîte pour plus d'infos
           </Text>
           
-          <PanGestureHandler onGestureEvent={panGestureHandler}>
-            <Animated.View style={styles.gestureContainer}>
-              <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
-                <Animated.View style={[styles.organigrammeContainer, animatedStyle]}>
-                  {hierarchyData.length > 0 ? (
-                    renderHorizontalOrganigrame()
-                  ) : (
-                    <View style={styles.emptyState}>
-                      <Text style={styles.emptyStateText}>
-                        {searchText ? 'Aucun résultat trouvé' : 'Aucune donnée à afficher'}
-                      </Text>
-                    </View>
-                  )}
-                </Animated.View>
-              </PinchGestureHandler>
-            </Animated.View>
-          </PanGestureHandler>
-        </View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+          <View style={styles.organigrammeContainer}>
+            {hierarchyData.length > 0 ? (
+              renderHorizontalOrganigrame()
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>
+                  {searchText ? 'Aucun résultat trouvé' : 'Aucune donnée à afficher'}
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 
   // Nouvelle fonction de rendu horizontal
