@@ -623,46 +623,185 @@ export default function Organigrame() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>← Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Organigrame de l'Escadron</Text>
-        <TouchableOpacity style={styles.exportButton} onPress={exportOrganigrame}>
-          <Text style={styles.exportButtonText}>📤</Text>
-        </TouchableOpacity>
-      </View>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>← Retour</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Organigrame de l'Escadron</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.resetButton} onPress={resetTransform}>
+              <Text style={styles.resetButtonText}>🔍</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.exportButton} onPress={exportOrganigrame}>
+              <Text style={styles.exportButtonText}>📤</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Rechercher une personne, grade, rôle..."
-          value={searchText}
-          onChangeText={setSearchText}
-          clearButtonMode="while-editing"
-        />
-      </View>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Rechercher une personne, grade, rôle..."
+            value={searchText}
+            onChangeText={setSearchText}
+            clearButtonMode="while-editing"
+          />
+        </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={true}>
-        <View style={styles.hierarchyContainer}>
-          <Text style={styles.sectionSubtitle}>
-            Structure hiérarchique • {users.filter(u => u.actif).length} membre(s) actif(s)
+        <View style={styles.content}>
+          <Text style={styles.instructions}>
+            Pincer pour zoomer • Glisser pour se déplacer • Toucher une boîte pour plus d'infos
           </Text>
           
-          {hierarchyData.length > 0 ? (
-            hierarchyData.map((node, index) => renderHierarchyNode(node, index))
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
-                {searchText ? 'Aucun résultat trouvé' : 'Aucune donnée à afficher'}
-              </Text>
-            </View>
-          )}
+          <PanGestureHandler onGestureEvent={panGestureHandler}>
+            <Animated.View style={styles.gestureContainer}>
+              <PinchGestureHandler onGestureEvent={pinchGestureHandler}>
+                <Animated.View style={[styles.organigrammeContainer, animatedStyle]}>
+                  {hierarchyData.length > 0 ? (
+                    renderHorizontalOrganigrame()
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyStateText}>
+                        {searchText ? 'Aucun résultat trouvé' : 'Aucune donnée à afficher'}
+                      </Text>
+                    </View>
+                  )}
+                </Animated.View>
+              </PinchGestureHandler>
+            </Animated.View>
+          </PanGestureHandler>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
+
+  // Nouvelle fonction de rendu horizontal
+  function renderHorizontalOrganigrame() {
+    const orgWidth = Math.max(screenWidth * 2, hierarchyData.length * 250);
+    const orgHeight = Math.max(screenHeight, 600);
+
+    return (
+      <View style={[styles.organigrammeContent, { width: orgWidth, height: orgHeight }]}>
+        {/* Lignes de connexion */}
+        {renderConnectionLines()}
+        
+        {/* Nœuds de l'organigrame */}
+        {hierarchyData.map((node, index) => renderNode(node, index))}
+      </View>
+    );
+  }
+
+  // Rendu des lignes de connexion
+  function renderConnectionLines() {
+    const lines: React.ReactElement[] = [];
+    
+    hierarchyData.forEach((node, index) => {
+      if (node.level > 0 && node.x !== undefined && node.y !== undefined) {
+        // Ligne verticale depuis le niveau supérieur
+        const upperLevelNodes = hierarchyData.filter(n => n.level === node.level - 1);
+        if (upperLevelNodes.length > 0) {
+          const parentNode = upperLevelNodes[0]; // Simplifié pour le prototype
+          if (parentNode.x !== undefined && parentNode.y !== undefined) {
+            // Ligne verticale
+            lines.push(
+              <View
+                key={`vline-${index}`}
+                style={[
+                  styles.verticalLine,
+                  {
+                    left: parentNode.x + (parentNode.width || 200) / 2 - 1,
+                    top: parentNode.y + (parentNode.height || 80),
+                    height: (node.y || 0) - (parentNode.y + (parentNode.height || 80))
+                  }
+                ]}
+              />
+            );
+            
+            // Ligne horizontale
+            lines.push(
+              <View
+                key={`hline-${index}`}
+                style={[
+                  styles.horizontalLine,
+                  {
+                    left: Math.min(parentNode.x + (parentNode.width || 200) / 2, node.x + (node.width || 200) / 2),
+                    top: node.y - 1,
+                    width: Math.abs(node.x + (node.width || 200) / 2 - (parentNode.x + (parentNode.width || 200) / 2))
+                  }
+                ]}
+              />
+            );
+          }
+        }
+      }
+    });
+
+    return lines;
+  }
+
+  // Rendu d'un nœud individuel
+  function renderNode(node: HierarchyNode, index: number) {
+    if (!node.x || node.y === undefined) return null;
+
+    const nodeStyle = [
+      styles.orgNode,
+      getCardStyleByLevel(node.level),
+      {
+        left: node.x,
+        top: node.y,
+        width: node.width || 200,
+        height: node.height || 80,
+      }
+    ];
+
+    if (node.type === 'user' && node.user) {
+      return (
+        <TouchableOpacity
+          key={`user-${node.user.id}`}
+          style={nodeStyle}
+          onPress={() => showUserDetails(node.user!)}
+        >
+          <Text style={[styles.nodeName, getTextStyleByLevel(node.level)]}>
+            {getUserName(node.user)}
+          </Text>
+          <Text style={styles.nodeRole}>
+            {getRoleDisplayName(node.user.role)}
+          </Text>
+          {node.user.has_admin_privileges && (
+            <Text style={styles.adminBadge}>• ADMIN</Text>
+          )}
+          {!node.user.actif && (
+            <Text style={styles.inactiveBadge}>• INACTIF</Text>
+          )}
+        </TouchableOpacity>
+      );
+    }
+
+    if (node.type === 'section' && node.section) {
+      const sectionId = `section-${node.section.id}`;
+      return (
+        <TouchableOpacity
+          key={sectionId}
+          style={nodeStyle}
+          onPress={() => toggleNode(sectionId)}
+        >
+          <Text style={styles.sectionNodeName}>
+            {node.isExpanded ? '📂' : '📁'} {node.section.nom}
+          </Text>
+          <Text style={styles.sectionNodeInfo}>
+            {node.memberCount} membre(s)
+          </Text>
+          <Text style={styles.sectionNodeResponsable}>
+            {getResponsableName(node.section.responsable_id)}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return null;
+  }
 }
 
 const styles = StyleSheet.create({
