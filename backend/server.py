@@ -951,6 +951,157 @@ async def delete_section(
             detail=f"Erreur lors de la suppression: {str(e)}"
         )
 
+# Routes pour les sous-groupes
+@api_router.get("/sections/{section_id}/subgroups", response_model=List[SubGroup])
+async def get_subgroups(
+    section_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Récupérer tous les sous-groupes d'une section"""
+    # Vérifier que la section existe
+    section = await db.sections.find_one({"id": section_id})
+    if not section:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section non trouvée"
+        )
+    
+    subgroups = await db.subgroups.find({"section_id": section_id}).to_list(100)
+    return [SubGroup(**subgroup) for subgroup in subgroups]
+
+@api_router.post("/subgroups", response_model=SubGroup)
+async def create_subgroup(
+    subgroup: SubGroupCreate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Créer un nouveau sous-groupe"""
+    # Vérifier que la section existe
+    section = await db.sections.find_one({"id": subgroup.section_id})
+    if not section:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Section non trouvée"
+        )
+    
+    # Vérifier que le nom du sous-groupe n'existe pas déjà dans cette section
+    existing_subgroup = await db.subgroups.find_one({
+        "nom": subgroup.nom,
+        "section_id": subgroup.section_id
+    })
+    if existing_subgroup:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Un sous-groupe avec ce nom existe déjà dans cette section"
+        )
+    
+    # Vérifier que le responsable existe si fourni
+    if subgroup.responsable_id:
+        responsable = await db.users.find_one({"id": subgroup.responsable_id, "actif": True})
+        if not responsable:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Responsable non trouvé ou inactif"
+            )
+    
+    new_subgroup = SubGroup(**subgroup.dict())
+    await db.subgroups.insert_one(new_subgroup.dict())
+    
+    return new_subgroup
+
+@api_router.put("/subgroups/{subgroup_id}")
+async def update_subgroup(
+    subgroup_id: str,
+    subgroup_update: SubGroupUpdate,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Mettre à jour un sous-groupe"""
+    # Vérifier que le sous-groupe existe
+    existing_subgroup = await db.subgroups.find_one({"id": subgroup_id})
+    if not existing_subgroup:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sous-groupe non trouvé"
+        )
+    
+    # Préparer les mises à jour
+    update_data = {}
+    
+    if subgroup_update.nom is not None:
+        # Vérifier que le nouveau nom n'existe pas déjà dans la section
+        name_exists = await db.subgroups.find_one({
+            "nom": subgroup_update.nom,
+            "section_id": existing_subgroup["section_id"],
+            "id": {"$ne": subgroup_id}
+        })
+        if name_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Un sous-groupe avec ce nom existe déjà dans cette section"
+            )
+        update_data["nom"] = subgroup_update.nom
+    
+    if subgroup_update.description is not None:
+        update_data["description"] = subgroup_update.description
+    
+    if subgroup_update.responsable_id is not None:
+        # Vérifier que le responsable existe
+        if subgroup_update.responsable_id:  # Si ce n'est pas une chaîne vide
+            responsable = await db.users.find_one({"id": subgroup_update.responsable_id, "actif": True})
+            if not responsable:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Responsable non trouvé ou inactif"
+                )
+        update_data["responsable_id"] = subgroup_update.responsable_id
+    
+    # Effectuer la mise à jour
+    if update_data:
+        await db.subgroups.update_one(
+            {"id": subgroup_id},
+            {"$set": update_data}
+        )
+    
+    return {"message": "Sous-groupe mis à jour avec succès"}
+
+@api_router.delete("/subgroups/{subgroup_id}")
+async def delete_subgroup(
+    subgroup_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Supprimer un sous-groupe"""
+    # Vérifier que le sous-groupe existe
+    existing_subgroup = await db.subgroups.find_one({"id": subgroup_id})
+    if not existing_subgroup:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sous-groupe non trouvé"
+        )
+    
+    # Supprimer le sous-groupe et mettre à jour les utilisateurs
+    try:
+        # Retirer l'affectation de sous-groupe de tous les utilisateurs
+        await db.users.update_many(
+            {"subgroup_id": subgroup_id},
+            {"$unset": {"subgroup_id": ""}}
+        )
+        
+        # Supprimer le sous-groupe
+        result = await db.subgroups.delete_one({"id": subgroup_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Sous-groupe non trouvé"
+            )
+        
+        return {"message": f"Sous-groupe {existing_subgroup['nom']} supprimé définitivement"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la suppression: {str(e)}"
+        )
+
 # Routes pour les présences
 @api_router.post("/presences", response_model=Presence)
 async def create_presence(
