@@ -751,7 +751,9 @@ export default function Admin() {
         email: '',
         grade: 'cadet',
         role: 'cadet',
-        section_id: ''
+        section_id: '',
+        subgroup_id: '', // Ajouter le sous-groupe pour la création
+        has_admin_privileges: false
       });
     }
     setShowUserModal(true);
