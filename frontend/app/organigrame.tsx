@@ -544,7 +544,15 @@ export default function Organigrame() {
 
   // Rendu d'un nœud individuel
   function renderNode(node: HierarchyNode, index: number) {
-    if (!node.x || node.y === undefined) return null;
+    // Vérification debug pour voir les coordonnées
+    if (node.type === 'section') {
+      console.log(`DEBUG renderNode: Section "${node.section?.nom}" x=${node.x}, y=${node.y}`);
+    }
+    
+    if (node.x === undefined || node.y === undefined) {
+      console.log(`DEBUG: Nœud ignoré car coordonnées manquantes - type: ${node.type}, x: ${node.x}, y: ${node.y}`);
+      return null;
+    }
 
     const nodeStyle = [
       styles.orgNode,
