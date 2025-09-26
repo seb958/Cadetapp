@@ -265,6 +265,33 @@ export default function Organigrame() {
     return nodes;
   };
 
+  const buildLevel3AndBelow = (filteredUsers: User[]): HierarchyNode[] => {
+    const nodes: HierarchyNode[] = [];
+
+    // Niveau 3: Adjudant d'escadron + Cadet Senior à l'administration  
+    const level3Users = filteredUsers.filter(u => 
+      (u.role.toLowerCase().includes('adjudant') && !u.role.toLowerCase().includes('chef')) ||
+      u.role === 'Adjudant d\'escadron' ||
+      (u.role.toLowerCase().includes('senior') && u.role.toLowerCase().includes('administration')) ||
+      u.role === 'cadet_admin' // Ancien système
+    );
+
+    level3Users.forEach(level3User => {
+      nodes.push({
+        user: level3User,
+        level: 3,
+        type: 'user',
+        children: buildSectionsAndLevel4(filteredUsers)
+      });
+    });
+
+    // S'il n'y a pas de niveau 3, directement les sections
+    if (level3Users.length === 0) {
+      nodes.push(...buildSectionsAndLevel4(filteredUsers));
+    }
+
+    return nodes;
+  };
   const buildSectionsAndLevel4 = (filteredUsers: User[]): HierarchyNode[] => {
     const nodes: HierarchyNode[] = [];
 
