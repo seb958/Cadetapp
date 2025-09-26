@@ -4066,4 +4066,126 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
+  
+  // Styles pour les sous-groupes
+  sectionMainInfo: {
+    flex: 1,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  expandIcon: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginLeft: 10,
+  },
+  sectionCardMemberCount: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  sectionExpandedContent: {
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    marginTop: 15,
+  },
+  subGroupsContainer: {
+    marginTop: 20,
+  },
+  subGroupsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  subGroupsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a365d',
+  },
+  addSubGroupButton: {
+    backgroundColor: '#3182ce',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  addSubGroupButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noSubGroupsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontStyle: 'italic',
+    padding: 15,
+    backgroundColor: '#f8fafc',
+    borderRadius: 6,
+    textAlign: 'center',
+  },
+  subGroupCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#3182ce',
+  },
+  subGroupHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  subGroupInfo: {
+    flex: 1,
+  },
+  subGroupName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a365d',
+  },
+  subGroupMemberCount: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  subGroupActions: {
+    marginLeft: 10,
+  },
+  editSubGroupButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  editSubGroupButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  subGroupDescription: {
+    fontSize: 14,
+    color: '#4a5568',
+    marginTop: 8,
+  },
+  subGroupResponsable: {
+    fontSize: 13,
+    color: '#6b7280',
+    marginTop: 6,
+  },
+  directMembersInfo: {
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#f0f9ff',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#0ea5e9',
+  },
+  directMembersText: {
+    fontSize: 14,
+    color: '#0c4a6e',
+  },
 });
