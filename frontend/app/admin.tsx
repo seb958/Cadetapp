@@ -2897,6 +2897,150 @@ export default function Admin() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Modal pour créer/modifier un sous-groupe */}
+      <Modal
+        visible={showSubGroupModal}
+        animationType="slide"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {editingSubGroup ? 'Modifier le Sous-groupe' : 'Nouveau Sous-groupe'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowSubGroupModal(false)}>
+              <Text style={styles.closeButton}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {/* Section parente */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Section parente</Text>
+              <Text style={styles.inputLabel}>Section *</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={subGroupForm.section_id}
+                  style={styles.picker}
+                  onValueChange={(value) => setSubGroupForm(prev => ({...prev, section_id: value}))}
+                >
+                  <Picker.Item label="Sélectionner une section" value="" />
+                  {sections.map((section) => (
+                    <Picker.Item key={section.id} label={section.nom} value={section.id} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            {/* Informations de base */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Informations de base</Text>
+              
+              <Text style={styles.inputLabel}>Nom du sous-groupe *</Text>
+              <TextInput
+                style={styles.input}
+                value={subGroupForm.nom}
+                onChangeText={(text) => setSubGroupForm(prev => ({...prev, nom: text}))}
+                placeholder="Ex: Peloton Alpha"
+              />
+
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={subGroupForm.description}
+                onChangeText={(text) => setSubGroupForm(prev => ({...prev, description: text}))}
+                placeholder="Description du sous-groupe..."
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            {/* Commandant de sous-groupe */}
+            <View style={styles.formSection}>
+              <Text style={styles.formSectionTitle}>Commandant de sous-groupe</Text>
+              
+              <TouchableOpacity
+                style={[
+                  styles.sectionOption,
+                  subGroupForm.responsable_id === '' && styles.sectionOptionActive
+                ]}
+                onPress={() => setSubGroupForm(prev => ({...prev, responsable_id: ''}))}
+              >
+                <Text style={[
+                  styles.sectionOptionText,
+                  subGroupForm.responsable_id === '' && styles.sectionOptionTextActive
+                ]}>
+                  Aucun commandant
+                </Text>
+              </TouchableOpacity>
+
+              {users.filter(u => u.actif).map((user) => (
+                <TouchableOpacity
+                  key={user.id}
+                  style={[
+                    styles.sectionOption,
+                    subGroupForm.responsable_id === user.id && styles.sectionOptionActive
+                  ]}
+                  onPress={() => setSubGroupForm(prev => ({...prev, responsable_id: user.id}))}
+                >
+                  <View style={styles.responsableInfo}>
+                    <Text style={[
+                      styles.sectionOptionText,
+                      subGroupForm.responsable_id === user.id && styles.sectionOptionTextActive
+                    ]}>
+                      {user.prenom} {user.nom}
+                    </Text>
+                    <Text style={styles.responsableRole}>
+                      {getRoleDisplayName(user.role)} - {getGradeDisplayName(user.grade)}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Information */}
+            <View style={styles.infoSection}>
+              <Text style={styles.infoTitle}>📋 À propos des sous-groupes</Text>
+              <Text style={styles.infoText}>
+                Les sous-groupes permettent d'organiser les cadets d'une section en unités plus petites. Le commandant du sous-groupe rapporte au sergent de section.
+              </Text>
+            </View>
+
+            {/* Zone de suppression dangereuse - uniquement pour sous-groupes existants */}
+            {editingSubGroup && (
+              <View style={styles.dangerZone}>
+                <Text style={styles.dangerZoneTitle}>🚨 Zone dangereuse</Text>
+                <Text style={styles.dangerZoneText}>
+                  La suppression d'un sous-groupe est irréversible. Tous les cadets de ce sous-groupe perdront leur affectation.
+                </Text>
+                <TouchableOpacity
+                  style={styles.dangerButton}
+                  onPress={() => {
+                    showConfirmation(
+                      'Supprimer définitivement',
+                      `Êtes-vous sûr de vouloir supprimer définitivement le sous-groupe "${editingSubGroup.nom}" ?\n\n⚠️ Cette action est IRRÉVERSIBLE.\n\nTous les cadets de ce sous-groupe perdront leur affectation.`,
+                      () => deleteSubGroup(editingSubGroup)
+                    );
+                  }}
+                >
+                  <Text style={styles.dangerButtonText}>🗑️ Supprimer définitivement ce sous-groupe</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Bouton de sauvegarde */}
+            <TouchableOpacity
+              style={[styles.saveButton, savingSubGroup && styles.saveButtonDisabled]}
+              onPress={saveSubGroup}
+              disabled={savingSubGroup}
+            >
+              <Text style={styles.saveButtonText}>
+                {savingSubGroup ? 'Enregistrement...' : editingSubGroup ? 'Modifier le Sous-groupe' : 'Créer le Sous-groupe'}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
