@@ -313,6 +313,14 @@ export default function Index() {
             </Text>
           </TouchableOpacity>
 
+          {/* Organigrame */}
+          <TouchableOpacity style={styles.featureCard} onPress={navigateToOrganigrame}>
+            <Text style={styles.featureTitle}>🏛️ Organigrame</Text>
+            <Text style={styles.featureDescription}>
+              Structure hiérarchique de l'escadron
+            </Text>
+          </TouchableOpacity>
+
           {/* Rapports */}
           <TouchableOpacity style={styles.featureCard} onPress={navigateToReports}>
             <Text style={styles.featureTitle}>📈 Rapports</Text>
