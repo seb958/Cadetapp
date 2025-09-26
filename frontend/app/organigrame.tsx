@@ -150,6 +150,11 @@ export default function Organigrame() {
     translateY.value = withSpring(0);
   };
 
+  // Vérifier l'authentification
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
   // Charger les données quand l'utilisateur est authentifié
   useEffect(() => {
     if (user) {
