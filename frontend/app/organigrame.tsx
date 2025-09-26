@@ -68,7 +68,12 @@ interface Role {
   is_system_role: boolean;
 }
 
-// Structure hiérarchique pour l'organigrame
+// Structure pour l'organigrame horizontal
+interface LevelData {
+  level: number;
+  nodes: HierarchyNode[];
+}
+
 interface HierarchyNode {
   user?: User;
   level: number;
@@ -78,6 +83,10 @@ interface HierarchyNode {
   subgroup?: SubGroup;
   memberCount?: number;
   isExpanded?: boolean;
+  x?: number; // Position X pour le layout horizontal
+  y?: number; // Position Y pour le layout horizontal
+  width?: number;
+  height?: number;
 }
 
 export default function Organigrame() {
