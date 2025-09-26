@@ -2704,6 +2704,72 @@ export default function Admin() {
                   </TouchableOpacity>
                 ))}
               </View>
+              
+              {/* Sous-groupe - affiché seulement si une section est sélectionnée */}
+              {userForm.section_id && (
+                <>
+                  <Text style={styles.inputLabel}>Sous-groupe (optionnel)</Text>
+                  <Text style={styles.helperText}>
+                    Les sous-groupes permettent une organisation plus fine au sein de la section
+                  </Text>
+                  
+                  <View style={styles.sectionSelector}>
+                    <TouchableOpacity
+                      style={[
+                        styles.sectionOption,
+                        userForm.subgroup_id === '' && styles.sectionOptionActive
+                      ]}
+                      onPress={() => setUserForm(prev => ({...prev, subgroup_id: ''}))}
+                    >
+                      <Text style={[
+                        styles.sectionOptionText,
+                        userForm.subgroup_id === '' && styles.sectionOptionTextActive
+                      ]}>
+                        Directement dans la section (aucun sous-groupe)
+                      </Text>
+                    </TouchableOpacity>
+
+                    {getSubGroupsForSection(userForm.section_id).map((subGroup) => (
+                      <TouchableOpacity
+                        key={subGroup.id}
+                        style={[
+                          styles.sectionOption,
+                          userForm.subgroup_id === subGroup.id && styles.sectionOptionActive
+                        ]}
+                        onPress={() => setUserForm(prev => ({...prev, subgroup_id: subGroup.id}))}
+                      >
+                        <View style={styles.subGroupOptionContent}>
+                          <Text style={[
+                            styles.sectionOptionText,
+                            userForm.subgroup_id === subGroup.id && styles.sectionOptionTextActive
+                          ]}>
+                            {subGroup.nom}
+                          </Text>
+                          {subGroup.description && (
+                            <Text style={[
+                              styles.subGroupOptionDescription,
+                              userForm.subgroup_id === subGroup.id && styles.sectionOptionTextActive
+                            ]}>
+                              {subGroup.description}
+                            </Text>
+                          )}
+                          <Text style={styles.subGroupMemberInfo}>
+                            {getUserCountForSubGroup(subGroup.id)} membre(s) actuellement
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+
+                    {getSubGroupsForSection(userForm.section_id).length === 0 && (
+                      <View style={styles.noSubGroupsInfo}>
+                        <Text style={styles.noSubGroupsInfoText}>
+                          Aucun sous-groupe dans cette section. Le cadet sera directement assigné à la section.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </>
+              )}
             </View>
 
             {/* Privilèges spéciaux */}
