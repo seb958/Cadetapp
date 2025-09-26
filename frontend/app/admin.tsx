@@ -2693,7 +2693,11 @@ export default function Admin() {
                       styles.sectionOption,
                       userForm.section_id === section.id && styles.sectionOptionActive
                     ]}
-                    onPress={() => setUserForm(prev => ({...prev, section_id: section.id}))}
+                    onPress={() => setUserForm(prev => ({
+                      ...prev, 
+                      section_id: section.id,
+                      subgroup_id: '' // Réinitialiser le sous-groupe quand on change de section
+                    }))}
                   >
                     <Text style={[
                       styles.sectionOptionText,
