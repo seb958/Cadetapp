@@ -340,6 +340,9 @@ export default function Admin() {
       loadRoles()
     ]);
     
+    // Charger les sous-groupes après les sections
+    await loadSubGroups();
+    
     // Puis charger les options de filtres (qui peuvent utiliser les données de fallback)
     await loadFilterOptions();
   };
