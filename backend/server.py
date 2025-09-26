@@ -131,7 +131,7 @@ class UserBase(BaseModel):
     username: Optional[str] = None  # Nom d'utilisateur pour connexion (ex: sdesy)
     email: Optional[EmailStr] = None
     grade: Grade
-    role: UserRole
+    role: str  # Changé de UserRole à str pour supporter les rôles personnalisés
     section_id: Optional[str] = None
     subgroup_id: Optional[str] = None  # Sous-groupe optionnel dans la section
     photo_base64: Optional[str] = None
