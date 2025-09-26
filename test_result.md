@@ -243,6 +243,18 @@ backend:
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 10/10 tests passés (100% réussite). Système de sous-groupes parfaitement fonctionnel: 1) Endpoints CRUD sous-groupes: GET/POST/PUT/DELETE fonctionnels avec validation complète, 2) Intégration utilisateur-sous-groupe: création/mise à jour utilisateurs avec subgroup_id OK, validation cohérence section/sous-groupe active (erreur 400), 3) Gestion erreurs: section inexistante (404), sous-groupe inexistant (404), noms dupliqués (400). Authentification: aadministrateur/admin123. Base URL: https://squadron-app.preview.emergentagent.com/api. Système robuste et sécurisé."
 
+  - task: "Assignation responsables de section et organigrame"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS ASSIGNATION RESPONSABLES ET ORGANIGRAME RÉUSSIS - 11/11 tests passés (100% réussite). Fonctionnalités validées: 1) Assignation responsable: Cadet Commandant (ID: 434b7d13-f0d8-469a-aeec-f25b2e2fd3b7) assigné avec succès comme responsable de Section 2 (ID: 1f06b8a5-462a-457b-88c7-6cebf7a00bee) via PUT /api/sections/{section_id}, 2) Organigrame vérifié: 12 utilisateurs actifs avec hiérarchie correcte (Niveau 0: Admin Administrateur encadrement, Niveau 2: Cadet Commandant Adjudant-Chef, Niveau 3: Emma Leroy et sgst 2 Sergents, 8 autres utilisateurs), 3) Structure validée: Section 1 a bien Emma Leroy comme responsable, 5 sections trouvées avec responsables assignés. Authentification: aadministrateur/admin123. Base URL: https://squadron-app.preview.emergentagent.com/api."
+
 frontend:
   - task: "Interface d'authentification française"
     implemented: true
