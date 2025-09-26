@@ -4262,4 +4262,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0c4a6e',
   },
+  
+  // Styles pour les sous-groupes dans le formulaire utilisateur
+  subGroupOptionContent: {
+    flex: 1,
+  },
+  subGroupOptionDescription: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  subGroupMemberInfo: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  noSubGroupsInfo: {
+    backgroundColor: '#f9fafb',
+    padding: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+  },
+  noSubGroupsInfoText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
 });
