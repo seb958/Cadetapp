@@ -228,6 +228,21 @@ backend:
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 4/4 tests passés (100% réussite). Support privilèges administrateur parfaitement fonctionnel: Création utilisateur avec privilèges admin OK, Vérification champ has_admin_privileges OK, Mise à jour privilèges admin OK, Validation des changements OK. Le champ est correctement géré dans les opérations CRUD utilisateurs."
 
+  - task: "Système de gestion des sous-groupes"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Système complet de sous-groupes implémenté avec modèles SubGroup, SubGroupCreate, SubGroupUpdate et 4 endpoints CRUD: GET /api/sections/{section_id}/subgroups, POST /api/subgroups, PUT /api/subgroups/{subgroup_id}, DELETE /api/subgroups/{subgroup_id}. Champ subgroup_id ajouté au modèle User avec validation de cohérence section/sous-groupe."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS COMPLETS RÉUSSIS - 10/10 tests passés (100% réussite). Système de sous-groupes parfaitement fonctionnel: 1) Endpoints CRUD sous-groupes: GET/POST/PUT/DELETE fonctionnels avec validation complète, 2) Intégration utilisateur-sous-groupe: création/mise à jour utilisateurs avec subgroup_id OK, validation cohérence section/sous-groupe active (erreur 400), 3) Gestion erreurs: section inexistante (404), sous-groupe inexistant (404), noms dupliqués (400). Authentification: aadministrateur/admin123. Base URL: https://squadron-app.preview.emergentagent.com/api. Système robuste et sécurisé."
+
 frontend:
   - task: "Interface d'authentification française"
     implemented: true
