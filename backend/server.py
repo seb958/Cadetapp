@@ -158,7 +158,7 @@ class UserInvitation(BaseModel):
     nom: str
     prenom: str
     grade: Grade
-    role: UserRole
+    role: str  # Changé de UserRole à str pour supporter les rôles personnalisés
     section_id: Optional[str] = None
     subgroup_id: Optional[str] = None
     has_admin_privileges: bool = False
