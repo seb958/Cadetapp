@@ -254,6 +254,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS ASSIGNATION RESPONSABLES ET ORGANIGRAME RÉUSSIS - 11/11 tests passés (100% réussite). Fonctionnalités validées: 1) Assignation responsable: Cadet Commandant (ID: 434b7d13-f0d8-469a-aeec-f25b2e2fd3b7) assigné avec succès comme responsable de Section 2 (ID: 1f06b8a5-462a-457b-88c7-6cebf7a00bee) via PUT /api/sections/{section_id}, 2) Organigrame vérifié: 12 utilisateurs actifs avec hiérarchie correcte (Niveau 0: Admin Administrateur encadrement, Niveau 2: Cadet Commandant Adjudant-Chef, Niveau 3: Emma Leroy et sgst 2 Sergents, 8 autres utilisateurs), 3) Structure validée: Section 1 a bien Emma Leroy comme responsable, 5 sections trouvées avec responsables assignés. Authentification: aadministrateur/admin123. Base URL: https://squadron-app.preview.emergentagent.com/api."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS SPÉCIFIQUES NOUVEAUX RÔLES RÉUSSIS - 10/10 tests passés (100% réussite). Validation complète des assignations de nouveaux responsables: 1) sgst 2 (Sergent de section, ID: 2449f021-af86-4349-bf19-a2c7f1edd228) assigné avec succès comme responsable de Musique, 2) adj 2 (Adjudant d'escadron, ID: a01b2ec0-64d0-4e35-8305-5db28e3efa97) assigné avec succès comme responsable de Garde aux drapeaux, 3) Réassignation Section 2 de Cadet Commandant vers sgst 2 réussie, 4) Toutes les vérifications confirmées. État final: Section 1 (Emma Leroy), Section 2 (sgst 2), Section 3 (Jean Moreau), Musique (sgst 2), Garde aux drapeaux (adj 2). PROBLÈME D'ASSIGNATION NOUVEAUX RÔLES COMPLÈTEMENT RÉSOLU. Authentification: aadministrateur/admin123."
 
 frontend:
   - task: "Interface d'authentification française"
