@@ -793,6 +793,12 @@ export default function Admin() {
         if (userForm.section_id !== (editingUser.section_id || '')) {
           payload.section_id = userForm.section_id || null;
         }
+        if (userForm.subgroup_id !== (editingUser.subgroup_id || '')) {
+          payload.subgroup_id = userForm.subgroup_id || null;
+        }
+        if (userForm.has_admin_privileges !== (editingUser.has_admin_privileges || false)) {
+          payload.has_admin_privileges = userForm.has_admin_privileges;
+        }
 
         // Vérifier s'il y a des modifications
         if (Object.keys(payload).length === 0) {
