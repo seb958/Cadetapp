@@ -697,16 +697,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0f2fe',
   },
-  gestureContainer: {
-    flex: 1,
-  },
   organigrammeContainer: {
-    flex: 1,
     minHeight: 600,
-  },
-  organigrammeContent: {
-    position: 'relative',
-    backgroundColor: 'white',
+    minWidth: screenWidth * 2,
+    padding: 20,
   },
   
   // Lignes de connexion
