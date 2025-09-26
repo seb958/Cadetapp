@@ -172,7 +172,7 @@ class UserUpdate(BaseModel):
     prenom: Optional[str] = None
     email: Optional[EmailStr] = None
     grade: Optional[Grade] = None
-    role: Optional[UserRole] = None
+    role: Optional[str] = None  # Changé de UserRole à str pour supporter les rôles personnalisés
     section_id: Optional[str] = None
     subgroup_id: Optional[str] = None
     actif: Optional[bool] = None
