@@ -1,832 +1,528 @@
 #!/usr/bin/env python3
 """
-Tests pour le système de gestion des rôles - Escadron Cadets
-Test spécifique pour vérifier le système de rôles et permissions
-
-Tests demandés:
-1. Les rôles personnalisés créés sont bien récupérés par GET /api/roles
-2. Un nouveau rôle peut être créé avec POST /api/roles 
-3. Les rôles créés contiennent les bonnes données (id, name, description, permissions, is_system_role, created_at)
-4. Les rôles système vs personnalisés sont bien distingués
-5. Vérifier que les rôles créés dans les tests précédents sont toujours présents
-
-Credentials: admin@escadron.fr / admin123 ou aadministrateur / admin123
+Tests complets pour le système de sous-groupes nouvellement implémenté
+Test du système de gestion d'escadron de cadets - Focus sur les sous-groupes
 """
 
 import requests
 import json
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 import uuid
-import sys
 
 # Configuration
 BASE_URL = "https://squadron-app.preview.emergentagent.com/api"
-ADMIN_EMAIL = "admin@escadron.fr"
+ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class CadetSquadTester:
+class SubgroupSystemTester:
     def __init__(self):
         self.session = requests.Session()
         self.admin_token = None
-        self.test_results = {
-            "total_tests": 0,
-            "passed_tests": 0,
-            "failed_tests": 0,
-            "categories": {}
+        self.test_data = {
+            'sections': [],
+            'subgroups': [],
+            'users': []
         }
         
-    def log_test(self, category, test_name, success, message=""):
-        """Enregistrer le résultat d'un test"""
-        self.test_results["total_tests"] += 1
-        
-        if category not in self.test_results["categories"]:
-            self.test_results["categories"][category] = {
-                "passed": 0,
-                "failed": 0,
-                "tests": []
-            }
-        
-        if success:
-            self.test_results["passed_tests"] += 1
-            self.test_results["categories"][category]["passed"] += 1
-            status = "✅ PASS"
-        else:
-            self.test_results["failed_tests"] += 1
-            self.test_results["categories"][category]["failed"] += 1
-            status = "❌ FAIL"
-            
-        self.test_results["categories"][category]["tests"].append({
-            "name": test_name,
-            "success": success,
-            "message": message
-        })
-        
-        print(f"{status} - {category}: {test_name}")
-        if message:
-            print(f"    {message}")
-    
     def authenticate_admin(self):
-        """Authentification admin"""
-        try:
-            response = self.session.post(f"{BASE_URL}/auth/login", json={
-                "email": ADMIN_EMAIL,
-                "password": ADMIN_PASSWORD
-            })
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.admin_token = data["access_token"]
-                self.session.headers.update({
-                    "Authorization": f"Bearer {self.admin_token}"
-                })
-                self.log_test("Authentication", "Admin login", True, f"Token obtenu pour {data['user']['email']}")
-                return True
-            else:
-                self.log_test("Authentication", "Admin login", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Authentication", "Admin login", False, f"Exception: {str(e)}")
+        """Authentification avec le compte administrateur"""
+        print("🔐 Authentification administrateur...")
+        
+        login_data = {
+            "username": ADMIN_USERNAME,
+            "password": ADMIN_PASSWORD
+        }
+        
+        response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
+        
+        if response.status_code == 200:
+            data = response.json()
+            self.admin_token = data["access_token"]
+            self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
+            print(f"✅ Authentification réussie - Token obtenu")
+            return True
+        else:
+            print(f"❌ Échec authentification: {response.status_code} - {response.text}")
             return False
     
-    def test_get_roles(self):
-        """Test de récupération des rôles"""
+    def test_subgroup_crud_endpoints(self):
+        """Test des endpoints CRUD pour les sous-groupes"""
+        print("\n📋 === TEST ENDPOINTS CRUD SOUS-GROUPES ===")
+        
+        results = {
+            'get_subgroups': False,
+            'create_subgroup': False,
+            'update_subgroup': False,
+            'delete_subgroup': False
+        }
+        
         try:
-            response = self.session.get(f"{BASE_URL}/roles")
-            
-            if response.status_code == 200:
-                roles = response.json()
-                self.log_test("Role Management", "GET /api/roles", True, f"Récupéré {len(roles)} rôles")
-                
-                # Vérifier la structure des rôles
-                if roles and len(roles) > 0:
-                    first_role = roles[0]
-                    required_fields = ["id", "name", "permissions", "is_system_role", "created_at"]
-                    missing_fields = [field for field in required_fields if field not in first_role]
-                    
-                    if not missing_fields:
-                        self.log_test("Role Management", "Role data structure", True, "Structure des rôles correcte")
-                    else:
-                        self.log_test("Role Management", "Role data structure", False, f"Champs manquants: {missing_fields}")
-                else:
-                    self.log_test("Role Management", "Role data structure", True, "Aucun rôle trouvé (base vide)")
-                    
-            else:
-                self.log_test("Role Management", "GET /api/roles", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Role Management", "GET /api/roles", False, f"Exception: {str(e)}")
-    
-    def test_create_role(self):
-        """Test de création d'un rôle"""
-        try:
-            role_data = {
-                "name": "Test Role Manager",
-                "description": "Rôle de test pour la gestion des permissions",
-                "permissions": ["view_users", "create_users", "view_sections"]
+            # 1. Créer une section de test
+            print("\n1️⃣ Création section de test...")
+            section_data = {
+                "nom": f"Section Test Sous-groupes {datetime.now().strftime('%H%M%S')}",
+                "description": "Section créée pour tester les sous-groupes"
             }
             
-            response = self.session.post(f"{BASE_URL}/roles", json=role_data)
-            
+            response = self.session.post(f"{BASE_URL}/sections", json=section_data)
             if response.status_code == 200:
-                role = response.json()
-                self.created_role_id = role["id"]  # Stocker pour les tests suivants
-                self.log_test("Role Management", "POST /api/roles", True, f"Rôle créé avec ID: {role['id']}")
-                
-                # Vérifier que le rôle a été créé avec les bonnes données
-                if (role["name"] == role_data["name"] and 
-                    role["description"] == role_data["description"] and
-                    set(role["permissions"]) == set(role_data["permissions"])):
-                    self.log_test("Role Management", "Role creation data validation", True, "Données du rôle correctes")
-                else:
-                    self.log_test("Role Management", "Role creation data validation", False, "Données du rôle incorrectes")
-                    
+                section = response.json()
+                self.test_data['sections'].append(section['id'])
+                print(f"✅ Section créée: {section['id']}")
             else:
-                self.log_test("Role Management", "POST /api/roles", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Role Management", "POST /api/roles", False, f"Exception: {str(e)}")
-    
-    def test_update_role(self):
-        """Test de mise à jour d'un rôle"""
-        if not hasattr(self, 'created_role_id'):
-            self.log_test("Role Management", "PUT /api/roles/{role_id}", False, "Aucun rôle créé pour le test")
-            return
+                print(f"❌ Erreur création section: {response.status_code} - {response.text}")
+                return results
             
-        try:
+            section_id = section['id']
+            
+            # 2. Test GET /api/sections/{section_id}/subgroups (vide initialement)
+            print("\n2️⃣ Test GET sous-groupes (section vide)...")
+            response = self.session.get(f"{BASE_URL}/sections/{section_id}/subgroups")
+            if response.status_code == 200:
+                subgroups = response.json()
+                if isinstance(subgroups, list) and len(subgroups) == 0:
+                    print("✅ GET sous-groupes fonctionne (liste vide)")
+                    results['get_subgroups'] = True
+                else:
+                    print(f"⚠️ Réponse inattendue: {subgroups}")
+            else:
+                print(f"❌ Erreur GET sous-groupes: {response.status_code} - {response.text}")
+            
+            # 3. Test POST /api/subgroups - Création sous-groupe
+            print("\n3️⃣ Test POST création sous-groupe...")
+            subgroup_data = {
+                "nom": f"Sous-groupe Alpha {datetime.now().strftime('%H%M%S')}",
+                "description": "Premier sous-groupe de test",
+                "section_id": section_id
+            }
+            
+            response = self.session.post(f"{BASE_URL}/subgroups", json=subgroup_data)
+            if response.status_code == 200:
+                subgroup = response.json()
+                self.test_data['subgroups'].append(subgroup['id'])
+                print(f"✅ Sous-groupe créé: {subgroup['id']}")
+                print(f"   Nom: {subgroup['nom']}")
+                print(f"   Section: {subgroup['section_id']}")
+                results['create_subgroup'] = True
+                subgroup_id = subgroup['id']
+            else:
+                print(f"❌ Erreur création sous-groupe: {response.status_code} - {response.text}")
+                return results
+            
+            # 4. Vérifier GET après création
+            print("\n4️⃣ Vérification GET après création...")
+            response = self.session.get(f"{BASE_URL}/sections/{section_id}/subgroups")
+            if response.status_code == 200:
+                subgroups = response.json()
+                if len(subgroups) == 1 and subgroups[0]['id'] == subgroup_id:
+                    print("✅ GET sous-groupes retourne le sous-groupe créé")
+                else:
+                    print(f"⚠️ Sous-groupe non trouvé dans la liste: {subgroups}")
+            
+            # 5. Test PUT /api/subgroups/{subgroup_id} - Mise à jour
+            print("\n5️⃣ Test PUT mise à jour sous-groupe...")
             update_data = {
-                "name": "Test Role Manager Updated",
-                "description": "Rôle de test mis à jour",
-                "permissions": ["view_users", "create_users", "edit_users", "view_sections"]
+                "nom": f"Sous-groupe Alpha Modifié {datetime.now().strftime('%H%M%S')}",
+                "description": "Description mise à jour"
             }
             
-            response = self.session.put(f"{BASE_URL}/roles/{self.created_role_id}", json=update_data)
-            
+            response = self.session.put(f"{BASE_URL}/subgroups/{subgroup_id}", json=update_data)
             if response.status_code == 200:
-                self.log_test("Role Management", "PUT /api/roles/{role_id}", True, "Rôle mis à jour avec succès")
+                print("✅ Mise à jour sous-groupe réussie")
+                results['update_subgroup'] = True
                 
-                # Vérifier la mise à jour en récupérant le rôle
-                get_response = self.session.get(f"{BASE_URL}/roles")
-                if get_response.status_code == 200:
-                    roles = get_response.json()
-                    updated_role = next((r for r in roles if r["id"] == self.created_role_id), None)
-                    
-                    if updated_role and updated_role["name"] == update_data["name"]:
-                        self.log_test("Role Management", "Role update validation", True, "Mise à jour confirmée")
+                # Vérifier la mise à jour
+                response = self.session.get(f"{BASE_URL}/sections/{section_id}/subgroups")
+                if response.status_code == 200:
+                    subgroups = response.json()
+                    updated_subgroup = next((sg for sg in subgroups if sg['id'] == subgroup_id), None)
+                    if updated_subgroup and updated_subgroup['nom'] == update_data['nom']:
+                        print("✅ Vérification mise à jour: nom correctement modifié")
                     else:
-                        self.log_test("Role Management", "Role update validation", False, "Mise à jour non confirmée")
-                        
+                        print("⚠️ Mise à jour non reflétée dans GET")
             else:
-                self.log_test("Role Management", "PUT /api/roles/{role_id}", False, f"Status: {response.status_code}, Response: {response.text}")
+                print(f"❌ Erreur mise à jour sous-groupe: {response.status_code} - {response.text}")
+            
+            # 6. Test DELETE /api/subgroups/{subgroup_id} - Suppression
+            print("\n6️⃣ Test DELETE suppression sous-groupe...")
+            response = self.session.delete(f"{BASE_URL}/subgroups/{subgroup_id}")
+            if response.status_code == 200:
+                print("✅ Suppression sous-groupe réussie")
+                results['delete_subgroup'] = True
+                
+                # Vérifier la suppression
+                response = self.session.get(f"{BASE_URL}/sections/{section_id}/subgroups")
+                if response.status_code == 200:
+                    subgroups = response.json()
+                    if len(subgroups) == 0:
+                        print("✅ Vérification suppression: liste vide")
+                    else:
+                        print(f"⚠️ Sous-groupe encore présent après suppression: {subgroups}")
+                
+                # Retirer de nos données de test
+                if subgroup_id in self.test_data['subgroups']:
+                    self.test_data['subgroups'].remove(subgroup_id)
+            else:
+                print(f"❌ Erreur suppression sous-groupe: {response.status_code} - {response.text}")
                 
         except Exception as e:
-            self.log_test("Role Management", "PUT /api/roles/{role_id}", False, f"Exception: {str(e)}")
+            print(f"❌ Exception dans test CRUD: {str(e)}")
+        
+        return results
     
-    def test_delete_role(self):
-        """Test de suppression d'un rôle"""
-        if not hasattr(self, 'created_role_id'):
-            self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, "Aucun rôle créé pour le test")
-            return
-            
+    def test_user_subgroup_integration(self):
+        """Test de l'intégration utilisateur-sous-groupe"""
+        print("\n👥 === TEST INTÉGRATION UTILISATEUR-SOUS-GROUPE ===")
+        
+        results = {
+            'user_creation_with_subgroup': False,
+            'user_update_subgroup': False,
+            'subgroup_section_validation': False
+        }
+        
         try:
-            response = self.session.delete(f"{BASE_URL}/roles/{self.created_role_id}")
+            # 1. Créer section et sous-groupe pour les tests
+            print("\n1️⃣ Préparation: création section et sous-groupe...")
             
-            if response.status_code == 200:
-                self.log_test("Role Management", "DELETE /api/roles/{role_id}", True, "Rôle supprimé avec succès")
-                
-                # Vérifier que le rôle a été supprimé
-                get_response = self.session.get(f"{BASE_URL}/roles")
-                if get_response.status_code == 200:
-                    roles = get_response.json()
-                    deleted_role = next((r for r in roles if r["id"] == self.created_role_id), None)
-                    
-                    if not deleted_role:
-                        self.log_test("Role Management", "Role deletion validation", True, "Suppression confirmée")
-                    else:
-                        self.log_test("Role Management", "Role deletion validation", False, "Rôle toujours présent")
-                        
-            else:
-                self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Role Management", "DELETE /api/roles/{role_id}", False, f"Exception: {str(e)}")
-    
-    def test_get_user_filters(self):
-        """Test de récupération des filtres utilisateurs"""
-        try:
-            response = self.session.get(f"{BASE_URL}/users/filters")
+            # Créer section
+            section_data = {
+                "nom": f"Section Intégration {datetime.now().strftime('%H%M%S')}",
+                "description": "Section pour test intégration utilisateur-sous-groupe"
+            }
+            response = self.session.post(f"{BASE_URL}/sections", json=section_data)
+            if response.status_code != 200:
+                print(f"❌ Erreur création section: {response.text}")
+                return results
             
-            if response.status_code == 200:
-                filters = response.json()
-                self.log_test("User Filters", "GET /api/users/filters", True, "Filtres récupérés avec succès")
-                
-                # Vérifier la structure des filtres
-                required_keys = ["grades", "roles", "sections"]
-                missing_keys = [key for key in required_keys if key not in filters]
-                
-                if not missing_keys:
-                    grades_count = len(filters["grades"])
-                    roles_count = len(filters["roles"])
-                    sections_count = len(filters["sections"])
-                    
-                    self.log_test("User Filters", "Filter structure validation", True, 
-                                f"Structure correcte: {grades_count} grades, {roles_count} rôles, {sections_count} sections")
-                else:
-                    self.log_test("User Filters", "Filter structure validation", False, f"Clés manquantes: {missing_keys}")
-                    
-            else:
-                self.log_test("User Filters", "GET /api/users/filters", False, f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("User Filters", "GET /api/users/filters", False, f"Exception: {str(e)}")
-    
-    def test_user_filtering(self):
-        """Test de filtrage des utilisateurs"""
-        try:
-            # Test 1: Filtrer par rôle
-            response = self.session.get(f"{BASE_URL}/users?role=cadet")
-            if response.status_code == 200:
-                cadets = response.json()
-                self.log_test("User Filters", "Filter by role (cadet)", True, f"Trouvé {len(cadets)} cadets")
-                
-                # Vérifier que tous les utilisateurs retournés ont bien le rôle cadet
-                if cadets:
-                    all_cadets = all(user.get("role") == "cadet" for user in cadets)
-                    if all_cadets:
-                        self.log_test("User Filters", "Role filter accuracy", True, "Tous les utilisateurs ont le bon rôle")
-                    else:
-                        self.log_test("User Filters", "Role filter accuracy", False, "Certains utilisateurs n'ont pas le bon rôle")
-            else:
-                self.log_test("User Filters", "Filter by role (cadet)", False, f"Status: {response.status_code}")
+            section = response.json()
+            section_id = section['id']
+            self.test_data['sections'].append(section_id)
             
-            # Test 2: Filtrer par grade
-            response = self.session.get(f"{BASE_URL}/users?grade=cadet")
-            if response.status_code == 200:
-                users_with_grade = response.json()
-                self.log_test("User Filters", "Filter by grade (cadet)", True, f"Trouvé {len(users_with_grade)} utilisateurs avec grade cadet")
-                
-                # Vérifier l'exactitude du filtre
-                if users_with_grade:
-                    all_correct_grade = all(user.get("grade") == "cadet" for user in users_with_grade)
-                    if all_correct_grade:
-                        self.log_test("User Filters", "Grade filter accuracy", True, "Tous les utilisateurs ont le bon grade")
-                    else:
-                        self.log_test("User Filters", "Grade filter accuracy", False, "Certains utilisateurs n'ont pas le bon grade")
-            else:
-                self.log_test("User Filters", "Filter by grade (cadet)", False, f"Status: {response.status_code}")
+            # Créer sous-groupe
+            subgroup_data = {
+                "nom": f"Sous-groupe Beta {datetime.now().strftime('%H%M%S')}",
+                "description": "Sous-groupe pour test intégration",
+                "section_id": section_id
+            }
+            response = self.session.post(f"{BASE_URL}/subgroups", json=subgroup_data)
+            if response.status_code != 200:
+                print(f"❌ Erreur création sous-groupe: {response.text}")
+                return results
             
-            # Test 3: Filtrer par section
-            sections_response = self.session.get(f"{BASE_URL}/sections")
-            if sections_response.status_code == 200:
-                sections = sections_response.json()
-                if sections:
-                    section_id = sections[0]["id"]
-                    response = self.session.get(f"{BASE_URL}/users?section_id={section_id}")
-                    if response.status_code == 200:
-                        users_in_section = response.json()
-                        self.log_test("User Filters", "Filter by section", True, f"Trouvé {len(users_in_section)} utilisateurs dans la section")
-                        
-                        # Vérifier l'exactitude du filtre
-                        if users_in_section:
-                            all_correct_section = all(user.get("section_id") == section_id for user in users_in_section)
-                            if all_correct_section:
-                                self.log_test("User Filters", "Section filter accuracy", True, "Tous les utilisateurs sont dans la bonne section")
-                            else:
-                                self.log_test("User Filters", "Section filter accuracy", False, "Certains utilisateurs ne sont pas dans la bonne section")
-                    else:
-                        self.log_test("User Filters", "Filter by section", False, f"Status: {response.status_code}")
-                else:
-                    self.log_test("User Filters", "Filter by section", True, "Aucune section disponible pour le test")
+            subgroup = response.json()
+            subgroup_id = subgroup['id']
+            self.test_data['subgroups'].append(subgroup_id)
+            print(f"✅ Section {section_id} et sous-groupe {subgroup_id} créés")
             
-            # Test 4: Filtres combinés
-            response = self.session.get(f"{BASE_URL}/users?role=cadet&grade=cadet")
-            if response.status_code == 200:
-                filtered_users = response.json()
-                self.log_test("User Filters", "Combined filters (role + grade)", True, f"Trouvé {len(filtered_users)} utilisateurs avec filtres combinés")
-                
-                # Vérifier l'exactitude des filtres combinés
-                if filtered_users:
-                    all_correct = all(user.get("role") == "cadet" and user.get("grade") == "cadet" for user in filtered_users)
-                    if all_correct:
-                        self.log_test("User Filters", "Combined filters accuracy", True, "Tous les utilisateurs correspondent aux filtres combinés")
-                    else:
-                        self.log_test("User Filters", "Combined filters accuracy", False, "Certains utilisateurs ne correspondent pas aux filtres")
-            else:
-                self.log_test("User Filters", "Combined filters (role + grade)", False, f"Status: {response.status_code}")
-                
-        except Exception as e:
-            self.log_test("User Filters", "User filtering tests", False, f"Exception: {str(e)}")
-    
-    def test_admin_privileges_field(self):
-        """Test du support du champ has_admin_privileges"""
-        try:
-            # Test 1: Créer un utilisateur avec privilèges admin
+            # 2. Test création utilisateur avec sous-groupe
+            print("\n2️⃣ Test création utilisateur avec sous-groupe...")
             user_data = {
-                "nom": "Test",
-                "prenom": "Admin Privileges",
-                "email": "test.admin.privileges@escadron.fr",
+                "nom": "TestSubgroup",
+                "prenom": f"Cadet{datetime.now().strftime('%H%M%S')}",
+                "email": f"cadet.subgroup.{datetime.now().strftime('%H%M%S')}@test.fr",
                 "grade": "cadet",
                 "role": "cadet",
-                "has_admin_privileges": True
+                "section_id": section_id,
+                "subgroup_id": subgroup_id,
+                "has_admin_privileges": False
             }
             
             response = self.session.post(f"{BASE_URL}/users", json=user_data)
-            
             if response.status_code == 200:
-                result = response.json()
-                user_id = result["user_id"]
-                self.test_user_id = user_id  # Stocker pour nettoyage
-                self.log_test("Admin Privileges", "Create user with admin privileges", True, f"Utilisateur créé avec ID: {user_id}")
+                user_result = response.json()
+                user_id = user_result['user_id']
+                self.test_data['users'].append(user_id)
+                print(f"✅ Utilisateur créé avec sous-groupe: {user_id}")
+                results['user_creation_with_subgroup'] = True
                 
-                # Test 2: Vérifier que l'utilisateur a bien les privilèges admin
-                get_response = self.session.get(f"{BASE_URL}/users/{user_id}")
-                if get_response.status_code == 200:
-                    user = get_response.json()
-                    if user.get("has_admin_privileges") == True:
-                        self.log_test("Admin Privileges", "Verify admin privileges field", True, "Champ has_admin_privileges correctement défini")
+                # Vérifier que l'utilisateur a bien le sous-groupe
+                response = self.session.get(f"{BASE_URL}/users/{user_id}")
+                if response.status_code == 200:
+                    user = response.json()
+                    if user.get('subgroup_id') == subgroup_id:
+                        print("✅ Vérification: utilisateur a le bon sous-groupe")
                     else:
-                        self.log_test("Admin Privileges", "Verify admin privileges field", False, f"has_admin_privileges = {user.get('has_admin_privileges')}")
-                else:
-                    self.log_test("Admin Privileges", "Verify admin privileges field", False, f"Impossible de récupérer l'utilisateur: {get_response.status_code}")
+                        print(f"⚠️ Sous-groupe incorrect: attendu {subgroup_id}, reçu {user.get('subgroup_id')}")
+            else:
+                print(f"❌ Erreur création utilisateur: {response.status_code} - {response.text}")
+            
+            # 3. Test mise à jour sous-groupe utilisateur
+            print("\n3️⃣ Test mise à jour sous-groupe utilisateur...")
+            
+            # Créer un deuxième sous-groupe
+            subgroup2_data = {
+                "nom": f"Sous-groupe Gamma {datetime.now().strftime('%H%M%S')}",
+                "description": "Deuxième sous-groupe pour test",
+                "section_id": section_id
+            }
+            response = self.session.post(f"{BASE_URL}/subgroups", json=subgroup2_data)
+            if response.status_code == 200:
+                subgroup2 = response.json()
+                subgroup2_id = subgroup2['id']
+                self.test_data['subgroups'].append(subgroup2_id)
                 
-                # Test 3: Mettre à jour les privilèges admin
-                update_data = {"has_admin_privileges": False}
-                update_response = self.session.put(f"{BASE_URL}/users/{user_id}", json=update_data)
-                
-                if update_response.status_code == 200:
-                    self.log_test("Admin Privileges", "Update admin privileges", True, "Privilèges admin mis à jour")
+                # Mettre à jour l'utilisateur
+                update_data = {"subgroup_id": subgroup2_id}
+                response = self.session.put(f"{BASE_URL}/users/{user_id}", json=update_data)
+                if response.status_code == 200:
+                    print("✅ Mise à jour sous-groupe utilisateur réussie")
+                    results['user_update_subgroup'] = True
                     
                     # Vérifier la mise à jour
-                    verify_response = self.session.get(f"{BASE_URL}/users/{user_id}")
-                    if verify_response.status_code == 200:
-                        updated_user = verify_response.json()
-                        if updated_user.get("has_admin_privileges") == False:
-                            self.log_test("Admin Privileges", "Verify admin privileges update", True, "Mise à jour des privilèges confirmée")
+                    response = self.session.get(f"{BASE_URL}/users/{user_id}")
+                    if response.status_code == 200:
+                        user = response.json()
+                        if user.get('subgroup_id') == subgroup2_id:
+                            print("✅ Vérification: sous-groupe utilisateur mis à jour")
                         else:
-                            self.log_test("Admin Privileges", "Verify admin privileges update", False, "Privilèges non mis à jour")
+                            print(f"⚠️ Mise à jour non reflétée: {user.get('subgroup_id')}")
                 else:
-                    self.log_test("Admin Privileges", "Update admin privileges", False, f"Status: {update_response.status_code}")
+                    print(f"❌ Erreur mise à jour utilisateur: {response.text}")
+            
+            # 4. Test validation section-sous-groupe
+            print("\n4️⃣ Test validation cohérence section-sous-groupe...")
+            
+            # Créer une autre section
+            other_section_data = {
+                "nom": f"Autre Section {datetime.now().strftime('%H%M%S')}",
+                "description": "Section pour test validation"
+            }
+            response = self.session.post(f"{BASE_URL}/sections", json=other_section_data)
+            if response.status_code == 200:
+                other_section = response.json()
+                other_section_id = other_section['id']
+                self.test_data['sections'].append(other_section_id)
                 
-            else:
-                self.log_test("Admin Privileges", "Create user with admin privileges", False, f"Status: {response.status_code}, Response: {response.text}")
+                # Essayer d'assigner un utilisateur à un sous-groupe d'une autre section
+                invalid_update = {
+                    "section_id": other_section_id,
+                    "subgroup_id": subgroup_id  # Sous-groupe de la première section
+                }
                 
+                response = self.session.put(f"{BASE_URL}/users/{user_id}", json=invalid_update)
+                if response.status_code == 400:
+                    print("✅ Validation section-sous-groupe: erreur 400 attendue")
+                    results['subgroup_section_validation'] = True
+                elif response.status_code != 200:
+                    print(f"✅ Validation section-sous-groupe: erreur {response.status_code} (validation active)")
+                    results['subgroup_section_validation'] = True
+                else:
+                    print("⚠️ Validation section-sous-groupe: aucune erreur (validation manquante?)")
+                    
         except Exception as e:
-            self.log_test("Admin Privileges", "Admin privileges tests", False, f"Exception: {str(e)}")
+            print(f"❌ Exception dans test intégration: {str(e)}")
+        
+        return results
     
-    def test_permissions_protection(self):
-        """Test de la protection des endpoints (permissions admin/encadrement)"""
+    def test_error_scenarios(self):
+        """Test des scénarios d'erreur"""
+        print("\n🚨 === TEST SCÉNARIOS D'ERREUR ===")
+        
+        results = {
+            'nonexistent_section_subgroup_creation': False,
+            'nonexistent_subgroup_user_assignment': False,
+            'duplicate_subgroup_name': False
+        }
+        
         try:
-            # Créer une session sans token admin pour tester les permissions
-            test_session = requests.Session()
+            # 1. Test création sous-groupe avec section inexistante
+            print("\n1️⃣ Test création sous-groupe avec section inexistante...")
+            fake_section_id = str(uuid.uuid4())
             
-            # Test 1: Accès aux rôles sans authentification
-            response = test_session.get(f"{BASE_URL}/roles")
-            if response.status_code in [401, 403]:  # Les deux sont acceptables
-                self.log_test("Permissions", "Roles access without auth", True, f"Accès refusé sans authentification (status: {response.status_code})")
-            else:
-                self.log_test("Permissions", "Roles access without auth", False, f"Status inattendu: {response.status_code}")
+            subgroup_data = {
+                "nom": "Sous-groupe Erreur",
+                "description": "Test avec section inexistante",
+                "section_id": fake_section_id
+            }
             
-            # Test 2: Accès aux filtres utilisateurs sans authentification
-            response = test_session.get(f"{BASE_URL}/users/filters")
-            if response.status_code in [401, 403]:  # Les deux sont acceptables
-                self.log_test("Permissions", "User filters access without auth", True, f"Accès refusé sans authentification (status: {response.status_code})")
+            response = self.session.post(f"{BASE_URL}/subgroups", json=subgroup_data)
+            if response.status_code == 404:
+                print("✅ Erreur 404 pour section inexistante")
+                results['nonexistent_section_subgroup_creation'] = True
+            elif response.status_code != 200:
+                print(f"✅ Erreur {response.status_code} pour section inexistante (validation active)")
+                results['nonexistent_section_subgroup_creation'] = True
             else:
-                self.log_test("Permissions", "User filters access without auth", False, f"Status inattendu: {response.status_code}")
+                print("⚠️ Aucune erreur pour section inexistante (validation manquante)")
             
-            # Test 3: Création de rôle sans authentification
-            role_data = {"name": "Test Role", "permissions": []}
-            response = test_session.post(f"{BASE_URL}/roles", json=role_data)
-            if response.status_code in [401, 403]:  # Les deux sont acceptables
-                self.log_test("Permissions", "Create role without auth", True, f"Création refusée sans authentification (status: {response.status_code})")
-            else:
-                self.log_test("Permissions", "Create role without auth", False, f"Status inattendu: {response.status_code}")
+            # 2. Test assignation utilisateur à sous-groupe inexistant
+            print("\n2️⃣ Test assignation utilisateur à sous-groupe inexistant...")
+            
+            # D'abord créer un utilisateur valide
+            section_data = {
+                "nom": f"Section Erreur {datetime.now().strftime('%H%M%S')}",
+                "description": "Section pour test erreur"
+            }
+            response = self.session.post(f"{BASE_URL}/sections", json=section_data)
+            if response.status_code == 200:
+                section = response.json()
+                section_id = section['id']
+                self.test_data['sections'].append(section_id)
                 
+                user_data = {
+                    "nom": "TestErreur",
+                    "prenom": f"Cadet{datetime.now().strftime('%H%M%S')}",
+                    "grade": "cadet",
+                    "role": "cadet",
+                    "section_id": section_id
+                }
+                
+                response = self.session.post(f"{BASE_URL}/users", json=user_data)
+                if response.status_code == 200:
+                    user_result = response.json()
+                    user_id = user_result['user_id']
+                    self.test_data['users'].append(user_id)
+                    
+                    # Essayer d'assigner un sous-groupe inexistant
+                    fake_subgroup_id = str(uuid.uuid4())
+                    update_data = {"subgroup_id": fake_subgroup_id}
+                    
+                    response = self.session.put(f"{BASE_URL}/users/{user_id}", json=update_data)
+                    if response.status_code == 404:
+                        print("✅ Erreur 404 pour sous-groupe inexistant")
+                        results['nonexistent_subgroup_user_assignment'] = True
+                    elif response.status_code != 200:
+                        print(f"✅ Erreur {response.status_code} pour sous-groupe inexistant (validation active)")
+                        results['nonexistent_subgroup_user_assignment'] = True
+                    else:
+                        print("⚠️ Aucune erreur pour sous-groupe inexistant (validation manquante)")
+            
+            # 3. Test nom de sous-groupe dupliqué dans même section
+            print("\n3️⃣ Test nom de sous-groupe dupliqué...")
+            
+            if section_id:
+                # Créer premier sous-groupe
+                subgroup_data = {
+                    "nom": f"Sous-groupe Unique {datetime.now().strftime('%H%M%S')}",
+                    "description": "Premier sous-groupe",
+                    "section_id": section_id
+                }
+                
+                response = self.session.post(f"{BASE_URL}/subgroups", json=subgroup_data)
+                if response.status_code == 200:
+                    subgroup = response.json()
+                    self.test_data['subgroups'].append(subgroup['id'])
+                    
+                    # Essayer de créer un deuxième avec le même nom
+                    duplicate_data = {
+                        "nom": subgroup_data["nom"],  # Même nom
+                        "description": "Tentative de duplication",
+                        "section_id": section_id
+                    }
+                    
+                    response = self.session.post(f"{BASE_URL}/subgroups", json=duplicate_data)
+                    if response.status_code == 400:
+                        print("✅ Erreur 400 pour nom dupliqué")
+                        results['duplicate_subgroup_name'] = True
+                    elif response.status_code != 200:
+                        print(f"✅ Erreur {response.status_code} pour nom dupliqué (validation active)")
+                        results['duplicate_subgroup_name'] = True
+                    else:
+                        print("⚠️ Aucune erreur pour nom dupliqué (validation manquante)")
+                        # Si créé par erreur, l'ajouter pour nettoyage
+                        if response.json().get('id'):
+                            self.test_data['subgroups'].append(response.json()['id'])
+                            
         except Exception as e:
-            self.log_test("Permissions", "Permissions protection tests", False, f"Exception: {str(e)}")
+            print(f"❌ Exception dans test erreurs: {str(e)}")
+        
+        return results
     
     def cleanup_test_data(self):
         """Nettoyer les données de test créées"""
-        # Nettoyer l'utilisateur de test s'il existe
-        if hasattr(self, 'test_user_id'):
-            try:
-                self.session.delete(f"{BASE_URL}/users/{self.test_user_id}")
-                print(f"🧹 Nettoyage: Utilisateur de test {self.test_user_id} supprimé")
-            except:
-                pass
+        print("\n🧹 === NETTOYAGE DONNÉES DE TEST ===")
         
-        # Nettoyer le rôle de test s'il existe
-        if hasattr(self, 'created_role_id'):
+        # Supprimer les utilisateurs
+        for user_id in self.test_data['users']:
             try:
-                self.session.delete(f"{BASE_URL}/roles/{self.created_role_id}")
-                print(f"🧹 Nettoyage: Rôle de test {self.created_role_id} supprimé")
-            except:
-                pass
-
-    def test_consecutive_absences_calculation(self):
-        """Test du calcul des absences consécutives"""
-        try:
-            # Test avec seuil par défaut (3)
-            response = self.session.get(f"{BASE_URL}/alerts/consecutive-absences")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log_test("Alerts", "Calculate consecutive absences (default threshold)", True, 
-                            f"Trouvé {len(data)} cadets avec absences consécutives")
-                
-                # Vérifier la structure des données
-                if data and len(data) > 0:
-                    first_item = data[0]
-                    required_fields = ["cadet_id", "consecutive_absences", "last_absence_date"]
-                    missing_fields = [field for field in required_fields if field not in first_item]
-                    
-                    if not missing_fields:
-                        self.log_test("Alerts", "Consecutive absences data structure", True, 
-                                    f"Structure correcte: {list(first_item.keys())}")
-                    else:
-                        self.log_test("Alerts", "Consecutive absences data structure", False, 
-                                    f"Champs manquants: {missing_fields}")
-                else:
-                    self.log_test("Alerts", "Consecutive absences data structure", True, 
-                                "Aucune absence consécutive trouvée (normal si pas de données)")
-                
-                # Test avec seuil personnalisé
-                response_custom = self.session.get(f"{BASE_URL}/alerts/consecutive-absences?threshold=2")
-                if response_custom.status_code == 200:
-                    custom_data = response_custom.json()
-                    self.log_test("Alerts", "Calculate consecutive absences (custom threshold=2)", True, 
-                                f"Trouvé {len(custom_data)} cadets avec seuil=2")
-                else:
-                    self.log_test("Alerts", "Calculate consecutive absences (custom threshold=2)", False, 
-                                f"Status: {response_custom.status_code}")
-                
-            else:
-                self.log_test("Alerts", "Calculate consecutive absences (default threshold)", False, 
-                            f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Calculate consecutive absences", False, f"Exception: {str(e)}")
-    
-    def test_get_alerts(self):
-        """Test de récupération des alertes"""
-        try:
-            response = self.session.get(f"{BASE_URL}/alerts")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.log_test("Alerts", "Get all alerts", True, f"Trouvé {len(data)} alertes")
-                
-                # Vérifier la structure si des alertes existent
-                if data and len(data) > 0:
-                    first_alert = data[0]
-                    required_fields = ["id", "cadet_id", "cadet_nom", "cadet_prenom", "consecutive_absences", 
-                                     "status", "created_at"]
-                    missing_fields = [field for field in required_fields if field not in first_alert]
-                    
-                    if not missing_fields:
-                        self.log_test("Alerts", "Alert data structure", True, 
-                                    f"Structure correcte avec statut: {first_alert.get('status')}")
-                    else:
-                        self.log_test("Alerts", "Alert data structure", False, 
-                                    f"Champs manquants: {missing_fields}")
-                else:
-                    self.log_test("Alerts", "Alert data structure", True, "Aucune alerte existante")
-                    
-            else:
-                self.log_test("Alerts", "Get all alerts", False, 
-                            f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Get all alerts", False, f"Exception: {str(e)}")
-    
-    def test_generate_alerts(self):
-        """Test de génération d'alertes"""
-        try:
-            # Test avec seuil par défaut
-            response = self.session.post(f"{BASE_URL}/alerts/generate")
-            
-            if response.status_code == 200:
-                data = response.json()
-                message = data.get("message", "")
-                self.log_test("Alerts", "Generate alerts (default threshold)", True, message)
-                
-                # Test avec seuil personnalisé
-                response_custom = self.session.post(f"{BASE_URL}/alerts/generate?threshold=2")
-                if response_custom.status_code == 200:
-                    custom_data = response_custom.json()
-                    custom_message = custom_data.get("message", "")
-                    self.log_test("Alerts", "Generate alerts (custom threshold=2)", True, custom_message)
-                else:
-                    self.log_test("Alerts", "Generate alerts (custom threshold=2)", False, 
-                                f"Status: {response_custom.status_code}")
-                
-            else:
-                self.log_test("Alerts", "Generate alerts (default threshold)", False, 
-                            f"Status: {response.status_code}, Response: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Generate alerts", False, f"Exception: {str(e)}")
-    
-    def test_alert_status_updates(self):
-        """Test de mise à jour des statuts d'alertes"""
-        try:
-            # D'abord récupérer les alertes existantes
-            response = self.session.get(f"{BASE_URL}/alerts")
-            
-            if response.status_code != 200:
-                self.log_test("Alerts", "Alert status updates", False, "Impossible de récupérer les alertes")
-                return
-                
-            alerts = response.json()
-            
-            if not alerts:
-                # Générer des alertes d'abord
-                gen_response = self.session.post(f"{BASE_URL}/alerts/generate?threshold=1")
-                if gen_response.status_code == 200:
-                    # Récupérer à nouveau
-                    response = self.session.get(f"{BASE_URL}/alerts")
-                    if response.status_code == 200:
-                        alerts = response.json()
-                
-            if alerts and len(alerts) > 0:
-                alert_id = alerts[0]["id"]
-                
-                # Test 1: Passer à "contacted"
-                update_data = {
-                    "status": "contacted",
-                    "contact_comment": "Famille contactée par téléphone"
-                }
-                
-                response = self.session.put(f"{BASE_URL}/alerts/{alert_id}", json=update_data)
-                
+                response = self.session.delete(f"{BASE_URL}/users/{user_id}")
                 if response.status_code == 200:
-                    self.log_test("Alerts", "Update alert to contacted", True, 
-                                "Alerte mise à jour vers 'contacted'")
-                    
-                    # Test 2: Passer à "resolved"
-                    resolve_data = {"status": "resolved"}
-                    response = self.session.put(f"{BASE_URL}/alerts/{alert_id}", json=resolve_data)
-                    
-                    if response.status_code == 200:
-                        self.log_test("Alerts", "Update alert to resolved", True, 
-                                    "Alerte mise à jour vers 'resolved'")
-                    else:
-                        self.log_test("Alerts", "Update alert to resolved", False, 
-                                    f"Status: {response.status_code}")
-                        
+                    print(f"✅ Utilisateur {user_id} supprimé")
                 else:
-                    self.log_test("Alerts", "Update alert to contacted", False, 
-                                f"Status: {response.status_code}, Response: {response.text}")
-                    
-                # Test 3: Test avec ID invalide
-                invalid_response = self.session.put(f"{BASE_URL}/alerts/invalid-id", json=update_data)
-                if invalid_response.status_code == 404:
-                    self.log_test("Alerts", "Update non-existent alert", True, 
-                                "Erreur 404 correcte pour ID invalide")
+                    print(f"⚠️ Erreur suppression utilisateur {user_id}: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Exception suppression utilisateur {user_id}: {str(e)}")
+        
+        # Supprimer les sous-groupes
+        for subgroup_id in self.test_data['subgroups']:
+            try:
+                response = self.session.delete(f"{BASE_URL}/subgroups/{subgroup_id}")
+                if response.status_code == 200:
+                    print(f"✅ Sous-groupe {subgroup_id} supprimé")
                 else:
-                    self.log_test("Alerts", "Update non-existent alert", False, 
-                                f"Status attendu 404, reçu: {invalid_response.status_code}")
-                    
-            else:
-                self.log_test("Alerts", "Alert status updates", False, 
-                            "Aucune alerte disponible pour les tests de mise à jour")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Alert status updates", False, f"Exception: {str(e)}")
-    
-    def test_delete_alert(self):
-        """Test de suppression d'alertes"""
-        try:
-            # Générer une alerte pour la supprimer
-            gen_response = self.session.post(f"{BASE_URL}/alerts/generate?threshold=1")
-            
-            # Récupérer les alertes
-            response = self.session.get(f"{BASE_URL}/alerts")
-            
-            if response.status_code == 200:
-                alerts = response.json()
-                
-                if alerts and len(alerts) > 0:
-                    alert_id = alerts[0]["id"]
-                    
-                    # Supprimer l'alerte
-                    delete_response = self.session.delete(f"{BASE_URL}/alerts/{alert_id}")
-                    
-                    if delete_response.status_code == 200:
-                        self.log_test("Alerts", "Delete alert", True, "Alerte supprimée avec succès")
-                        
-                        # Vérifier que l'alerte n'existe plus
-                        verify_response = self.session.delete(f"{BASE_URL}/alerts/{alert_id}")
-                        if verify_response.status_code == 404:
-                            self.log_test("Alerts", "Verify alert deletion", True, 
-                                        "Alerte correctement supprimée (404 sur seconde tentative)")
-                        else:
-                            self.log_test("Alerts", "Verify alert deletion", False, 
-                                        f"Status attendu 404, reçu: {verify_response.status_code}")
-                    else:
-                        self.log_test("Alerts", "Delete alert", False, 
-                                    f"Status: {delete_response.status_code}")
-                        
-                    # Test avec ID invalide
-                    invalid_response = self.session.delete(f"{BASE_URL}/alerts/invalid-id")
-                    if invalid_response.status_code == 404:
-                        self.log_test("Alerts", "Delete non-existent alert", True, 
-                                    "Erreur 404 correcte pour ID invalide")
-                    else:
-                        self.log_test("Alerts", "Delete non-existent alert", False, 
-                                    f"Status attendu 404, reçu: {invalid_response.status_code}")
-                        
+                    print(f"⚠️ Erreur suppression sous-groupe {subgroup_id}: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Exception suppression sous-groupe {subgroup_id}: {str(e)}")
+        
+        # Supprimer les sections
+        for section_id in self.test_data['sections']:
+            try:
+                response = self.session.delete(f"{BASE_URL}/sections/{section_id}")
+                if response.status_code == 200:
+                    print(f"✅ Section {section_id} supprimée")
                 else:
-                    self.log_test("Alerts", "Delete alert", False, "Aucune alerte disponible pour suppression")
-                    
-            else:
-                self.log_test("Alerts", "Delete alert", False, "Impossible de récupérer les alertes")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Delete alert", False, f"Exception: {str(e)}")
-    
-    def test_alert_permissions(self):
-        """Test des permissions pour les alertes"""
-        try:
-            # Créer un token cadet pour tester les permissions
-            cadet_response = self.session.post(f"{BASE_URL}/auth/login", json={
-                "email": "marie.dubois@escadron.fr",  # Cadet existant
-                "password": "cadet123"
-            })
-            
-            if cadet_response.status_code == 200:
-                cadet_data = cadet_response.json()
-                cadet_token = cadet_data["access_token"]
-                
-                # Tester l'accès avec token cadet
-                cadet_session = requests.Session()
-                cadet_session.headers.update({
-                    "Authorization": f"Bearer {cadet_token}"
-                })
-                
-                # Test accès aux alertes (devrait échouer)
-                response = cadet_session.get(f"{BASE_URL}/alerts")
-                if response.status_code == 403:
-                    self.log_test("Alerts", "Cadet permission denied", True, 
-                                "Accès correctement refusé pour cadet")
-                else:
-                    self.log_test("Alerts", "Cadet permission denied", False, 
-                                f"Status attendu 403, reçu: {response.status_code}")
-                    
-                # Test génération d'alertes (devrait échouer)
-                gen_response = cadet_session.post(f"{BASE_URL}/alerts/generate")
-                if gen_response.status_code == 403:
-                    self.log_test("Alerts", "Cadet generate permission denied", True, 
-                                "Génération d'alertes correctement refusée pour cadet")
-                else:
-                    self.log_test("Alerts", "Cadet generate permission denied", False, 
-                                f"Status attendu 403, reçu: {gen_response.status_code}")
-                    
-            else:
-                self.log_test("Alerts", "Alert permissions", False, 
-                            "Impossible de se connecter avec compte cadet pour test permissions")
-                
-        except Exception as e:
-            self.log_test("Alerts", "Alert permissions", False, f"Exception: {str(e)}")
-    
-    def test_existing_endpoints_compatibility(self):
-        """Test de compatibilité avec les endpoints existants"""
-        try:
-            # Test endpoint utilisateurs
-            response = self.session.get(f"{BASE_URL}/users")
-            if response.status_code == 200:
-                users = response.json()
-                self.log_test("Compatibility", "Users endpoint", True, f"Trouvé {len(users)} utilisateurs")
-            else:
-                self.log_test("Compatibility", "Users endpoint", False, f"Status: {response.status_code}")
-            
-            # Test endpoint sections
-            response = self.session.get(f"{BASE_URL}/sections")
-            if response.status_code == 200:
-                sections = response.json()
-                self.log_test("Compatibility", "Sections endpoint", True, f"Trouvé {len(sections)} sections")
-            else:
-                self.log_test("Compatibility", "Sections endpoint", False, f"Status: {response.status_code}")
-            
-            # Test endpoint présences
-            response = self.session.get(f"{BASE_URL}/presences")
-            if response.status_code == 200:
-                presences = response.json()
-                self.log_test("Compatibility", "Presences endpoint", True, f"Trouvé {len(presences)} présences")
-            else:
-                self.log_test("Compatibility", "Presences endpoint", False, f"Status: {response.status_code}")
-            
-            # Test endpoint activités
-            response = self.session.get(f"{BASE_URL}/activities")
-            if response.status_code == 200:
-                activities = response.json()
-                self.log_test("Compatibility", "Activities endpoint", True, f"Trouvé {len(activities)} activités")
-            else:
-                self.log_test("Compatibility", "Activities endpoint", False, f"Status: {response.status_code}")
-                
-        except Exception as e:
-            self.log_test("Compatibility", "Existing endpoints", False, f"Exception: {str(e)}")
+                    print(f"⚠️ Erreur suppression section {section_id}: {response.status_code}")
+            except Exception as e:
+                print(f"⚠️ Exception suppression section {section_id}: {str(e)}")
+        
+        print("🧹 Nettoyage terminé")
     
     def run_all_tests(self):
         """Exécuter tous les tests"""
-        print("🚀 DÉBUT DES TESTS - Système de gestion des rôles et filtres utilisateurs")
-        print("=" * 80)
-        print(f"📍 Base URL: {BASE_URL}")
-        print(f"👤 Admin: {ADMIN_EMAIL}")
+        print("🚀 === DÉBUT TESTS SYSTÈME SOUS-GROUPES ===")
+        print(f"🌐 Base URL: {BASE_URL}")
+        print(f"👤 Authentification: {ADMIN_USERNAME}")
         
         # Authentification
         if not self.authenticate_admin():
-            print("❌ Impossible de s'authentifier - Arrêt des tests")
+            print("❌ Échec authentification - Arrêt des tests")
             return
         
-        # Tests de gestion des rôles
-        print("\n📋 TESTS DE GESTION DES RÔLES")
-        print("-" * 40)
-        self.test_get_roles()
-        self.test_create_role()
-        self.test_update_role()
-        self.test_delete_role()
+        all_results = {}
         
-        # Tests des filtres utilisateurs
-        print("\n🔍 TESTS DES FILTRES UTILISATEURS")
-        print("-" * 40)
-        self.test_get_user_filters()
-        self.test_user_filtering()
+        try:
+            # Test 1: CRUD endpoints
+            print("\n" + "="*60)
+            crud_results = self.test_subgroup_crud_endpoints()
+            all_results.update(crud_results)
+            
+            # Test 2: Intégration utilisateur-sous-groupe
+            print("\n" + "="*60)
+            integration_results = self.test_user_subgroup_integration()
+            all_results.update(integration_results)
+            
+            # Test 3: Scénarios d'erreur
+            print("\n" + "="*60)
+            error_results = self.test_error_scenarios()
+            all_results.update(error_results)
+            
+        finally:
+            # Nettoyage (toujours exécuté)
+            print("\n" + "="*60)
+            self.cleanup_test_data()
         
-        # Tests des privilèges administrateur
-        print("\n👑 TESTS DES PRIVILÈGES ADMINISTRATEUR")
-        print("-" * 40)
-        self.test_admin_privileges_field()
+        # Résumé final
+        print("\n" + "="*60)
+        print("📊 === RÉSUMÉ FINAL ===")
         
-        # Tests de protection des permissions
-        print("\n🔒 TESTS DE PROTECTION DES PERMISSIONS")
-        print("-" * 40)
-        self.test_permissions_protection()
+        total_tests = len(all_results)
+        passed_tests = sum(1 for result in all_results.values() if result)
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        # Tests du système d'alertes (existants)
-        print("\n📋 TESTS DU SYSTÈME D'ALERTES")
-        print("-" * 40)
-        self.test_consecutive_absences_calculation()
-        self.test_get_alerts()
-        self.test_generate_alerts()
-        self.test_alert_status_updates()
-        self.test_delete_alert()
-        self.test_alert_permissions()
+        print(f"📈 Tests réussis: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
         
-        # Tests de compatibilité
-        print("\n🔄 TESTS DE COMPATIBILITÉ")
-        print("-" * 40)
-        self.test_existing_endpoints_compatibility()
+        print("\n📋 Détail des résultats:")
+        for test_name, result in all_results.items():
+            status = "✅ RÉUSSI" if result else "❌ ÉCHEC"
+            print(f"  {status} - {test_name}")
         
-        # Nettoyage des données de test
-        print("\n🧹 NETTOYAGE")
-        print("-" * 40)
-        self.cleanup_test_data()
-        
-        # Résumé
-        self.print_summary()
-    
-    def print_summary(self):
-        """Afficher le résumé des tests"""
-        print("\n" + "=" * 80)
-        print("📊 RÉSUMÉ DES TESTS")
-        print("=" * 80)
-        
-        total = self.test_results["total_tests"]
-        passed = self.test_results["passed_tests"]
-        failed = self.test_results["failed_tests"]
-        success_rate = (passed / total * 100) if total > 0 else 0
-        
-        print(f"Total des tests: {total}")
-        print(f"✅ Réussis: {passed}")
-        print(f"❌ Échoués: {failed}")
-        print(f"📈 Taux de réussite: {success_rate:.1f}%")
-        
-        print("\n📋 DÉTAIL PAR CATÉGORIE:")
-        for category, results in self.test_results["categories"].items():
-            cat_total = results["passed"] + results["failed"]
-            cat_rate = (results["passed"] / cat_total * 100) if cat_total > 0 else 0
-            print(f"  {category}: {results['passed']}/{cat_total} ({cat_rate:.1f}%)")
-        
-        if failed > 0:
-            print("\n❌ TESTS ÉCHOUÉS:")
-            for category, results in self.test_results["categories"].items():
-                failed_tests = [t for t in results["tests"] if not t["success"]]
-                if failed_tests:
-                    print(f"  {category}:")
-                    for test in failed_tests:
-                        print(f"    - {test['name']}: {test['message']}")
-        
-        print("\n" + "=" * 80)
-        
-        if success_rate >= 90:
-            print("🎉 EXCELLENT! Système d'alertes fonctionnel")
-        elif success_rate >= 75:
-            print("✅ BON! Quelques ajustements mineurs nécessaires")
-        elif success_rate >= 50:
-            print("⚠️  MOYEN! Plusieurs problèmes à corriger")
+        if success_rate >= 80:
+            print(f"\n🎉 SYSTÈME SOUS-GROUPES FONCTIONNEL ({success_rate:.1f}% réussite)")
         else:
-            print("❌ CRITIQUE! Système nécessite des corrections majeures")
+            print(f"\n⚠️ PROBLÈMES DÉTECTÉS DANS LE SYSTÈME SOUS-GROUPES ({success_rate:.1f}% réussite)")
+        
+        return all_results
 
 if __name__ == "__main__":
-    tester = CadetSquadTester()
-    tester.run_all_tests()
+    tester = SubgroupSystemTester()
+    results = tester.run_all_tests()
