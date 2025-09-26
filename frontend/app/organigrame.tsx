@@ -746,20 +746,41 @@ const styles = StyleSheet.create({
   },
   nodeContainer: {
     marginVertical: 4,
+    position: 'relative',
+  },
+  
+  // Lignes de connexion pour l'organigrame
+  connectionLine: {
+    position: 'absolute',
+    width: 2,
+    backgroundColor: '#cbd5e0',
+    top: 0,
+    bottom: 0,
+  },
+  horizontalLine: {
+    position: 'absolute',
+    height: 2,
+    backgroundColor: '#cbd5e0',
+    top: '50%',
+  },
+  childrenContainer: {
+    marginLeft: 30,
   },
   
   // Styles pour les sections
   sectionCard: {
     backgroundColor: '#edf2f7',
-    borderRadius: 8,
-    padding: 15,
-    borderLeftWidth: 4,
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 5,
     borderLeftColor: '#3182ce',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+    marginRight: 10,
+    minWidth: 250,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -770,19 +791,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
     color: '#2d3748',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   sectionDetails: {
     fontSize: 14,
     color: '#4a5568',
-    marginBottom: 2,
+    marginBottom: 3,
+  },
+  expandIconContainer: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(49, 130, 206, 0.1)',
   },
   expandIcon: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#3182ce',
+    fontWeight: 'bold',
   },
   
   // Styles pour les sous-groupes
