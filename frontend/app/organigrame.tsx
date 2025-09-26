@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
   },
   organigrammeContainer: {
     minHeight: 600,
-    minWidth: screenWidth * 2,
+    minWidth: 800, // Largeur fixe pour permettre le scroll horizontal
     padding: 20,
   },
   
