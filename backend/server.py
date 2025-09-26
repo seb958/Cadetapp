@@ -797,7 +797,7 @@ async def update_user(
     if user_update.grade is not None:
         update_data["grade"] = user_update.grade.value
     if user_update.role is not None:
-        update_data["role"] = user_update.role.value
+        update_data["role"] = user_update.role  # Plus besoin de .value car c'est maintenant un str
     if user_update.section_id is not None:
         # Vérifier que la section existe si fournie
         if user_update.section_id:
