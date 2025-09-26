@@ -251,7 +251,8 @@ export default function Organigrame() {
     // Niveau 2: Adjudant-Chef d'escadron
     const adjudantChefs = filteredUsers.filter(u => 
       u.role.toLowerCase().includes('adjudant-chef') || 
-      u.role === 'Adjudant-Chef d\'escadron'
+      u.role === 'Adjudant-Chef d\'escadron' ||
+      u.role.toLowerCase() === 'adjudant-chef d\'escadron'
     );
     
     adjudantChefs.forEach((adjudantChef, index) => {
@@ -267,12 +268,18 @@ export default function Organigrame() {
       });
     });
 
-    // Niveau 3: Adjudant d'escadron + Cadet Admin (ancien système)
+    // Niveau 3: Adjudant d'escadron + Sergents de section + anciens cadet_admin
     const level3Users = filteredUsers.filter(u => 
-      (u.role.toLowerCase().includes('adjudant') && !u.role.toLowerCase().includes('chef')) ||
+      // Adjudants d'escadron
       u.role === 'Adjudant d\'escadron' ||
+      u.role.toLowerCase() === 'adjudant d\'escadron' ||
+      // Sergents de section (Emma Leroy maintenant)
+      u.role === 'Sergent de section' ||
+      u.role.toLowerCase() === 'sergent de section' ||
+      // Administration senior
       (u.role.toLowerCase().includes('senior') && u.role.toLowerCase().includes('administration')) ||
-      u.role === 'cadet_admin' // Important: inclure les anciens cadet_admin
+      // Anciens rôles
+      u.role === 'cadet_admin'
     );
 
     level3Users.forEach((level3User, index) => {
