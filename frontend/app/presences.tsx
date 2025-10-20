@@ -427,6 +427,91 @@ export default function Presences() {
     }
   };
 
+  // ============================================================================
+  // NOUVELLES FONCTIONS POUR SWIPE ATTENDANCE
+  // ============================================================================
+
+  const openNewAttendance = () => {
+    setShowNewAttendance(true);
+  };
+
+  const handleSwipeAttendanceComplete = async (presentIds: string[]) => {
+    setSavingAttendance(true);
+    setShowNewAttendance(false);
+
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      // Créer les données de présence : présents + absents (tous les autres)
+      const allCadetIds = cadets.map(c => c.id);
+      const absentIds = allCadetIds.filter(id => !presentIds.includes(id));
+      
+      const presencesData = [
+        ...presentIds.map(id => ({ cadet_id: id, status: 'present', commentaire: null })),
+        ...absentIds.map(id => ({ cadet_id: id, status: 'absent', commentaire: null }))
+      ];
+
+      // Vérifier si on est en ligne
+      if (!isOnline) {
+        // Mode hors ligne : enregistrer localement
+        for (const presence of presencesData) {
+          await addToSyncQueue({
+            type: 'presence',
+            data: {
+              cadet_id: presence.cadet_id,
+              date: selectedDate,
+              status: presence.status as 'present' | 'absent',
+              commentaire: undefined,
+              timestamp: new Date().toISOString(),
+              temp_id: `presence_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            },
+            attempts: 0,
+            created_at: new Date().toISOString()
+          });
+        }
+        
+        Alert.alert(
+          '📴 Mode Hors Ligne', 
+          `${presencesData.length} présence(s) enregistrée(s) localement.\n\n${presentIds.length} présent(s), ${absentIds.length} absent(s)`
+        );
+        return;
+      }
+
+      // Mode en ligne : enregistrer sur le serveur
+      const payload = {
+        date: selectedDate,
+        activite: activite || null,
+        presences: presencesData
+      };
+
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/presences/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        Alert.alert(
+          'Succès', 
+          `${result.created_count} présences enregistrées\n${presentIds.length} présent(s), ${absentIds.length} absent(s)`
+        );
+        await loadPresences(user!);
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Erreur lors de l\'enregistrement');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement:', error);
+      Alert.alert('Erreur', 'Impossible d\'enregistrer les présences');
+    } finally {
+      setSavingAttendance(false);
+    }
+  };
+
   const loadStats = async (cadetId: string) => {
     try {
       const token = await AsyncStorage.getItem('access_token');
