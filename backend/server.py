@@ -1333,6 +1333,27 @@ async def update_presence(
                 detail="Vous ne pouvez modifier que les présences de votre section"
             )
     
+    # Vérifier le délai de 24h (seulement pour les non-admins)
+    if current_user.role not in [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        # Récupérer la date de la présence
+        presence_datetime = presence.get("heure_enregistrement")
+        if isinstance(presence_datetime, str):
+            presence_datetime = datetime.fromisoformat(presence_datetime.replace('Z', '+00:00'))
+        
+        # Calculer le délai
+        now = datetime.now(timezone.utc)
+        if presence_datetime.tzinfo is None:
+            presence_datetime = presence_datetime.replace(tzinfo=timezone.utc)
+        
+        time_diff = now - presence_datetime
+        
+        # Si plus de 24h, interdire la modification
+        if time_diff.total_seconds() > 86400:  # 24h = 86400 secondes
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous ne pouvez modifier une présence que dans les 24h suivant son enregistrement. Contactez un administrateur."
+            )
+    
     # Préparer les mises à jour
     update_data = {}
     if updates.status is not None:
