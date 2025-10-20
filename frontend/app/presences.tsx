@@ -65,6 +65,14 @@ interface Presence {
   activite?: string;
 }
 
+interface Section {
+  id: string;
+  nom: string;
+  description?: string;
+  responsable_id?: string;
+  created_at?: string;
+}
+
 interface PresenceStats {
   total_seances: number;
   presences: number;
@@ -78,6 +86,7 @@ export default function Presences() {
   const [user, setUser] = useState<User | null>(null);
   const [presences, setPresences] = useState<Presence[]>([]);
   const [cadets, setCadets] = useState<User[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +96,7 @@ export default function Presences() {
   
   // États pour la prise de présence
   const [showTakeAttendance, setShowTakeAttendance] = useState(false);
+  const [showNewAttendance, setShowNewAttendance] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [activite, setActivite] = useState('');
   const [attendanceData, setAttendanceData] = useState<{[key: string]: {status: string, commentaire: string}}>({});
