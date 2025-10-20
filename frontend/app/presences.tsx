@@ -15,6 +15,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { ConnectionIndicator } from '../components/ConnectionIndicator';
+import { useOfflineMode } from '../hooks/useOfflineMode';
+import { addToSyncQueue, getCacheData, recordPresence, getConnectionStatus } from '../services/offlineService';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
