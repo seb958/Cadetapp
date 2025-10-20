@@ -400,6 +400,19 @@ export default function Presences() {
         <Text style={styles.title}>Gestion des Présences</Text>
       </View>
 
+      {/* Indicateur de connexion et synchronisation */}
+      <View style={styles.connectionIndicatorContainer}>
+        <ConnectionIndicator 
+          onSyncPress={async () => {
+            const result = await handleManualSync();
+            Alert.alert(
+              result.success ? 'Succès' : 'Erreur',
+              result.message
+            );
+          }}
+        />
+      </View>
+
       <ScrollView 
         style={styles.content}
         refreshControl={
