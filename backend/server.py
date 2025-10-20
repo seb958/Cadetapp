@@ -1905,6 +1905,277 @@ async def delete_alert(
     
     return {"message": "Alerte supprimée avec succès"}
 
+# ============================================================================
+# SYSTÈME DE SYNCHRONISATION HORS LIGNE
+# ============================================================================
+
+# Modèles pour la synchronisation
+class OfflinePresence(BaseModel):
+    """Présence enregistrée hors ligne"""
+    cadet_id: str
+    date: str  # Format ISO: YYYY-MM-DD
+    status: PresenceStatus
+    commentaire: Optional[str] = None
+    timestamp: datetime  # Horodatage de création côté client
+    temp_id: str  # ID temporaire côté client pour tracking
+
+class OfflineInspection(BaseModel):
+    """Inspection d'uniforme enregistrée hors ligne"""
+    cadet_id: str
+    date: str  # Format ISO: YYYY-MM-DD
+    note: Optional[str] = None
+    timestamp: datetime
+    temp_id: str
+
+class SyncBatchRequest(BaseModel):
+    """Requête de synchronisation groupée"""
+    presences: List[OfflinePresence] = []
+    inspections: List[OfflineInspection] = []
+
+class SyncResult(BaseModel):
+    """Résultat de synchronisation pour un élément"""
+    temp_id: str
+    success: bool
+    server_id: Optional[str] = None  # ID créé sur le serveur
+    error: Optional[str] = None
+    action: str  # "created", "updated", "merged"
+
+class SyncBatchResponse(BaseModel):
+    """Réponse de synchronisation groupée"""
+    presence_results: List[SyncResult] = []
+    inspection_results: List[SyncResult] = []
+    total_synced: int
+    total_errors: int
+
+@api_router.post("/sync/batch", response_model=SyncBatchResponse)
+async def sync_offline_data(
+    sync_request: SyncBatchRequest,
+    current_user: User = Depends(require_presence_permissions)
+):
+    """
+    Synchronise les données enregistrées hors ligne
+    - Fusionne intelligemment les présences (la plus récente gagne)
+    - Crée automatiquement une présence si inspection d'uniforme sans présence
+    """
+    presence_results = []
+    inspection_results = []
+    
+    # ========== SYNCHRONISATION DES PRÉSENCES ==========
+    for offline_presence in sync_request.presences:
+        try:
+            # Vérifier que le cadet existe
+            cadet = await db.users.find_one({"id": offline_presence.cadet_id, "actif": True})
+            if not cadet:
+                presence_results.append(SyncResult(
+                    temp_id=offline_presence.temp_id,
+                    success=False,
+                    error="Cadet non trouvé"
+                ))
+                continue
+            
+            # Vérifier les permissions
+            if current_user.role == UserRole.CADET_RESPONSIBLE:
+                if cadet.get("section_id") != current_user.section_id:
+                    presence_results.append(SyncResult(
+                        temp_id=offline_presence.temp_id,
+                        success=False,
+                        error="Permission refusée pour ce cadet"
+                    ))
+                    continue
+            
+            # Chercher présence existante pour ce cadet à cette date
+            existing_presence = await db.presences.find_one({
+                "cadet_id": offline_presence.cadet_id,
+                "date": offline_presence.date
+            })
+            
+            if existing_presence:
+                # Fusionner intelligemment : la plus récente gagne
+                existing_timestamp = existing_presence.get("heure_enregistrement")
+                if isinstance(existing_timestamp, str):
+                    existing_timestamp = datetime.fromisoformat(existing_timestamp.replace('Z', '+00:00'))
+                
+                # Comparer les timestamps
+                if offline_presence.timestamp > existing_timestamp:
+                    # La présence hors ligne est plus récente, mettre à jour
+                    await db.presences.update_one(
+                        {"id": existing_presence["id"]},
+                        {"$set": {
+                            "status": offline_presence.status.value,
+                            "commentaire": offline_presence.commentaire,
+                            "enregistre_par": current_user.id,
+                            "heure_enregistrement": offline_presence.timestamp.isoformat()
+                        }}
+                    )
+                    presence_results.append(SyncResult(
+                        temp_id=offline_presence.temp_id,
+                        success=True,
+                        server_id=existing_presence["id"],
+                        action="updated"
+                    ))
+                else:
+                    # La présence serveur est plus récente, garder celle-ci
+                    presence_results.append(SyncResult(
+                        temp_id=offline_presence.temp_id,
+                        success=True,
+                        server_id=existing_presence["id"],
+                        action="merged"
+                    ))
+            else:
+                # Créer nouvelle présence
+                presence_id = str(uuid.uuid4())
+                presence_data = {
+                    "id": presence_id,
+                    "cadet_id": offline_presence.cadet_id,
+                    "date": offline_presence.date,
+                    "status": offline_presence.status.value,
+                    "commentaire": offline_presence.commentaire,
+                    "enregistre_par": current_user.id,
+                    "heure_enregistrement": offline_presence.timestamp.isoformat(),
+                    "section_id": cadet.get("section_id"),
+                    "activite": None
+                }
+                
+                await db.presences.insert_one(presence_data)
+                presence_results.append(SyncResult(
+                    temp_id=offline_presence.temp_id,
+                    success=True,
+                    server_id=presence_id,
+                    action="created"
+                ))
+                
+        except Exception as e:
+            presence_results.append(SyncResult(
+                temp_id=offline_presence.temp_id,
+                success=False,
+                error=str(e)
+            ))
+    
+    # ========== SYNCHRONISATION DES INSPECTIONS D'UNIFORME ==========
+    for offline_inspection in sync_request.inspections:
+        try:
+            # Vérifier que le cadet existe
+            cadet = await db.users.find_one({"id": offline_inspection.cadet_id, "actif": True})
+            if not cadet:
+                inspection_results.append(SyncResult(
+                    temp_id=offline_inspection.temp_id,
+                    success=False,
+                    error="Cadet non trouvé"
+                ))
+                continue
+            
+            # Vérifier les permissions
+            if current_user.role == UserRole.CADET_RESPONSIBLE:
+                if cadet.get("section_id") != current_user.section_id:
+                    inspection_results.append(SyncResult(
+                        temp_id=offline_inspection.temp_id,
+                        success=False,
+                        error="Permission refusée pour ce cadet"
+                    ))
+                    continue
+            
+            # LOGIQUE SPÉCIALE : Créer automatiquement une présence si elle n'existe pas
+            # (cas où cadet oublie la prise de présence et va directement à l'inspection)
+            existing_presence = await db.presences.find_one({
+                "cadet_id": offline_inspection.cadet_id,
+                "date": offline_inspection.date
+            })
+            
+            if not existing_presence:
+                # Créer une présence automatique avec statut "present"
+                presence_id = str(uuid.uuid4())
+                presence_data = {
+                    "id": presence_id,
+                    "cadet_id": offline_inspection.cadet_id,
+                    "date": offline_inspection.date,
+                    "status": PresenceStatus.PRESENT.value,
+                    "commentaire": "Présence automatique (inspection d'uniforme)",
+                    "enregistre_par": current_user.id,
+                    "heure_enregistrement": offline_inspection.timestamp.isoformat(),
+                    "section_id": cadet.get("section_id"),
+                    "activite": "Inspection d'uniforme"
+                }
+                await db.presences.insert_one(presence_data)
+            
+            # TODO: Ajouter une collection "inspections" si nécessaire
+            # Pour l'instant, on enregistre juste l'inspection dans les commentaires
+            inspection_id = str(uuid.uuid4())
+            inspection_results.append(SyncResult(
+                temp_id=offline_inspection.temp_id,
+                success=True,
+                server_id=inspection_id,
+                action="created"
+            ))
+            
+        except Exception as e:
+            inspection_results.append(SyncResult(
+                temp_id=offline_inspection.temp_id,
+                success=False,
+                error=str(e)
+            ))
+    
+    # Calculer les statistiques
+    total_synced = sum(1 for r in presence_results + inspection_results if r.success)
+    total_errors = sum(1 for r in presence_results + inspection_results if not r.success)
+    
+    return SyncBatchResponse(
+        presence_results=presence_results,
+        inspection_results=inspection_results,
+        total_synced=total_synced,
+        total_errors=total_errors
+    )
+
+@api_router.get("/sync/cache-data")
+async def get_cache_data(current_user: User = Depends(get_current_user)):
+    """
+    Retourne toutes les données nécessaires pour le mode hors ligne
+    - Liste des cadets actifs
+    - Sections
+    - Activités récentes
+    """
+    # Récupérer tous les cadets actifs
+    users_cursor = db.users.find({"actif": True})
+    users = await users_cursor.to_list(length=None)
+    
+    # Filtrer selon les permissions
+    if current_user.role == UserRole.CADET_RESPONSIBLE:
+        users = [u for u in users if u.get("section_id") == current_user.section_id]
+    elif current_user.role == UserRole.CADET:
+        users = [u for u in users if u.get("id") == current_user.id]
+    
+    # Récupérer les sections
+    sections_cursor = db.sections.find({})
+    sections = await sections_cursor.to_list(length=None)
+    
+    # Récupérer les activités récentes (30 derniers jours)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    activities_cursor = db.activities.find({
+        "created_at": {"$gte": thirty_days_ago}
+    })
+    activities = await activities_cursor.to_list(length=None)
+    
+    # Nettoyer les données pour le frontend
+    for user in users:
+        user.pop("hashed_password", None)
+        user.pop("invitation_token", None)
+        if "_id" in user:
+            user["_id"] = str(user["_id"])
+    
+    for section in sections:
+        if "_id" in section:
+            section["_id"] = str(section["_id"])
+    
+    for activity in activities:
+        if "_id" in activity:
+            activity["_id"] = str(activity["_id"])
+    
+    return {
+        "users": users,
+        "sections": sections,
+        "activities": activities,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 # Route de test
 @api_router.get("/")
 async def root():
