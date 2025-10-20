@@ -104,6 +104,18 @@
 
 user_problem_statement: "Développer une application mobile/web pour gérer présences et inspections d'uniformes dans un escadron de cadets avec 4 rôles utilisateur et système d'authentification complet + gestion des présences"
 
+  - task: "Système de synchronisation hors ligne"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Système de synchronisation hors ligne implémenté avec 3 nouveaux endpoints: POST /api/sync/batch (synchronisation groupée de présences et inspections hors ligne avec fusion intelligente par timestamp), GET /api/sync/cache-data (téléchargement données pour cache local: users, sections, activities). Frontend: service offlineService.ts créé avec détection connexion (react-native-community/netinfo), gestion cache (AsyncStorage), queue de synchronisation. Hook useOfflineMode.ts pour state management. Composant ConnectionIndicator.tsx avec statut en ligne/hors ligne, badge queue, bouton sync. Intégré dans presences.tsx. Prêt pour tests backend."
+
 backend:
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
