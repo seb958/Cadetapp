@@ -2048,7 +2048,8 @@ async def sync_offline_data(
             presence_results.append(SyncResult(
                 temp_id=offline_presence.temp_id,
                 success=False,
-                error=str(e)
+                error=str(e),
+                action="error"
             ))
     
     # ========== SYNCHRONISATION DES INSPECTIONS D'UNIFORME ==========
