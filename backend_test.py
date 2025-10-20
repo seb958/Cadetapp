@@ -223,19 +223,72 @@ class BackendTester:
             self.log_test("GET /api/roles", False, f"Exception: {str(e)}")
             return []
     
-    def find_section_by_name(self, sections, section_name):
-        """Trouver une section par son nom"""
+    def test_get_subgroups(self, sections):
+        """Test GET /api/sections/{section_id}/subgroups pour chaque section"""
+        total_subgroups = 0
+        
         for section in sections:
-            if section_name.lower() in section["nom"].lower():
-                return section
-        return None
+            section_id = section["id"]
+            section_name = section["nom"]
+            
+            try:
+                response = self.session.get(f"{BASE_URL}/sections/{section_id}/subgroups")
+                
+                if response.status_code == 200:
+                    subgroups = response.json()
+                    total_subgroups += len(subgroups)
+                    self.log_test(f"GET /api/sections/{section_name}/subgroups", True, 
+                                f"{len(subgroups)} sous-groupes trouvés")
+                else:
+                    self.log_test(f"GET /api/sections/{section_name}/subgroups", False, 
+                                f"Erreur {response.status_code}: {response.text}")
+                    
+            except Exception as e:
+                self.log_test(f"GET /api/sections/{section_name}/subgroups", False, f"Exception: {str(e)}")
+        
+        self.log_test("Total sous-groupes", True, f"{total_subgroups} sous-groupes au total")
+        return total_subgroups
     
-    def find_user_by_id(self, users, user_id):
-        """Trouver un utilisateur par son ID"""
+    def test_section_managers(self, sections, users):
+        """Vérifier l'assignation des responsables de sections"""
+        users_by_id = {user["id"]: user for user in users}
+        
+        sections_with_managers = 0
+        for section in sections:
+            section_name = section["nom"]
+            manager_id = section.get("responsable_id")
+            
+            if manager_id:
+                if manager_id in users_by_id:
+                    manager = users_by_id[manager_id]
+                    sections_with_managers += 1
+                    self.log_test(f"Section '{section_name}' - Responsable assigné", True, 
+                                f"Responsable: {manager['prenom']} {manager['nom']} ({manager['role']})")
+                else:
+                    self.log_test(f"Section '{section_name}' - Responsable valide", False, 
+                                f"Responsable ID {manager_id} non trouvé dans les utilisateurs")
+            else:
+                self.log_test(f"Section '{section_name}' - Responsable assigné", False, "Aucun responsable assigné")
+        
+        self.log_test("Sections avec responsables", True, f"{sections_with_managers}/{len(sections)} sections ont un responsable")
+    
+    def test_custom_role_users(self, users):
+        """Vérifier les utilisateurs avec rôles personnalisés"""
+        custom_role_users = []
+        expected_roles = ["Adjudant-Chef d'escadron", "Sergent de section", "Adjudant d'escadron"]
+        
         for user in users:
-            if user["id"] == user_id:
-                return user
-        return None
+            if user["role"] in expected_roles:
+                custom_role_users.append(user)
+                self.log_test(f"Utilisateur rôle personnalisé - {user['prenom']} {user['nom']}", True, 
+                            f"Rôle: {user['role']}, Username: {user.get('username', 'AUCUN')}")
+        
+        if len(custom_role_users) >= 3:
+            self.log_test("Utilisateurs rôles personnalisés", True, f"{len(custom_role_users)} utilisateurs avec rôles personnalisés trouvés")
+        else:
+            self.log_test("Utilisateurs rôles personnalisés", False, f"Seulement {len(custom_role_users)} utilisateurs avec rôles personnalisés trouvés (attendu: au moins 3)")
+        
+        return custom_role_users
     
     def assign_section_leader(self, section_id, responsable_id, section_name, user_name):
         """Assigner un responsable à une section"""
