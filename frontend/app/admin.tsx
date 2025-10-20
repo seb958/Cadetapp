@@ -2961,7 +2961,8 @@ export default function Admin() {
                     </Text>
                   </View>
                 </TouchableOpacity>
-              ))}
+              ));
+              })()}
             </View>
 
             {/* Information */}
