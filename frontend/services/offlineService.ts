@@ -391,6 +391,7 @@ export const syncQueue = async (
       success: true,
       synced: result.total_synced,
       errors: result.total_errors,
+      errorDetails: errors.length > 0 ? errors : undefined,
     };
   } catch (error) {
     console.error('❌ Erreur synchronisation:', error);
