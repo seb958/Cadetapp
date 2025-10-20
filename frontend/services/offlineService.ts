@@ -314,7 +314,7 @@ export const syncQueue = async (
   apiUrl: string,
   token: string,
   onProgress?: (current: number, total: number) => void
-): Promise<{ success: boolean; synced: number; errors: number }> => {
+): Promise<{ success: boolean; synced: number; errors: number; errorDetails?: any[] }> => {
   try {
     // Vérifier si une synchronisation est déjà en cours
     const isSyncing = await AsyncStorage.getItem(STORAGE_KEYS.IS_SYNCING);
