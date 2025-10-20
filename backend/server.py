@@ -1916,7 +1916,7 @@ class OfflinePresence(BaseModel):
     date: str  # Format ISO: YYYY-MM-DD
     status: PresenceStatus
     commentaire: Optional[str] = None
-    timestamp: datetime  # Horodatage de création côté client
+    timestamp: str  # Horodatage ISO avec timezone
     temp_id: str  # ID temporaire côté client pour tracking
 
 class OfflineInspection(BaseModel):
@@ -1924,7 +1924,7 @@ class OfflineInspection(BaseModel):
     cadet_id: str
     date: str  # Format ISO: YYYY-MM-DD
     note: Optional[str] = None
-    timestamp: datetime
+    timestamp: str  # Horodatage ISO avec timezone
     temp_id: str
 
 class SyncBatchRequest(BaseModel):
