@@ -33,26 +33,27 @@ EXPECTED_USERS_WITH_USERNAMES = [
     }
 ]
 
-class SectionAssignmentTester:
+class BackendTester:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
-        self.test_results = []
-        
-    def log_test(self, test_name, success, message, details=None):
-        """Enregistrer le résultat d'un test"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "message": message,
-            "details": details,
-            "timestamp": datetime.now().isoformat()
+        self.test_results = {
+            "total_tests": 0,
+            "passed_tests": 0,
+            "failed_tests": 0,
+            "errors": []
         }
-        self.test_results.append(result)
-        status = "✅ RÉUSSI" if success else "❌ ÉCHEC"
-        print(f"{status} - {test_name}: {message}")
-        if details and not success:
-            print(f"   Détails: {details}")
+    
+    def log_test(self, test_name, success, message=""):
+        """Enregistrer le résultat d'un test"""
+        self.test_results["total_tests"] += 1
+        if success:
+            self.test_results["passed_tests"] += 1
+            print(f"✅ {test_name}: {message}")
+        else:
+            self.test_results["failed_tests"] += 1
+            self.test_results["errors"].append(f"{test_name}: {message}")
+            print(f"❌ {test_name}: {message}")
     
     def authenticate(self):
         """Authentification avec les credentials admin"""
