@@ -1957,6 +1957,9 @@ async def sync_offline_data(
     - Fusionne intelligemment les présences (la plus récente gagne)
     - Crée automatiquement une présence si inspection d'uniforme sans présence
     """
+    # Log pour debug
+    logger.info(f"Sync batch reçu: {len(sync_request.presences)} présences, {len(sync_request.inspections)} inspections")
+    
     presence_results = []
     inspection_results = []
     
