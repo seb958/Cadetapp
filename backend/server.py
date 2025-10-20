@@ -1996,24 +1996,35 @@ async def sync_offline_data(
             
             if existing_presence:
                 # Fusionner intelligemment : la plus récente gagne
-                existing_timestamp = existing_presence.get("heure_enregistrement")
+                existing_timestamp_raw = existing_presence.get("heure_enregistrement")
                 
                 try:
-                    if isinstance(existing_timestamp, str):
-                        existing_timestamp = datetime.fromisoformat(existing_timestamp.replace('Z', '+00:00'))
-                    elif isinstance(existing_timestamp, datetime):
-                        # S'assurer qu'il a une timezone
+                    # Convertir le timestamp existant en datetime avec timezone UTC
+                    if isinstance(existing_timestamp_raw, str):
+                        existing_timestamp = datetime.fromisoformat(existing_timestamp_raw.replace('Z', '+00:00'))
                         if existing_timestamp.tzinfo is None:
                             existing_timestamp = existing_timestamp.replace(tzinfo=timezone.utc)
-                    elif existing_timestamp is None:
+                    elif isinstance(existing_timestamp_raw, datetime):
+                        # Forcer la timezone UTC même s'il semble déjà avoir un tzinfo
+                        if existing_timestamp_raw.tzinfo is None:
+                            existing_timestamp = existing_timestamp_raw.replace(tzinfo=timezone.utc)
+                        else:
+                            # Convertir en UTC si timezone différente
+                            existing_timestamp = existing_timestamp_raw.astimezone(timezone.utc)
+                    elif existing_timestamp_raw is None:
                         # Pas de timestamp existant, utiliser un timestamp très ancien
                         existing_timestamp = datetime.min.replace(tzinfo=timezone.utc)
+                    else:
+                        # Type inconnu, utiliser timestamp très ancien
+                        existing_timestamp = datetime.min.replace(tzinfo=timezone.utc)
                     
-                    # Normaliser le timestamp offline en timezone-aware si nécessaire
-                    # Le timestamp vient maintenant comme une chaîne ISO
+                    # Convertir le timestamp offline (chaîne ISO) en datetime avec timezone UTC
                     offline_timestamp = datetime.fromisoformat(offline_presence.timestamp.replace('Z', '+00:00'))
                     if offline_timestamp.tzinfo is None:
                         offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
+                    
+                    # Log pour debug
+                    logger.info(f"Comparaison: existing={existing_timestamp} (tz={existing_timestamp.tzinfo}), offline={offline_timestamp} (tz={offline_timestamp.tzinfo})")
                     
                     # Comparer les timestamps
                     if offline_timestamp > existing_timestamp:
