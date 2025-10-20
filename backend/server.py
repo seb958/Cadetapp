@@ -1969,7 +1969,8 @@ async def sync_offline_data(
                 presence_results.append(SyncResult(
                     temp_id=offline_presence.temp_id,
                     success=False,
-                    error="Cadet non trouvé"
+                    error="Cadet non trouvé",
+                    action="error"
                 ))
                 continue
             
