@@ -363,6 +363,15 @@ export const syncQueue = async (
     
     const result = await response.json();
     
+    // Logger les erreurs pour debug
+    const errors = [
+      ...result.presence_results.filter((r: any) => !r.success),
+      ...result.inspection_results.filter((r: any) => !r.success),
+    ];
+    if (errors.length > 0) {
+      console.log('❌ Erreurs de synchronisation:', JSON.stringify(errors, null, 2));
+    }
+    
     // Supprimer les éléments synchronisés avec succès de la queue
     const successTempIds = [
       ...result.presence_results.filter((r: any) => r.success).map((r: any) => r.temp_id),
