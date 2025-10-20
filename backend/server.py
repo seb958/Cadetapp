@@ -1999,9 +1999,18 @@ async def sync_offline_data(
                 existing_timestamp = existing_presence.get("heure_enregistrement")
                 if isinstance(existing_timestamp, str):
                     existing_timestamp = datetime.fromisoformat(existing_timestamp.replace('Z', '+00:00'))
+                elif isinstance(existing_timestamp, datetime):
+                    # S'assurer qu'il a une timezone
+                    if existing_timestamp.tzinfo is None:
+                        existing_timestamp = existing_timestamp.replace(tzinfo=timezone.utc)
+                
+                # Normaliser le timestamp offline en timezone-aware si nécessaire
+                offline_timestamp = offline_presence.timestamp
+                if offline_timestamp.tzinfo is None:
+                    offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
                 
                 # Comparer les timestamps
-                if offline_presence.timestamp > existing_timestamp:
+                if offline_timestamp > existing_timestamp:
                     # La présence hors ligne est plus récente, mettre à jour
                     await db.presences.update_one(
                         {"id": existing_presence["id"]},
@@ -2009,7 +2018,7 @@ async def sync_offline_data(
                             "status": offline_presence.status.value,
                             "commentaire": offline_presence.commentaire,
                             "enregistre_par": current_user.id,
-                            "heure_enregistrement": offline_presence.timestamp.isoformat()
+                            "heure_enregistrement": offline_timestamp.isoformat()
                         }}
                     )
                     presence_results.append(SyncResult(
