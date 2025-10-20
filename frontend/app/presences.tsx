@@ -80,6 +80,9 @@ export default function Presences() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
+  // Hook pour le mode hors ligne
+  const { isOnline, isSyncing, syncQueueCount, handleManualSync, refreshCache } = useOfflineMode();
+  
   // États pour la prise de présence
   const [showTakeAttendance, setShowTakeAttendance] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
