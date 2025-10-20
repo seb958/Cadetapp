@@ -2116,7 +2116,8 @@ async def sync_offline_data(
             inspection_results.append(SyncResult(
                 temp_id=offline_inspection.temp_id,
                 success=False,
-                error=str(e)
+                error=str(e),
+                action="error"
             ))
     
     # Calculer les statistiques
