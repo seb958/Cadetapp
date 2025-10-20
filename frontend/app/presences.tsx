@@ -596,9 +596,16 @@ export default function Presences() {
           <View style={styles.actionsContainer}>
             <TouchableOpacity 
               style={styles.primaryButton}
+              onPress={openNewAttendance}
+            >
+              <Text style={styles.primaryButtonText}>📝 Prise Rapide (Swipe)</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.secondaryButton}
               onPress={openTakeAttendance}
             >
-              <Text style={styles.primaryButtonText}>📝 Prendre les Présences</Text>
+              <Text style={styles.secondaryButtonText}>Prise Détaillée</Text>
             </TouchableOpacity>
           </View>
         )}
