@@ -1,18 +1,37 @@
 #!/usr/bin/env python3
 """
-Tests pour l'assignation de nouveaux responsables de section
-Test spécifique pour vérifier que le problème est résolu
+Test backend de l'application de gestion d'escadron de cadets
+Focus sur la vérification des 3 utilisateurs avec nouveaux usernames
 """
 
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, date
 import sys
 
 # Configuration
 BASE_URL = "https://cadet-command.preview.emergentagent.com/api"
-ADMIN_USERNAME = "aadministrateur"
+ADMIN_EMAIL = "admin@escadron.fr"
 ADMIN_PASSWORD = "admin123"
+
+# Utilisateurs avec nouveaux usernames à vérifier
+EXPECTED_USERS_WITH_USERNAMES = [
+    {
+        "username": "adjudantchef_descadron",
+        "role": "Adjudant-Chef d'escadron",
+        "expected_id": "434b7d13-f0d8-469a-aeec-f25b2e2fd3b7"
+    },
+    {
+        "username": "sergent_de_section", 
+        "role": "Sergent de section",
+        "expected_id": "2449f021-af86-4349-bf19-a2c7f1edd228"
+    },
+    {
+        "username": "adjudant_descadron",
+        "role": "Adjudant d'escadron", 
+        "expected_id": "a01b2ec0-64d0-4e35-8305-5db28e3efa97"
+    }
+]
 
 class SectionAssignmentTester:
     def __init__(self):
