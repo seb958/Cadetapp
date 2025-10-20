@@ -316,6 +316,8 @@ test_plan:
 
 agent_communication:
     - agent: "main"
+      message: "✅ GÉNÉRATION USERNAMES MANQUANTS TERMINÉE - Script generate_missing_usernames.py créé et exécuté avec succès. 3 utilisateurs sans username identifiés et mis à jour: 1) adjudantchef_descadron (Adjudant-Chef d'escadron, ID: 434b7d13-f0d8-469a-aeec-f25b2e2fd3b7), 2) sergent_de_section (Sergent de section, ID: 2449f021-af86-4349-bf19-a2c7f1edd228), 3) adjudant_descadron (Adjudant d'escadron, ID: a01b2ec0-64d0-4e35-8305-5db28e3efa97). IMPORTANT: Ces utilisateurs ont besoin d'emails et mots de passe pour se connecter. Version React Native mismatch identifiée (0.79.5 vs 0.81.4) - nécessite soit downgrade Expo Go sur tablette, soit upgrade projet vers Expo SDK 55. Prêt pour tests backend."
+    - agent: "main"
       message: "Phase 1 implémentée: système d'authentification complet backend + frontend. Testé manuellement avec curl - tous les endpoints fonctionnent. Admin créé: admin@escadron.fr / admin123. Prêt pour tests automatisés backend."
     - agent: "testing_backend"
       message: "Backend testé automatiquement - 16 tests passés (100% réussite). Authentification JWT, invitations, permissions par rôle, tous les endpoints sécurisés fonctionnent parfaitement."
