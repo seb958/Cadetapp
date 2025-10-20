@@ -1997,44 +1997,58 @@ async def sync_offline_data(
             if existing_presence:
                 # Fusionner intelligemment : la plus récente gagne
                 existing_timestamp = existing_presence.get("heure_enregistrement")
-                if isinstance(existing_timestamp, str):
-                    existing_timestamp = datetime.fromisoformat(existing_timestamp.replace('Z', '+00:00'))
-                elif isinstance(existing_timestamp, datetime):
-                    # S'assurer qu'il a une timezone
-                    if existing_timestamp.tzinfo is None:
-                        existing_timestamp = existing_timestamp.replace(tzinfo=timezone.utc)
                 
-                # Normaliser le timestamp offline en timezone-aware si nécessaire
-                offline_timestamp = offline_presence.timestamp
-                if offline_timestamp.tzinfo is None:
-                    offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
-                
-                # Comparer les timestamps
-                if offline_timestamp > existing_timestamp:
-                    # La présence hors ligne est plus récente, mettre à jour
-                    await db.presences.update_one(
-                        {"id": existing_presence["id"]},
-                        {"$set": {
-                            "status": offline_presence.status.value,
-                            "commentaire": offline_presence.commentaire,
-                            "enregistre_par": current_user.id,
-                            "heure_enregistrement": offline_timestamp.isoformat()
-                        }}
-                    )
+                try:
+                    if isinstance(existing_timestamp, str):
+                        existing_timestamp = datetime.fromisoformat(existing_timestamp.replace('Z', '+00:00'))
+                    elif isinstance(existing_timestamp, datetime):
+                        # S'assurer qu'il a une timezone
+                        if existing_timestamp.tzinfo is None:
+                            existing_timestamp = existing_timestamp.replace(tzinfo=timezone.utc)
+                    elif existing_timestamp is None:
+                        # Pas de timestamp existant, utiliser un timestamp très ancien
+                        existing_timestamp = datetime.min.replace(tzinfo=timezone.utc)
+                    
+                    # Normaliser le timestamp offline en timezone-aware si nécessaire
+                    offline_timestamp = offline_presence.timestamp
+                    if offline_timestamp.tzinfo is None:
+                        offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
+                    
+                    # Comparer les timestamps
+                    if offline_timestamp > existing_timestamp:
+                        # La présence hors ligne est plus récente, mettre à jour
+                        await db.presences.update_one(
+                            {"id": existing_presence["id"]},
+                            {"$set": {
+                                "status": offline_presence.status.value,
+                                "commentaire": offline_presence.commentaire,
+                                "enregistre_par": current_user.id,
+                                "heure_enregistrement": offline_timestamp.isoformat()
+                            }}
+                        )
+                        presence_results.append(SyncResult(
+                            temp_id=offline_presence.temp_id,
+                            success=True,
+                            server_id=existing_presence["id"],
+                            action="updated"
+                        ))
+                    else:
+                        # La présence serveur est plus récente, garder celle-ci
+                        presence_results.append(SyncResult(
+                            temp_id=offline_presence.temp_id,
+                            success=True,
+                            server_id=existing_presence["id"],
+                            action="merged"
+                        ))
+                except Exception as e:
+                    logger.error(f"Erreur comparaison timestamps: existing={existing_timestamp} ({type(existing_timestamp)}), offline={offline_presence.timestamp} ({type(offline_presence.timestamp)}), error={str(e)}")
                     presence_results.append(SyncResult(
                         temp_id=offline_presence.temp_id,
-                        success=True,
-                        server_id=existing_presence["id"],
-                        action="updated"
+                        success=False,
+                        error=str(e),
+                        action="error"
                     ))
-                else:
-                    # La présence serveur est plus récente, garder celle-ci
-                    presence_results.append(SyncResult(
-                        temp_id=offline_presence.temp_id,
-                        success=True,
-                        server_id=existing_presence["id"],
-                        action="merged"
-                    ))
+                    continue
             else:
                 # Créer nouvelle présence
                 presence_id = str(uuid.uuid4())
