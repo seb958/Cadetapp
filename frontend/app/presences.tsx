@@ -1249,6 +1249,7 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     marginBottom: 20,
+    gap: 12,
   },
   primaryButton: {
     backgroundColor: '#3182ce',
@@ -1258,6 +1259,17 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#E5E5E5',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#333',
     fontSize: 16,
     fontWeight: '600',
   },
