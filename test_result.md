@@ -309,7 +309,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Système de gestion des sous-groupes"
+    - "Vérification des 3 utilisateurs avec nouveaux usernames"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
