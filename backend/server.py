@@ -2122,6 +2122,12 @@ async def sync_offline_data(
             if not existing_presence:
                 # Créer une présence automatique avec statut "present"
                 presence_id = str(uuid.uuid4())
+                
+                # Convertir le timestamp ISO en datetime avec timezone
+                inspection_timestamp = datetime.fromisoformat(offline_inspection.timestamp.replace('Z', '+00:00'))
+                if inspection_timestamp.tzinfo is None:
+                    inspection_timestamp = inspection_timestamp.replace(tzinfo=timezone.utc)
+                
                 presence_data = {
                     "id": presence_id,
                     "cadet_id": offline_inspection.cadet_id,
@@ -2129,7 +2135,7 @@ async def sync_offline_data(
                     "status": PresenceStatus.PRESENT.value,
                     "commentaire": "Présence automatique (inspection d'uniforme)",
                     "enregistre_par": current_user.id,
-                    "heure_enregistrement": offline_inspection.timestamp.isoformat(),
+                    "heure_enregistrement": inspection_timestamp.isoformat(),
                     "section_id": cadet.get("section_id"),
                     "activite": "Inspection d'uniforme"
                 }
