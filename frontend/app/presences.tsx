@@ -124,6 +124,12 @@ export default function Presences() {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
+        
+        // Télécharger et mettre en cache les données si en ligne
+        if (isOnline) {
+          await refreshCache();
+        }
+        
         await loadPresences(parsedUser);
         
         // Charger les cadets si l'utilisateur peut prendre les présences
