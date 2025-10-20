@@ -16,16 +16,13 @@ BASE_URL = "https://cadet-command.preview.emergentagent.com/api"
 ADMIN_USERNAME = "admin@escadron.fr"
 ADMIN_PASSWORD = "admin123"
 
-class BackendTester:
+class OfflineSyncTester:
     def __init__(self):
         self.session = requests.Session()
-        self.auth_token = None
-        self.test_results = {
-            "total_tests": 0,
-            "passed_tests": 0,
-            "failed_tests": 0,
-            "errors": []
-        }
+        self.admin_token = None
+        self.cadet_token = None
+        self.responsible_token = None
+        self.test_results = []
     
     def log_test(self, test_name, success, message=""):
         """Enregistrer le résultat d'un test"""
