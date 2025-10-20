@@ -2042,7 +2042,7 @@ async def sync_offline_data(
                             action="merged"
                         ))
                 except Exception as e:
-                    logger.error(f"Erreur comparaison timestamps: existing={existing_timestamp} ({type(existing_timestamp)}), offline={offline_presence.timestamp} ({type(offline_presence.timestamp)}), error={str(e)}")
+                    logger.error(f"Erreur comparaison timestamps: existing={existing_timestamp} ({type(existing_timestamp)}), offline={offline_presence.timestamp}, error={str(e)}")
                     presence_results.append(SyncResult(
                         temp_id=offline_presence.temp_id,
                         success=False,
@@ -2053,6 +2053,12 @@ async def sync_offline_data(
             else:
                 # Créer nouvelle présence
                 presence_id = str(uuid.uuid4())
+                
+                # Convertir le timestamp ISO en datetime avec timezone
+                offline_timestamp = datetime.fromisoformat(offline_presence.timestamp.replace('Z', '+00:00'))
+                if offline_timestamp.tzinfo is None:
+                    offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
+                
                 presence_data = {
                     "id": presence_id,
                     "cadet_id": offline_presence.cadet_id,
@@ -2060,7 +2066,7 @@ async def sync_offline_data(
                     "status": offline_presence.status.value,
                     "commentaire": offline_presence.commentaire,
                     "enregistre_par": current_user.id,
-                    "heure_enregistrement": offline_presence.timestamp.isoformat(),
+                    "heure_enregistrement": offline_timestamp.isoformat(),
                     "section_id": cadet.get("section_id"),
                     "activite": None
                 }
