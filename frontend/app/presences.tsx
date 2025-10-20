@@ -1169,6 +1169,33 @@ export default function Presences() {
           )}
         </SafeAreaView>
       </Modal>
+
+      {/* Nouveau Modal pour Swipe Attendance */}
+      <Modal
+        visible={showNewAttendance}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SwipeableAttendance
+            sections={sections.map(section => ({
+              id: section.id,
+              nom: section.nom,
+              cadets: cadets
+                .filter(cadet => cadet.section_id === section.id)
+                .map(cadet => ({
+                  id: cadet.id,
+                  nom: cadet.last_name || '',
+                  prenom: cadet.first_name || '',
+                  grade: cadet.grade || '',
+                  section_id: cadet.section_id || '',
+                }))
+            }))}
+            onComplete={handleSwipeAttendanceComplete}
+            onCancel={() => setShowNewAttendance(false)}
+          />
+        </GestureHandlerRootView>
+      </Modal>
     </SafeAreaView>
   );
 }
