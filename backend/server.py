@@ -2010,7 +2010,8 @@ async def sync_offline_data(
                         existing_timestamp = datetime.min.replace(tzinfo=timezone.utc)
                     
                     # Normaliser le timestamp offline en timezone-aware si nécessaire
-                    offline_timestamp = offline_presence.timestamp
+                    # Le timestamp vient maintenant comme une chaîne ISO
+                    offline_timestamp = datetime.fromisoformat(offline_presence.timestamp.replace('Z', '+00:00'))
                     if offline_timestamp.tzinfo is None:
                         offline_timestamp = offline_timestamp.replace(tzinfo=timezone.utc)
                     
