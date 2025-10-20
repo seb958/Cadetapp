@@ -55,44 +55,28 @@ class BackendTester:
             self.test_results["errors"].append(f"{test_name}: {message}")
             print(f"❌ {test_name}: {message}")
     
-    def authenticate(self):
-        """Authentification avec les credentials admin"""
+    def authenticate_admin(self):
+        """Authentification avec le compte admin"""
         try:
-            response = self.session.post(
-                f"{BASE_URL}/auth/login",
-                json={
-                    "username": ADMIN_USERNAME,
-                    "password": ADMIN_PASSWORD
-                }
-            )
+            login_data = {
+                "username": "aadministrateur",  # Username de l'admin selon les tests précédents
+                "password": ADMIN_PASSWORD
+            }
+            
+            response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
             
             if response.status_code == 200:
                 data = response.json()
                 self.auth_token = data["access_token"]
-                self.session.headers.update({
-                    "Authorization": f"Bearer {self.auth_token}"
-                })
-                self.log_test(
-                    "Authentification admin",
-                    True,
-                    f"Connexion réussie pour {ADMIN_USERNAME}"
-                )
+                self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
+                self.log_test("Authentification admin", True, f"Token obtenu pour {data['user']['prenom']} {data['user']['nom']}")
                 return True
             else:
-                self.log_test(
-                    "Authentification admin",
-                    False,
-                    f"Échec de connexion: {response.status_code}",
-                    response.text
-                )
+                self.log_test("Authentification admin", False, f"Erreur {response.status_code}: {response.text}")
                 return False
                 
         except Exception as e:
-            self.log_test(
-                "Authentification admin",
-                False,
-                f"Erreur de connexion: {str(e)}"
-            )
+            self.log_test("Authentification admin", False, f"Exception: {str(e)}")
             return False
     
     def get_sections(self):
