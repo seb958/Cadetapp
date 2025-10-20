@@ -64,8 +64,8 @@ export const useOfflineMode = () => {
 
   const handleAutoSync = async () => {
     try {
-      const token = await AsyncStorage.getItem('@user_token');
-      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+      const token = await AsyncStorage.getItem('access_token');
+      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
       
       if (token && backendUrl) {
         await handleManualSync();
@@ -87,8 +87,8 @@ export const useOfflineMode = () => {
     try {
       setIsSyncing(true);
       
-      const token = await AsyncStorage.getItem('@user_token');
-      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+      const token = await AsyncStorage.getItem('access_token');
+      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
       
       if (!token) {
         return { success: false, message: 'Non authentifié' };
@@ -121,8 +121,8 @@ export const useOfflineMode = () => {
 
   const refreshCache = async (): Promise<boolean> => {
     try {
-      const token = await AsyncStorage.getItem('@user_token');
-      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || '';
+      const token = await AsyncStorage.getItem('access_token');
+      const backendUrl = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || process.env.EXPO_PUBLIC_BACKEND_URL || '';
       
       if (!token || !backendUrl) {
         return false;
