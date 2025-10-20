@@ -79,65 +79,149 @@ class BackendTester:
             self.log_test("Authentification admin", False, f"Exception: {str(e)}")
             return False
     
-    def get_sections(self):
-        """Récupérer toutes les sections"""
-        try:
-            response = self.session.get(f"{BASE_URL}/sections")
-            
-            if response.status_code == 200:
-                sections = response.json()
-                self.log_test(
-                    "Récupération des sections",
-                    True,
-                    f"{len(sections)} sections trouvées"
-                )
-                return sections
-            else:
-                self.log_test(
-                    "Récupération des sections",
-                    False,
-                    f"Erreur {response.status_code}",
-                    response.text
-                )
-                return None
-                
-        except Exception as e:
-            self.log_test(
-                "Récupération des sections",
-                False,
-                f"Erreur: {str(e)}"
-            )
-            return None
-    
-    def get_users(self):
-        """Récupérer tous les utilisateurs"""
+    def test_get_all_users(self):
+        """Test GET /api/users - récupération de tous les utilisateurs"""
         try:
             response = self.session.get(f"{BASE_URL}/users")
             
             if response.status_code == 200:
                 users = response.json()
-                self.log_test(
-                    "Récupération des utilisateurs",
-                    True,
-                    f"{len(users)} utilisateurs trouvés"
-                )
+                self.log_test("GET /api/users", True, f"{len(users)} utilisateurs trouvés")
                 return users
             else:
-                self.log_test(
-                    "Récupération des utilisateurs",
-                    False,
-                    f"Erreur {response.status_code}",
-                    response.text
-                )
-                return None
+                self.log_test("GET /api/users", False, f"Erreur {response.status_code}: {response.text}")
+                return []
                 
         except Exception as e:
-            self.log_test(
-                "Récupération des utilisateurs",
-                False,
-                f"Erreur: {str(e)}"
-            )
-            return None
+            self.log_test("GET /api/users", False, f"Exception: {str(e)}")
+            return []
+    
+    def test_users_with_new_usernames(self, users):
+        """Vérifier les 3 utilisateurs avec nouveaux usernames"""
+        found_users = {}
+        
+        # Créer un dictionnaire des utilisateurs par ID et username
+        users_by_id = {user["id"]: user for user in users}
+        users_by_username = {user.get("username"): user for user in users if user.get("username")}
+        
+        for expected_user in EXPECTED_USERS_WITH_USERNAMES:
+            username = expected_user["username"]
+            role = expected_user["role"]
+            expected_id = expected_user["expected_id"]
+            
+            # Vérifier par username
+            if username in users_by_username:
+                user = users_by_username[username]
+                found_users[username] = user
+                
+                # Vérifier l'ID
+                if user["id"] == expected_id:
+                    self.log_test(f"Username {username} - ID correct", True, f"ID {expected_id} confirmé")
+                else:
+                    self.log_test(f"Username {username} - ID correct", False, f"ID attendu: {expected_id}, trouvé: {user['id']}")
+                
+                # Vérifier le rôle
+                if user["role"] == role:
+                    self.log_test(f"Username {username} - Rôle correct", True, f"Rôle '{role}' confirmé")
+                else:
+                    self.log_test(f"Username {username} - Rôle correct", False, f"Rôle attendu: '{role}', trouvé: '{user['role']}'")
+                
+                # Vérifier que l'utilisateur est actif
+                if user.get("actif", False):
+                    self.log_test(f"Username {username} - Statut actif", True, "Utilisateur actif")
+                else:
+                    self.log_test(f"Username {username} - Statut actif", False, "Utilisateur inactif")
+                    
+            else:
+                # Vérifier par ID si username pas trouvé
+                if expected_id in users_by_id:
+                    user = users_by_id[expected_id]
+                    current_username = user.get("username", "AUCUN")
+                    self.log_test(f"Username {username} - Trouvé par ID", False, 
+                                f"ID {expected_id} trouvé mais username est '{current_username}' au lieu de '{username}'")
+                else:
+                    self.log_test(f"Username {username} - Existence", False, f"Utilisateur avec username '{username}' ou ID '{expected_id}' non trouvé")
+        
+        return found_users
+    
+    def test_get_sections(self):
+        """Test GET /api/sections"""
+        try:
+            response = self.session.get(f"{BASE_URL}/sections")
+            
+            if response.status_code == 200:
+                sections = response.json()
+                self.log_test("GET /api/sections", True, f"{len(sections)} sections trouvées")
+                return sections
+            else:
+                self.log_test("GET /api/sections", False, f"Erreur {response.status_code}: {response.text}")
+                return []
+                
+        except Exception as e:
+            self.log_test("GET /api/sections", False, f"Exception: {str(e)}")
+            return []
+    
+    def test_get_activities(self):
+        """Test GET /api/activities"""
+        try:
+            response = self.session.get(f"{BASE_URL}/activities")
+            
+            if response.status_code == 200:
+                activities = response.json()
+                self.log_test("GET /api/activities", True, f"{len(activities)} activités trouvées")
+                return activities
+            else:
+                self.log_test("GET /api/activities", False, f"Erreur {response.status_code}: {response.text}")
+                return []
+                
+        except Exception as e:
+            self.log_test("GET /api/activities", False, f"Exception: {str(e)}")
+            return []
+    
+    def test_get_presences(self):
+        """Test GET /api/presences"""
+        try:
+            response = self.session.get(f"{BASE_URL}/presences")
+            
+            if response.status_code == 200:
+                presences = response.json()
+                self.log_test("GET /api/presences", True, f"{len(presences)} présences trouvées")
+                return presences
+            else:
+                self.log_test("GET /api/presences", False, f"Erreur {response.status_code}: {response.text}")
+                return []
+                
+        except Exception as e:
+            self.log_test("GET /api/presences", False, f"Exception: {str(e)}")
+            return []
+    
+    def test_get_roles(self):
+        """Test GET /api/roles"""
+        try:
+            response = self.session.get(f"{BASE_URL}/roles")
+            
+            if response.status_code == 200:
+                roles = response.json()
+                self.log_test("GET /api/roles", True, f"{len(roles)} rôles trouvés")
+                
+                # Vérifier les rôles personnalisés attendus
+                role_names = [role["name"] for role in roles]
+                expected_custom_roles = ["Adjudant-Chef d'escadron", "Sergent de section", "Adjudant d'escadron"]
+                
+                for expected_role in expected_custom_roles:
+                    if expected_role in role_names:
+                        self.log_test(f"Rôle personnalisé '{expected_role}'", True, "Rôle trouvé")
+                    else:
+                        self.log_test(f"Rôle personnalisé '{expected_role}'", False, "Rôle non trouvé")
+                
+                return roles
+            else:
+                self.log_test("GET /api/roles", False, f"Erreur {response.status_code}: {response.text}")
+                return []
+                
+        except Exception as e:
+            self.log_test("GET /api/roles", False, f"Exception: {str(e)}")
+            return []
     
     def find_section_by_name(self, sections, section_name):
         """Trouver une section par son nom"""
