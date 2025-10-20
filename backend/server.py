@@ -1980,7 +1980,8 @@ async def sync_offline_data(
                     presence_results.append(SyncResult(
                         temp_id=offline_presence.temp_id,
                         success=False,
-                        error="Permission refusée pour ce cadet"
+                        error="Permission refusée pour ce cadet",
+                        action="error"
                     ))
                     continue
             
