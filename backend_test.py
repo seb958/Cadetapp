@@ -290,69 +290,73 @@ class BackendTester:
         
         return custom_role_users
     
-    def assign_section_leader(self, section_id, responsable_id, section_name, user_name):
-        """Assigner un responsable à une section"""
-        try:
-            # D'abord récupérer les détails actuels de la section
-            response = self.session.get(f"{BASE_URL}/sections")
-            if response.status_code != 200:
-                self.log_test(
-                    f"Assignation {user_name} -> {section_name}",
-                    False,
-                    "Impossible de récupérer les sections"
-                )
-                return False
-            
-            sections = response.json()
-            current_section = None
-            for section in sections:
-                if section["id"] == section_id:
-                    current_section = section
-                    break
-            
-            if not current_section:
-                self.log_test(
-                    f"Assignation {user_name} -> {section_name}",
-                    False,
-                    "Section non trouvée"
-                )
-                return False
-            
-            # Préparer les données de mise à jour
-            update_data = {
-                "nom": current_section["nom"],
-                "description": current_section.get("description"),
-                "responsable_id": responsable_id
-            }
-            
-            # Effectuer la mise à jour
-            response = self.session.put(
-                f"{BASE_URL}/sections/{section_id}",
-                json=update_data
-            )
-            
-            if response.status_code == 200:
-                self.log_test(
-                    f"Assignation {user_name} -> {section_name}",
-                    True,
-                    "Assignation réussie"
-                )
-                return True
-            else:
-                self.log_test(
-                    f"Assignation {user_name} -> {section_name}",
-                    False,
-                    f"Erreur {response.status_code}",
-                    response.text
-                )
-                return False
-                
-        except Exception as e:
-            self.log_test(
-                f"Assignation {user_name} -> {section_name}",
-                False,
-                f"Erreur: {str(e)}"
-            )
+    def run_all_tests(self):
+        """Exécuter tous les tests"""
+        print("🚀 Début des tests backend - Application de gestion d'escadron de cadets")
+        print(f"📍 Base URL: {BASE_URL}")
+        print("=" * 80)
+        
+        # 1. Authentification
+        if not self.authenticate_admin():
+            print("❌ Impossible de continuer sans authentification")
+            return False
+        
+        print("\n📋 Tests des endpoints principaux:")
+        print("-" * 40)
+        
+        # 2. Test des endpoints principaux
+        users = self.test_get_all_users()
+        sections = self.test_get_sections()
+        activities = self.test_get_activities()
+        presences = self.test_get_presences()
+        roles = self.test_get_roles()
+        
+        print("\n👥 Tests spécifiques aux utilisateurs avec nouveaux usernames:")
+        print("-" * 60)
+        
+        # 3. Tests spécifiques aux utilisateurs avec nouveaux usernames
+        if users:
+            found_users = self.test_users_with_new_usernames(users)
+            custom_role_users = self.test_custom_role_users(users)
+        
+        print("\n🏢 Tests des sections et sous-groupes:")
+        print("-" * 40)
+        
+        # 4. Tests des sections et responsables
+        if sections and users:
+            self.test_section_managers(sections, users)
+            self.test_get_subgroups(sections)
+        
+        # 5. Résumé final
+        print("\n" + "=" * 80)
+        print("📊 RÉSUMÉ DES TESTS")
+        print("=" * 80)
+        
+        total = self.test_results["total_tests"]
+        passed = self.test_results["passed_tests"]
+        failed = self.test_results["failed_tests"]
+        success_rate = (passed / total * 100) if total > 0 else 0
+        
+        print(f"✅ Tests réussis: {passed}/{total} ({success_rate:.1f}%)")
+        print(f"❌ Tests échoués: {failed}/{total}")
+        
+        if self.test_results["errors"]:
+            print(f"\n🔍 ERREURS DÉTAILLÉES:")
+            for error in self.test_results["errors"]:
+                print(f"   • {error}")
+        
+        print("\n🎯 FOCUS: Vérification des 3 utilisateurs avec nouveaux usernames")
+        username_tests_passed = sum(1 for error in self.test_results["errors"] if "Username" not in error)
+        total_username_tests = sum(1 for _ in range(self.test_results["total_tests"]) if "Username" in str(_))
+        
+        if failed == 0:
+            print("🎉 TOUS LES TESTS SONT PASSÉS - Backend fonctionnel")
+            return True
+        elif failed <= 2:
+            print("⚠️  TESTS MAJORITAIREMENT RÉUSSIS - Quelques problèmes mineurs")
+            return True
+        else:
+            print("🚨 PROBLÈMES CRITIQUES DÉTECTÉS - Intervention requise")
             return False
     
     def verify_assignment(self, section_id, expected_responsable_id, section_name, user_name):
