@@ -108,7 +108,15 @@ export default function Presences() {
 
   useEffect(() => {
     loadUserAndData();
-  }, []);
+    // Rafraîchir le cache périodiquement si en ligne
+    const interval = setInterval(() => {
+      if (isOnline) {
+        refreshCache();
+      }
+    }, 300000); // Toutes les 5 minutes
+    
+    return () => clearInterval(interval);
+  }, [isOnline]);
 
   const loadUserAndData = async () => {
     try {
