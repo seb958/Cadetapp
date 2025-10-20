@@ -305,6 +305,37 @@ export default function Presences() {
         commentaire: attendanceData[cadetId].commentaire || null
       }));
 
+      // Vérifier si on est en ligne
+      if (!isOnline) {
+        // Mode hors ligne : enregistrer localement dans la queue
+        let offlineSavedCount = 0;
+        for (const presence of presencesData) {
+          await addToSyncQueue({
+            type: 'presence',
+            data: {
+              cadet_id: presence.cadet_id,
+              date: selectedDate,
+              status: presence.status as 'present' | 'absent' | 'retard',
+              commentaire: presence.commentaire || undefined,
+              timestamp: new Date().toISOString(),
+              temp_id: `presence_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            },
+            attempts: 0,
+            created_at: new Date().toISOString()
+          });
+          offlineSavedCount++;
+        }
+        
+        Alert.alert(
+          '📴 Mode Hors Ligne', 
+          `${offlineSavedCount} présence(s) enregistrée(s) localement.\n\nElles seront synchronisées automatiquement quand la connexion sera restaurée.`
+        );
+        setShowTakeAttendance(false);
+        setAttendanceData({});
+        return;
+      }
+
+      // Mode en ligne : enregistrer directement sur le serveur
       const payload = {
         date: selectedDate,
         activite: activite || null,
@@ -334,7 +365,17 @@ export default function Presences() {
       }
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement:', error);
-      Alert.alert('Erreur', 'Impossible d\'enregistrer les présences');
+      
+      // Si erreur réseau en mode en ligne, proposer d'enregistrer localement
+      if (!isOnline) {
+        Alert.alert(
+          'Erreur de connexion',
+          'Pas de connexion internet. Les présences ont été enregistrées localement et seront synchronisées plus tard.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Erreur', 'Impossible d\'enregistrer les présences');
+      }
     } finally {
       setSavingAttendance(false);
     }
