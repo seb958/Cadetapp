@@ -104,9 +104,21 @@ export const useOfflineMode = () => {
           return { success: true, message: 'Aucune donnée à synchroniser' };
         }
         
+        // Si des erreurs, construire un message détaillé
+        if (result.errors > 0 && result.errorDetails) {
+          const errorMessages = result.errorDetails.map((err: any) => 
+            `• ${err.error || 'Erreur inconnue'}`
+          ).join('\n');
+          
+          return {
+            success: result.synced > 0, // Succès partiel si au moins 1 synchronisé
+            message: `${result.synced} élément(s) synchronisé(s)\n${result.errors} erreur(s):\n\n${errorMessages}`,
+          };
+        }
+        
         return {
           success: true,
-          message: `${result.synced} élément(s) synchronisé(s)${result.errors > 0 ? `, ${result.errors} erreur(s)` : ''}`,
+          message: `${result.synced} élément(s) synchronisé(s)`,
         };
       }
       
