@@ -2063,7 +2063,8 @@ async def sync_offline_data(
                 inspection_results.append(SyncResult(
                     temp_id=offline_inspection.temp_id,
                     success=False,
-                    error="Cadet non trouvé"
+                    error="Cadet non trouvé",
+                    action="error"
                 ))
                 continue
             
