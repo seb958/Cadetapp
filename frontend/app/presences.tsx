@@ -18,6 +18,8 @@ import { router } from 'expo-router';
 import { ConnectionIndicator } from '../components/ConnectionIndicator';
 import { useOfflineMode } from '../hooks/useOfflineMode';
 import { addToSyncQueue, getCacheData, recordPresence, getConnectionStatus } from '../services/offlineService';
+import { SwipeableAttendance } from '../components/SwipeableAttendance';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
