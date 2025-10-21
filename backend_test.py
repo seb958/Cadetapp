@@ -243,9 +243,10 @@ class OfflineSyncTester:
             # Utiliser une date différente pour éviter les conflits
             test_date = "2024-01-16"
             
-            # Vérifier qu'il n'y a pas de présence existante
+            # Vérifier qu'il n'y a pas de présence existante pour cette date
             response = self.session.get(f"{BASE_URL}/presences?date={test_date}&cadet_id={cadet_id}")
             existing_presences = response.json() if response.status_code == 200 else []
+            existing_count = len(existing_presences)
             
             # Créer une inspection pour déclencher la création automatique de présence
             inspection_data = {
