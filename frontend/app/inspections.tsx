@@ -502,6 +502,11 @@ export default function Inspections() {
     return recentInspections.some(insp => insp.cadet_id === cadetId);
   };
 
+  const openInspectionDetail = (inspection: UniformInspection) => {
+    setSelectedInspection(inspection);
+    setShowDetailModal(true);
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
