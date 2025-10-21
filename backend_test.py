@@ -21,9 +21,9 @@ class UniformInspectionTester:
     def __init__(self):
         self.session = requests.Session()
         self.admin_token = None
-        self.cadet_token = None
-        self.responsible_token = None
         self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
         
     def log_result(self, test_name, success, details=""):
         """Enregistrer le résultat d'un test"""
