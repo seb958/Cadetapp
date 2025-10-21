@@ -1024,7 +1024,65 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
+    marginBottom: 4,
+  },
+  criteriaSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
     marginBottom: 12,
+    fontStyle: 'italic',
+  },
+  criterionContainer: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+  },
+  criterionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  scoreButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  scoreButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  scoreButtonSelected: {
+    borderWidth: 3,
+  },
+  scoreButton0: {
+    borderColor: '#ef4444',
+  },
+  scoreButton1: {
+    borderColor: '#f97316',
+  },
+  scoreButton2: {
+    borderColor: '#eab308',
+  },
+  scoreButton3: {
+    borderColor: '#84cc16',
+  },
+  scoreButton4: {
+    borderColor: '#10b981',
+  },
+  scoreButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4b5563',
+  },
+  scoreButtonTextSelected: {
+    color: '#1f2937',
   },
   criterionCard: {
     flexDirection: 'row',
