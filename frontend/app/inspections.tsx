@@ -489,6 +489,16 @@ export default function Inspections() {
         <Text style={styles.title}>Inspections d'Uniformes</Text>
       </View>
 
+      {/* Indicateur de connexion */}
+      <View style={styles.connectionIndicatorContainer}>
+        <ConnectionIndicator 
+          isOnline={isOnline}
+          isSyncing={isSyncing}
+          syncQueueCount={syncQueueCount}
+          onSync={handleManualSync}
+        />
+      </View>
+
       <ScrollView
         style={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
