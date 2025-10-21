@@ -300,8 +300,14 @@ export default function Inspections() {
     setSelectedCadet(cadet);
     
     // Initialiser les scores des critères à 0 (barème de 0 à 4)
+    // IMPORTANT: Utiliser les critères ACTUELS des settings en mémoire
     const uniformType = todaySchedule.uniform_type;
     const criteria = settings?.inspectionCriteria[uniformType] || [];
+    
+    console.log(`🔍 Ouverture inspection pour ${cadet.nom} ${cadet.prenom}`);
+    console.log(`👔 Tenue: ${uniformType}`);
+    console.log(`📋 Critères chargés:`, criteria);
+    
     const initialScores: { [key: string]: number } = {};
     criteria.forEach(criterion => {
       initialScores[criterion] = 0;
