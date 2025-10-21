@@ -231,6 +231,8 @@ export default function Inspections() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(`📊 Inspections reçues: ${data.length} inspections`);
+        console.log('📋 Cadets inspectés:', data.map((i: any) => `${i.cadet_nom} ${i.cadet_prenom}`));
         setRecentInspections(data);
       }
     } catch (error) {
