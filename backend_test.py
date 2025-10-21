@@ -198,8 +198,8 @@ class OfflineSyncTester:
                 # Chercher notre inspection de test
                 test_inspection = None
                 for inspection in inspections:
-                    if ("Test synchronisation offline" in inspection.get("commentaire", "") or
-                        "Test synchronisation offline direct" in inspection.get("commentaire", "")):
+                    commentaire = inspection.get("commentaire", "")
+                    if commentaire and ("Test synchronisation offline" in commentaire):
                         test_inspection = inspection
                         break
                 
