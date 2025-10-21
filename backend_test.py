@@ -683,9 +683,10 @@ class UniformInspectionTester:
     
     def run_all_tests(self):
         """Exécuter tous les tests"""
-        print("🚀 DÉBUT DES TESTS SYSTÈME D'INSPECTION DES UNIFORMES")
+        print("🚀 DÉBUT DES TESTS - SYSTÈME D'INSPECTION DES UNIFORMES AVEC BARÈME DE NOTATION (0-4)")
         print(f"📍 Base URL: {BASE_URL}")
         print(f"👤 Authentification: {ADMIN_CREDENTIALS['username']}")
+        print("🎯 Focus: Nouveau barème de notation 0-4 points par critère")
         print("=" * 80)
         
         # Authentification
