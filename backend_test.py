@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Tests complets pour le système d'inspection des uniformes
-Référence: test_result.md - Section "Système d'inspection des uniformes"
+Tests Backend pour le Système d'Inspection des Uniformes avec Barème de Notation (0-4)
+Test du système d'inspection des uniformes avec le nouveau barème de notation de 0 à 4 points par critère.
+Référence: test_result.md - Section "Système d'inspection des uniformes avec barème de notation"
 """
 
 import requests
