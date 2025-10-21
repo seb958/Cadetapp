@@ -126,7 +126,7 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -140,6 +140,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS SYSTÈME BARÈME NOTATION 0-4 RÉUSSIS - 35/39 tests passés (89.7% réussite). Nouveau système de notation parfaitement fonctionnel: 1) CALCUL SCORES NOUVEAU BARÈME: Tous les scénarios validés - Score parfait (100%), Score moyen (50%), Score faible (8.33%), Score mixte (56.25%) calculés correctement avec formule (obtained_score/max_score)*100, 2) FORMAT DONNÉES: GET /api/uniform-inspections retourne criteria_scores avec entiers 0-4 (plus booléens), champ max_score présent, données enrichies complètes (cadet_nom, inspector_name, section_nom), 3) RÉTROCOMPATIBILITÉ: Toutes les 10 inspections existantes ont champ max_score, GET fonctionne sans erreur, 4) FONCTIONNALITÉS EXISTANTES: Création automatique présence, permissions granulaires, gestion erreurs (404 cadet/planification inexistants) préservées. 4 échecs mineurs: max_score absent dans réponse POST (présent dans GET), validation scores négatifs/supérieurs à 4 non implémentée, flag auto_marked_present parfois false. Système de notation 0-4 opérationnel et prêt pour production. Base URL: https://uniformcheck.preview.emergentagent.com/api. Authentification: aadministrateur/admin123."
+        - working: "NA"
+          agent: "main"
+          comment: "🔧 CORRECTIF MODE OFFLINE DES INSPECTIONS UNIFORMES: Problème identifié: import dynamique `await import('../services/offlineService')` dans inspections.tsx échouait lorsque l'appareil était hors ligne (ERR_INTERNET_DISCONNECTED) car il tentait de télécharger le module depuis le réseau. Solution implémentée: 1) Remplacement import dynamique par import statique en haut du fichier: `import * as offlineService from '../services/offlineService';`, 2) Utilisation directe de `offlineService.recordUniformInspection()` dans la fonction saveInspection. Modifications dans /app/frontend/app/inspections.tsx (ligne 22 + ligne 367). Service offlineService.ts contient déjà la fonction recordUniformInspection avec gestion complète de la queue offline (type 'inspection', stockage AsyncStorage UNIFORM_INSPECTIONS_QUEUE). Backend /api/sync/batch déjà configuré pour traiter les inspections de la queue offline et marquer automatiquement présent. Prêt pour tests backend de la synchronisation offline des inspections."
 
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
