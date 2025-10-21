@@ -622,11 +622,11 @@ class UniformInspectionTester:
                 "cadet_id": test_cadet["id"],
                 "uniform_type": "C1 - Tenue de Parade",
                 "criteria_scores": {
-                    "Kippi réglementaire": True,
-                    "Chemise blanche impeccable": True,
-                    "Cravate correctement nouée": False
+                    "Kippi réglementaire": 4,
+                    "Chemise blanche impeccable": 3,
+                    "Cravate correctement nouée": 1
                 },
-                "commentaire": "Test flux complet - inspection automatisée"
+                "commentaire": "Test flux complet - inspection automatisée avec barème 0-4"
             }
             
             response = self.session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
