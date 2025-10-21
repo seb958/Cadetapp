@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 """
-Tests pour le système de synchronisation hors ligne
-Teste les endpoints GET /api/sync/cache-data et POST /api/sync/batch
+Tests complets pour le système d'inspection des uniformes
+Référence: test_result.md - Section "Système d'inspection des uniformes"
 """
 
 import requests
 import json
-from datetime import datetime, date, timedelta
-import uuid
+from datetime import date, datetime, timedelta
 import sys
-import time
+import os
 
 # Configuration
 BASE_URL = "https://squadnet-1.preview.emergentagent.com/api"
-ADMIN_USERNAME = "admin@escadron.fr"
-ADMIN_PASSWORD = "admin123"
+ADMIN_CREDENTIALS = {
+    "username": "aadministrateur",
+    "password": "admin123"
+}
 
-class OfflineSyncTester:
+class UniformInspectionTester:
     def __init__(self):
         self.session = requests.Session()
         self.admin_token = None
