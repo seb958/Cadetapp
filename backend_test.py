@@ -419,6 +419,155 @@ class UniformInspectionTester:
         except Exception as e:
             self.log_test("Gestion erreurs - Planification inexistante", False, f"Erreur: {str(e)}")
     
+    def test_score_calculation_scenarios(self):
+        """Test des scénarios de calcul du score avec barème 0-4"""
+        print("\n=== TESTS SCÉNARIOS CALCUL SCORE (0-4) ===")
+        
+        test_cadet = self.get_test_cadet()
+        if not test_cadet:
+            self.log_test("Récupération cadet pour tests score", False, "Aucun cadet trouvé")
+            return
+        
+        cadet_id = test_cadet["id"]
+        
+        # Scénarios de test spécifiés dans la demande
+        scenarios = [
+            {
+                "name": "Score parfait",
+                "criteria": {"critère1": 4, "critère2": 4, "critère3": 4},
+                "expected": 100.0
+            },
+            {
+                "name": "Score moyen", 
+                "criteria": {"critère1": 2, "critère2": 2, "critère3": 2},
+                "expected": 50.0
+            },
+            {
+                "name": "Score faible",
+                "criteria": {"critère1": 0, "critère2": 1, "critère3": 0},
+                "expected": 8.33
+            },
+            {
+                "name": "Score mixte",
+                "criteria": {"critère1": 4, "critère2": 0, "critère3": 3, "critère4": 2},
+                "expected": 56.25
+            }
+        ]
+        
+        for scenario in scenarios:
+            try:
+                inspection_data = {
+                    "cadet_id": cadet_id,
+                    "uniform_type": f"Test - {scenario['name']}",
+                    "criteria_scores": scenario["criteria"],
+                    "commentaire": f"Test calcul score - {scenario['name']}"
+                }
+                
+                response = self.session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    actual_score = result.get("total_score")
+                    expected_score = scenario["expected"]
+                    
+                    # Tolérance de 0.01% pour les arrondis
+                    score_correct = abs(actual_score - expected_score) <= 0.01
+                    self.log_test(f"Calcul Score - {scenario['name']}", score_correct,
+                                f"Attendu: {expected_score}%, Obtenu: {actual_score}%")
+                else:
+                    self.log_test(f"Calcul Score - {scenario['name']}", False,
+                                f"Status: {response.status_code}, Response: {response.text}")
+                    
+            except Exception as e:
+                self.log_test(f"Calcul Score - {scenario['name']}", False, f"Erreur: {str(e)}")
+    
+    def test_data_validation(self):
+        """Test de la validation des données (scores 0-4)"""
+        print("\n=== TESTS VALIDATION DONNÉES ===")
+        
+        test_cadet = self.get_test_cadet()
+        if not test_cadet:
+            self.log_test("Récupération cadet pour validation", False, "Aucun cadet trouvé")
+            return
+        
+        cadet_id = test_cadet["id"]
+        
+        # Tests de validation
+        validation_tests = [
+            {
+                "name": "Scores négatifs",
+                "data": {"cadet_id": cadet_id, "uniform_type": "Test", "criteria_scores": {"critère": -1}},
+                "should_fail": True
+            },
+            {
+                "name": "Scores > 4",
+                "data": {"cadet_id": cadet_id, "uniform_type": "Test", "criteria_scores": {"critère": 5}},
+                "should_fail": True
+            },
+            {
+                "name": "Scores valides (0-4)",
+                "data": {"cadet_id": cadet_id, "uniform_type": "Test", "criteria_scores": {"critère1": 0, "critère2": 4, "critère3": 2}},
+                "should_fail": False
+            }
+        ]
+        
+        for test in validation_tests:
+            try:
+                response = self.session.post(f"{BASE_URL}/uniform-inspections", json=test["data"])
+                
+                if test["should_fail"]:
+                    # Ce test devrait échouer
+                    if response.status_code >= 400:
+                        self.log_test(f"Validation - {test['name']}", True, f"Rejeté correctement (Status: {response.status_code})")
+                    else:
+                        self.log_test(f"Validation - {test['name']}", False, f"Devrait être rejeté mais accepté (Status: {response.status_code})")
+                else:
+                    # Ce test devrait réussir
+                    if response.status_code == 200:
+                        self.log_test(f"Validation - {test['name']}", True, "Accepté correctement")
+                    else:
+                        self.log_test(f"Validation - {test['name']}", False, f"Devrait être accepté mais rejeté (Status: {response.status_code})")
+                        
+            except Exception as e:
+                self.log_test(f"Validation - {test['name']}", False, f"Erreur: {str(e)}")
+    
+    def test_retrocompatibility(self):
+        """Test de rétrocompatibilité avec anciennes données"""
+        print("\n=== TEST RÉTROCOMPATIBILITÉ ===")
+        
+        try:
+            # Tester que les anciennes inspections (si existantes) ne cassent pas le GET
+            response = self.session.get(f"{BASE_URL}/uniform-inspections")
+            
+            if response.status_code == 200:
+                inspections = response.json()
+                
+                # Vérifier que toutes les inspections ont un max_score (même si 0 par défaut)
+                all_have_max_score = True
+                missing_max_score_count = 0
+                
+                for inspection in inspections:
+                    if "max_score" not in inspection:
+                        all_have_max_score = False
+                        missing_max_score_count += 1
+                
+                if all_have_max_score:
+                    self.log_test("Rétrocompatibilité - max_score présent", True, 
+                                f"Toutes les {len(inspections)} inspections ont le champ max_score")
+                else:
+                    self.log_test("Rétrocompatibilité - max_score présent", False, 
+                                f"{missing_max_score_count}/{len(inspections)} inspections n'ont pas max_score")
+                
+                # Vérifier que le GET fonctionne sans erreur
+                self.log_test("Rétrocompatibilité - GET fonctionne", True, 
+                            f"Récupération de {len(inspections)} inspections sans erreur")
+                
+            else:
+                self.log_test("Rétrocompatibilité - GET fonctionne", False, f"Status: {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("Rétrocompatibilité", False, f"Erreur: {str(e)}")
+
     def test_complete_inspection_workflow(self):
         """Test du flux complet d'inspection"""
         print("\n=== TEST FLUX COMPLET D'INSPECTION ===")
