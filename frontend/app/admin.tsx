@@ -1179,8 +1179,15 @@ export default function Admin() {
       const token = await AsyncStorage.getItem('access_token');
       console.log('🔍 Chargement des settings depuis le backend...');
       
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      // Ajouter un timestamp pour éviter le cache
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings?t=${timestamp}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
       });
 
       if (response.ok) {
