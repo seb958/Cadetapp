@@ -336,7 +336,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Vérification des 3 utilisateurs avec nouveaux usernames"
+    - "Système d'inspection des uniformes"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
