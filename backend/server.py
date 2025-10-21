@@ -2535,13 +2535,16 @@ async def create_uniform_inspection(
                 detail="Vous ne pouvez inspecter que les cadets de votre section"
             )
     
-    # Calculer le score total
+    # Calculer le score total basé sur le barème (0-4 points par critère)
     total_criteria = len(inspection.criteria_scores)
     if total_criteria == 0:
         total_score = 0.0
+        max_score = 0
     else:
-        conforming_criteria = sum(1 for is_conforming in inspection.criteria_scores.values() if is_conforming)
-        total_score = round((conforming_criteria / total_criteria) * 100, 2)
+        # Chaque critère est noté de 0 à 4
+        obtained_score = sum(inspection.criteria_scores.values())
+        max_score = total_criteria * 4  # Score maximum possible
+        total_score = round((obtained_score / max_score) * 100, 2) if max_score > 0 else 0.0
     
     # Vérifier la présence du cadet pour cette date
     existing_presence = await db.presences.find_one({
