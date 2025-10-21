@@ -225,10 +225,21 @@ export default function Inspections() {
     try {
       const token = await AsyncStorage.getItem('access_token');
       const today = new Date().toISOString().split('T')[0];
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/uniform-inspections?date=${today}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      console.log(`🔍 Chargement inspections pour la date: ${today}`);
+      
+      const url = `${EXPO_PUBLIC_BACKEND_URL}/api/uniform-inspections?date=${today}`;
+      console.log(`🌐 URL: ${url}`);
+      
+      const response = await fetch(url, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
       });
 
+      console.log(`📥 Statut réponse: ${response.status}`);
+      
       if (response.ok) {
         const data = await response.json();
         console.log(`📊 Inspections reçues: ${data.length} inspections`);
