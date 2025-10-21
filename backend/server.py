@@ -1944,7 +1944,9 @@ class OfflineInspection(BaseModel):
     """Inspection d'uniforme enregistrée hors ligne"""
     cadet_id: str
     date: str  # Format ISO: YYYY-MM-DD
-    note: Optional[str] = None
+    uniform_type: str  # Type de tenue (ex: "C1", "C5")
+    criteria_scores: Dict[str, int]  # Critère -> Score (0-4)
+    commentaire: Optional[str] = None
     timestamp: str  # Horodatage ISO avec timezone
     temp_id: str
 
