@@ -101,6 +101,10 @@ export default function Inspections() {
   const [scheduleDate, setScheduleDate] = useState('');
   const [savingSchedule, setSavingSchedule] = useState(false);
   
+  // États pour le modal de détail d'inspection
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedInspection, setSelectedInspection] = useState<UniformInspection | null>(null);
+  
   // Permissions
   const [canScheduleUniform, setCanScheduleUniform] = useState(false);
   const [canInspect, setCanInspect] = useState(false);
