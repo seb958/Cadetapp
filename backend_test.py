@@ -18,7 +18,7 @@ ADMIN_CREDENTIALS = {
     "password": "admin123"
 }
 
-class UniformInspectionTester:
+class OfflineSyncTester:
     def __init__(self):
         self.session = requests.Session()
         self.admin_token = None
