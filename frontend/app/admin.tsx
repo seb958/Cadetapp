@@ -349,7 +349,8 @@ export default function Admin() {
       loadUsers(),
       loadSections(),
       loadAlerts(),
-      loadRoles()
+      loadRoles(),
+      loadSettings()  // Ajouter le chargement des settings
     ]);
     
     // Charger les sous-groupes APRÈS les sections (dépendance)
