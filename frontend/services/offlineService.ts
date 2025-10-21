@@ -278,18 +278,24 @@ export const recordPresence = async (
 /**
  * Enregistre une inspection d'uniforme (en ligne ou hors ligne)
  */
-export const recordInspection = async (
+export const recordUniformInspection = async (
   cadetId: string,
   date: string,
-  note?: string
+  uniformType: string,
+  criteriaScores: { [criterion: string]: number },
+  commentaire?: string
 ): Promise<{ success: boolean; offline: boolean }> => {
   const inspection: OfflineInspection = {
     cadet_id: cadetId,
     date,
-    note,
+    uniform_type: uniformType,
+    criteria_scores: criteriaScores,
+    commentaire,
     timestamp: new Date().toISOString(),
     temp_id: `inspection_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   };
+  
+  console.log('💾 recordUniformInspection - Mode:', isOnline ? 'EN LIGNE' : 'HORS LIGNE');
   
   // Si hors ligne, ajouter à la queue
   if (!isOnline) {
@@ -299,10 +305,13 @@ export const recordInspection = async (
       attempts: 0,
       created_at: new Date().toISOString(),
     });
+    console.log('📦 Inspection ajoutée à la queue de synchronisation');
     return { success: true, offline: true };
   }
   
+  // Si en ligne, retourner false pour que l'appelant gère l'envoi
   return { success: true, offline: false };
+};
 };
 
 // ============================================================================
