@@ -246,16 +246,23 @@ class UniformInspectionTester:
             if response.status_code == 200:
                 result = response.json()
                 
-                # Vérifier le calcul du score (3/4 = 75%)
-                expected_score = 75.0
+                # Vérifier le calcul du score avec nouveau barème (4+3+2+1)/16 * 100 = 62.5%
+                expected_score = 62.5
                 actual_score = result.get("total_score")
                 score_correct = actual_score == expected_score
                 
-                self.log_test("POST /api/uniform-inspections - Création", True,
+                self.log_test("POST /api/uniform-inspections - Création nouveau barème", True,
                             f"Score calculé: {actual_score}% (attendu: {expected_score}%)")
                 
-                self.log_test("POST /api/uniform-inspections - Calcul score", score_correct,
+                self.log_test("POST /api/uniform-inspections - Calcul score 0-4", score_correct,
                             f"Score: {actual_score}% vs {expected_score}%")
+                
+                # Vérifier la présence du champ max_score
+                max_score = result.get("max_score")
+                expected_max_score = 16  # 4 critères * 4 points max
+                max_score_correct = max_score == expected_max_score
+                self.log_test("POST /api/uniform-inspections - max_score présent", max_score_correct,
+                            f"max_score: {max_score} (attendu: {expected_max_score})")
                 
                 # Vérifier le flag auto_marked_present
                 auto_marked = result.get("auto_marked_present", False)
