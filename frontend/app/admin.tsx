@@ -1174,6 +1174,53 @@ export default function Admin() {
     }
   };
 
+  const loadSettings = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Si des settings existent dans la base, les charger
+        if (data && Object.keys(data.inspectionCriteria || {}).length > 0) {
+          setSettings(data);
+          console.log('✅ Settings chargés depuis le backend:', Object.keys(data.inspectionCriteria || {}));
+        } else {
+          // Sinon, sauvegarder les settings par défaut
+          console.log('⚠️ Aucun settings trouvé, sauvegarde des valeurs par défaut');
+          await saveDefaultSettings();
+        }
+      } else {
+        // Si erreur 403 ou autre, utiliser les valeurs par défaut
+        console.log('⚠️ Erreur lors du chargement des settings, utilisation des valeurs par défaut');
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des settings:', error);
+    }
+  };
+
+  const saveDefaultSettings = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (response.ok) {
+        console.log('✅ Settings par défaut sauvegardés');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des settings par défaut:', error);
+    }
+  };
+
   const saveSettings = async () => {
     setSavingSettings(true);
     try {
