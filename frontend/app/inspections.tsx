@@ -642,27 +642,40 @@ export default function Inspections() {
                 <Text style={styles.modalUniform}>{todaySchedule?.uniform_type}</Text>
                 
                 <View style={styles.criteriaSection}>
-                  <Text style={styles.criteriaTitle}>Critères d'inspection</Text>
+                  <Text style={styles.criteriaTitle}>Critères d'inspection (Barème: 0-4 points)</Text>
+                  <Text style={styles.criteriaSubtitle}>
+                    0 = Très mauvais | 1 = Mauvais | 2 = Passable | 3 = Bon | 4 = Excellent
+                  </Text>
                   
                   {Object.keys(criteriaScores).map(criterion => (
-                    <TouchableOpacity
-                      key={criterion}
-                      style={[
-                        styles.criterionCard,
-                        criteriaScores[criterion] && styles.criterionCardConforming
-                      ]}
-                      onPress={() => toggleCriterion(criterion)}
-                    >
-                      <Text style={[
-                        styles.criterionText,
-                        criteriaScores[criterion] && styles.criterionTextConforming
-                      ]}>
-                        {criterion}
-                      </Text>
-                      <Text style={styles.criterionStatus}>
-                        {criteriaScores[criterion] ? '✓' : '✗'}
-                      </Text>
-                    </TouchableOpacity>
+                    <View key={criterion} style={styles.criterionContainer}>
+                      <Text style={styles.criterionLabel}>{criterion}</Text>
+                      
+                      <View style={styles.scoreButtons}>
+                        {[0, 1, 2, 3, 4].map(score => (
+                          <TouchableOpacity
+                            key={score}
+                            style={[
+                              styles.scoreButton,
+                              criteriaScores[criterion] === score && styles.scoreButtonSelected,
+                              score === 0 && styles.scoreButton0,
+                              score === 1 && styles.scoreButton1,
+                              score === 2 && styles.scoreButton2,
+                              score === 3 && styles.scoreButton3,
+                              score === 4 && styles.scoreButton4,
+                            ]}
+                            onPress={() => updateCriterionScore(criterion, score)}
+                          >
+                            <Text style={[
+                              styles.scoreButtonText,
+                              criteriaScores[criterion] === score && styles.scoreButtonTextSelected
+                            ]}>
+                              {score}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
                   ))}
                 </View>
                 
