@@ -487,9 +487,12 @@ export default function Inspections() {
               )}
               <TouchableOpacity 
                 style={[styles.scheduleButton, {backgroundColor: '#ef4444'}]} 
-                onPress={() => {
+                onPress={async () => {
+                  console.log('🔄 Réinitialisation complète...');
                   setRecentInspections([]);
-                  Alert.alert('Réinitialisé', 'Liste des inspections vidée');
+                  // Forcer le rechargement des settings
+                  await loadSettings();
+                  Alert.alert('Réinitialisé', 'Liste des inspections vidée et settings rechargés');
                 }}
               >
                 <Text style={styles.scheduleButtonText}>Réinitialiser</Text>
