@@ -120,13 +120,13 @@ user_problem_statement: "Développer une application mobile/web pour gérer pré
           comment: "✅ TESTS SYSTÈME SYNCHRONISATION HORS LIGNE RÉUSSIS - 15/18 tests passés (83.3% réussite). Fonctionnalités validées: 1) GET /api/sync/cache-data: Structure correcte (users, sections, activities, timestamp), données récupérées (12 utilisateurs, 5 sections, activités 30 derniers jours), mots de passe hashés supprimés, timestamp valide, authentification requise (403). 2) POST /api/sync/batch: Synchronisation présences simples OK, fusion intelligente basée timestamp OK (plus récent gagne), création automatique présence lors inspection OK, gestion erreurs (cadet inexistant) OK, authentification requise (403). Bug corrigé: SyncResult.action manquant dans cas d'erreur. 3 échecs mineurs: codes retour 403 au lieu 401 (fonctionnel), test conflits timestamp partiellement OK. Système de synchronisation hors ligne parfaitement fonctionnel pour mode offline. Base URL: https://squadnet-1.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
 
 backend:
-  - task: "Système d'inspection des uniformes"
+  - task: "Système d'inspection des uniformes avec barème de notation"
     implemented: true
-    working: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -134,6 +134,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS SYSTÈME D'INSPECTION DES UNIFORMES COMPLETS RÉUSSIS - 27/27 tests passés (100% réussite). Système d'inspection des uniformes parfaitement fonctionnel: 1) GESTION DES PARAMÈTRES: GET/POST /api/settings avec structure complète (escadronName, address, contactEmail, allowMotivatedAbsences, consecutiveAbsenceThreshold, inspectionCriteria, autoBackup), sauvegarde et persistance des critères d'inspection par type de tenue validées. 2) PLANIFICATION DES TENUES: GET /api/uniform-schedule (tenue du jour et date spécifique), POST /api/uniform-schedule (programmation tenue), DELETE /api/uniform-schedule/{id} (suppression) tous fonctionnels. 3) INSPECTIONS D'UNIFORMES: POST /api/uniform-inspections avec calcul automatique score (75% pour 3/4 critères conformes), création automatique présence (flag auto_marked_present=true), GET /api/uniform-inspections avec données enrichies (cadet_nom, inspector_name, section_nom), filtres par date/cadet fonctionnels. 4) PERMISSIONS: Admin peut programmer tenues et inspecter, gestion erreurs appropriée (404 pour cadet/planification inexistants). 5) FLUX COMPLET: Sauvegarde critères → Programmation tenue → Inspection avec auto-présence → Récupération données enrichies parfaitement validé. Authentification: aadministrateur/admin123. Base URL: https://squadnet-1.preview.emergentagent.com/api. Système prêt pour production."
+        - working: "NA"
+          agent: "main"
+          comment: "MISE À JOUR BARÈME DE NOTATION (0-4 points). Changements backend: UniformInspection.criteria_scores changé de Dict[str,bool] à Dict[str,int], ajout champ max_score:int. Calcul score mis à jour: obtained_score=sum(criteria_scores.values()), max_score=total_criteria*4, total_score=(obtained_score/max_score)*100. GET endpoint mis à jour pour inclure max_score. Frontend (inspections.tsx): Interface complètement redessinée avec boutons de sélection 0-4 pour chaque critère (code couleur: 0=rouge, 1=orange, 2=jaune, 3=vert clair, 4=vert foncé). Affichage temps réel du score calculé. Légende barème ajoutée. Prêt pour tests backend avec nouveau barème."
 
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
