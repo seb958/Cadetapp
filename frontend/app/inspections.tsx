@@ -77,6 +77,9 @@ export default function Inspections() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
+  // Hook mode hors ligne
+  const { isOnline, isSyncing, syncQueueCount, handleManualSync } = useOfflineMode();
+  
   // Données
   const [cadets, setCadets] = useState<User[]>([]); 
   const [sections, setSections] = useState<Section[]>([]);
