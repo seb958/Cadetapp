@@ -683,7 +683,12 @@ export default function Inspections() {
             <Text style={styles.sectionTitle}>Inspections du jour ({recentInspections.length})</Text>
             
             {recentInspections.map(inspection => (
-              <View key={inspection.id} style={styles.inspectionCard}>
+              <TouchableOpacity 
+                key={inspection.id} 
+                style={styles.inspectionCard}
+                onPress={() => openInspectionDetail(inspection)}
+                activeOpacity={0.7}
+              >
                 <View style={styles.inspectionHeader}>
                   <Text style={styles.inspectionCadet}>
                     {getGradeDisplayName(inspection.cadet_grade)} {inspection.cadet_nom} {inspection.cadet_prenom}
@@ -708,7 +713,9 @@ export default function Inspections() {
                 {inspection.commentaire && (
                   <Text style={styles.inspectionComment}>{inspection.commentaire}</Text>
                 )}
-              </View>
+                
+                <Text style={styles.tapToSeeDetail}>👆 Appuyer pour voir le détail</Text>
+              </TouchableOpacity>
             ))}
           </View>
         )}
