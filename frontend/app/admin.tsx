@@ -1177,30 +1177,38 @@ export default function Admin() {
   const loadSettings = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
+      console.log('🔍 Chargement des settings depuis le backend...');
+      
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('📥 Réponse du backend:', JSON.stringify(data.inspectionCriteria));
+        
         // Vérifier si les settings contiennent des critères d'inspection
         const hasInspectionCriteria = data.inspectionCriteria && Object.keys(data.inspectionCriteria).length > 0;
         
+        console.log('🔎 hasInspectionCriteria:', hasInspectionCriteria);
+        console.log('🔎 Nombre de tenues dans backend:', Object.keys(data.inspectionCriteria || {}).length);
+        
         if (hasInspectionCriteria) {
           // Des settings existent avec des critères, les charger
+          console.log('✅ Chargement des settings depuis le backend');
           setSettings(data);
-          console.log('✅ Settings chargés depuis le backend:', Object.keys(data.inspectionCriteria || {}));
         } else {
           // Aucun settings ou settings vides, sauvegarder les valeurs par défaut
           console.log('⚠️ Settings vides détectés, sauvegarde des valeurs par défaut');
+          console.log('📋 Valeurs par défaut à sauvegarder:', Object.keys(settings.inspectionCriteria));
           await saveDefaultSettings();
         }
       } else {
         // Si erreur, garder les valeurs par défaut déjà dans le state
-        console.log('⚠️ Erreur lors du chargement des settings, conservation des valeurs par défaut');
+        console.log('⚠️ Erreur', response.status, '- Conservation des valeurs par défaut');
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des settings:', error);
+      console.error('❌ Erreur lors du chargement des settings:', error);
     }
   };
 
