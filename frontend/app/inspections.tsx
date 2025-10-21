@@ -290,12 +290,12 @@ export default function Inspections() {
 
     setSelectedCadet(cadet);
     
-    // Initialiser les scores des critères
+    // Initialiser les scores des critères à 0 (barème de 0 à 4)
     const uniformType = todaySchedule.uniform_type;
     const criteria = settings?.inspectionCriteria[uniformType] || [];
-    const initialScores: { [key: string]: boolean } = {};
+    const initialScores: { [key: string]: number } = {};
     criteria.forEach(criterion => {
-      initialScores[criterion] = false;
+      initialScores[criterion] = 0;
     });
     setCriteriaScores(initialScores);
     setInspectionComment('');
