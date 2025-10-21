@@ -461,11 +461,22 @@ export default function Inspections() {
         <View style={styles.scheduleCard}>
           <View style={styles.scheduleHeader}>
             <Text style={styles.scheduleTitle}>👔 Tenue du jour</Text>
-            {canScheduleUniform && (
-              <TouchableOpacity style={styles.scheduleButton} onPress={openScheduleModal}>
-                <Text style={styles.scheduleButtonText}>Programmer</Text>
+            <View style={{flexDirection: 'row', gap: 8}}>
+              {canScheduleUniform && (
+                <TouchableOpacity style={styles.scheduleButton} onPress={openScheduleModal}>
+                  <Text style={styles.scheduleButtonText}>Programmer</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                style={[styles.scheduleButton, {backgroundColor: '#ef4444'}]} 
+                onPress={() => {
+                  setRecentInspections([]);
+                  Alert.alert('Réinitialisé', 'Liste des inspections vidée');
+                }}
+              >
+                <Text style={styles.scheduleButtonText}>Réinitialiser</Text>
               </TouchableOpacity>
-            )}
+            </View>
           </View>
           
           {todaySchedule?.uniform_type ? (
