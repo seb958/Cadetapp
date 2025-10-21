@@ -2286,7 +2286,8 @@ class UniformInspection(BaseModel):
     cadet_id: str
     date: date
     uniform_type: str  # Type de tenue inspecté
-    criteria_scores: Dict[str, bool]  # Critère -> Conforme (True/False)
+    criteria_scores: Dict[str, int]  # Critère -> Score (0-4)
+    max_score: int  # Score maximum possible
     total_score: float  # Score total calculé (pourcentage)
     commentaire: Optional[str] = None
     inspected_by: str  # ID de l'inspecteur
@@ -2297,7 +2298,7 @@ class UniformInspection(BaseModel):
 class UniformInspectionCreate(BaseModel):
     cadet_id: str
     uniform_type: str
-    criteria_scores: Dict[str, bool]
+    criteria_scores: Dict[str, int]  # Critère -> Score (0-4)
     commentaire: Optional[str] = None
 
 class UniformInspectionResponse(BaseModel):
