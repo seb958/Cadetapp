@@ -85,7 +85,7 @@ export default function Inspections() {
   // États pour l'inspection
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [selectedCadet, setSelectedCadet] = useState<User | null>(null);
-  const [criteriaScores, setCriteriaScores] = useState<{ [key: string]: boolean }>({});
+  const [criteriaScores, setCriteriaScores] = useState<{ [key: string]: number }>({});  // 0-4 points
   const [inspectionComment, setInspectionComment] = useState('');
   const [savingInspection, setSavingInspection] = useState(false);
   
