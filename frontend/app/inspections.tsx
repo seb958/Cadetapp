@@ -330,10 +330,20 @@ export default function Inspections() {
   const saveInspection = async () => {
     if (!selectedCadet || !todaySchedule?.uniform_type) return;
 
+    console.log('💾 Début sauvegarde inspection pour cadet:', selectedCadet.nom, selectedCadet.prenom);
     setSavingInspection(true);
     try {
       const token = await AsyncStorage.getItem('access_token');
       const today = new Date().toISOString().split('T')[0];
+      
+      const requestBody = {
+        cadet_id: selectedCadet.id,
+        uniform_type: todaySchedule.uniform_type,
+        criteria_scores: criteriaScores,
+        commentaire: inspectionComment || null
+      };
+      
+      console.log('📤 Envoi requête:', JSON.stringify(requestBody));
       
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/uniform-inspections?inspection_date=${today}`, {
         method: 'POST',
@@ -341,16 +351,15 @@ export default function Inspections() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          cadet_id: selectedCadet.id,
-          uniform_type: todaySchedule.uniform_type,
-          criteria_scores: criteriaScores,
-          commentaire: inspectionComment || null
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('📥 Réponse statut:', response.status);
 
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ Inspection sauvegardée:', result);
+        
         let message = `Inspection enregistrée avec succès\nScore: ${result.total_score}%`;
         
         if (result.auto_marked_present) {
@@ -360,7 +369,10 @@ export default function Inspections() {
         Alert.alert('Succès', message);
         setShowInspectionModal(false);
         setSelectedCadet(null);
+        
+        console.log('🔄 Rechargement des inspections...');
         await loadRecentInspections();
+        console.log('✅ Inspections rechargées');
       } else {
         const errorData = await response.json();
         Alert.alert('Erreur', errorData.detail || 'Erreur lors de l\'enregistrement');
