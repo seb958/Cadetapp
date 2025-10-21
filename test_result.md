@@ -122,11 +122,11 @@ user_problem_statement: "Développer une application mobile/web pour gérer pré
 backend:
   - task: "Système d'inspection des uniformes avec barème de notation"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
