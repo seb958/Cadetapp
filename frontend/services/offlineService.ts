@@ -312,7 +312,6 @@ export const recordUniformInspection = async (
   // Si en ligne, retourner false pour que l'appelant gère l'envoi
   return { success: true, offline: false };
 };
-};
 
 // ============================================================================
 // SYNCHRONISATION
