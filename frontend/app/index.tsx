@@ -173,8 +173,7 @@ export default function Index() {
   };
 
   const navigateToInspections = () => {
-    // TODO: Implémenter plus tard
-    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+    router.push('/inspections');
   };
 
   const navigateToOrganigrame = () => {
