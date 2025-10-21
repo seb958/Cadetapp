@@ -228,18 +228,18 @@ class UniformInspectionTester:
         cadet_name = f"{test_cadet['prenom']} {test_cadet['nom']}"
         self.log_test("Récupération cadet test", True, f"Cadet: {cadet_name}")
         
-        # Test 1: POST /api/uniform-inspections - Créer inspection avec auto-présence
+        # Test 1: POST /api/uniform-inspections - Créer inspection avec nouveau barème (0-4)
         try:
             inspection_data = {
                 "cadet_id": cadet_id,
                 "uniform_type": "C1 - Tenue de Parade",
                 "criteria_scores": {
-                    "Kippi réglementaire": True,
-                    "Chemise blanche impeccable": True,
-                    "Cravate correctement nouée": False,
-                    "Chaussures cirées": True
+                    "Kippi réglementaire": 4,
+                    "Chemise blanche impeccable": 3,
+                    "Pantalon bien repassé": 2,
+                    "Chaussures cirées": 1
                 },
-                "commentaire": "Test d'inspection automatisée"
+                "commentaire": "Test barème notation"
             }
             
             response = self.session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
