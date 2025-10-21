@@ -2253,6 +2253,438 @@ async def get_cache_data(current_user: User = Depends(get_current_user)):
         "timestamp": datetime.utcnow().isoformat()
     }
 
+# ============================================================================
+# SYSTÈME D'INSPECTION DES UNIFORMES
+# ============================================================================
+
+# Modèles pour les inspections d'uniformes
+class UniformSchedule(BaseModel):
+    """Planification des tenues pour les inspections"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: date  # Date de l'inspection
+    uniform_type: str  # Type de tenue (ex: "C1 - Tenue de Parade", "C5 - Tenue d'Entraînement")
+    set_by: str  # ID de l'utilisateur qui a programmé
+    set_at: datetime = Field(default_factory=datetime.utcnow)
+
+class UniformScheduleCreate(BaseModel):
+    date: date
+    uniform_type: str
+
+class Settings(BaseModel):
+    """Paramètres de l'application incluant les critères d'inspection"""
+    escadronName: str = ""
+    address: str = ""
+    contactEmail: str = ""
+    allowMotivatedAbsences: bool = True
+    consecutiveAbsenceThreshold: int = 3
+    inspectionCriteria: Dict[str, List[str]] = {}  # Type de tenue -> liste de critères
+    autoBackup: bool = True
+
+class UniformInspection(BaseModel):
+    """Inspection d'uniforme d'un cadet"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cadet_id: str
+    date: date
+    uniform_type: str  # Type de tenue inspecté
+    criteria_scores: Dict[str, bool]  # Critère -> Conforme (True/False)
+    total_score: float  # Score total calculé (pourcentage)
+    commentaire: Optional[str] = None
+    inspected_by: str  # ID de l'inspecteur
+    inspection_time: datetime = Field(default_factory=datetime.utcnow)
+    section_id: Optional[str] = None
+    auto_marked_present: bool = False  # Flag si présence créée automatiquement
+
+class UniformInspectionCreate(BaseModel):
+    cadet_id: str
+    uniform_type: str
+    criteria_scores: Dict[str, bool]
+    commentaire: Optional[str] = None
+
+class UniformInspectionResponse(BaseModel):
+    id: str
+    cadet_id: str
+    cadet_nom: str
+    cadet_prenom: str
+    cadet_grade: str
+    date: date
+    uniform_type: str
+    criteria_scores: Dict[str, bool]
+    total_score: float
+    commentaire: Optional[str]
+    inspected_by: str
+    inspector_name: str
+    inspection_time: datetime
+    section_id: Optional[str]
+    section_nom: Optional[str]
+    auto_marked_present: bool
+
+# Fonction pour vérifier les permissions d'inspection
+async def require_inspection_permissions(current_user: User = Depends(get_current_user)):
+    """
+    Vérifie les permissions pour l'inspection des uniformes
+    Autorisé: Chefs de section et supérieurs
+    """
+    # Récupérer les rôles personnalisés qui peuvent inspecter
+    allowed_system_roles = [UserRole.CADET_RESPONSIBLE, UserRole.CADET_ADMIN, UserRole.ENCADREMENT]
+    
+    # Rôles personnalisés autorisés (contenant "chef", "sergent", "adjudant", "officier")
+    allowed_custom_keywords = ["chef", "sergent", "adjudant", "officier", "commandant"]
+    
+    # Vérifier rôles système
+    if current_user.role in [r.value for r in allowed_system_roles]:
+        return current_user
+    
+    # Vérifier rôles personnalisés par mots-clés
+    role_lower = current_user.role.lower()
+    if any(keyword in role_lower for keyword in allowed_custom_keywords):
+        return current_user
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Accès refusé. Permissions d'inspection requises (chefs de section et supérieurs)."
+    )
+
+# Fonction pour vérifier les permissions de programmation de tenue
+async def require_uniform_schedule_permissions(current_user: User = Depends(get_current_user)):
+    """
+    Vérifie les permissions pour programmer la tenue du jour
+    Autorisé: Adjudants, Adjudant-Chef, Officiers, Encadrement
+    """
+    # Rôles système autorisés
+    allowed_system_roles = [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]
+    
+    # Mots-clés pour les rôles personnalisés autorisés
+    allowed_custom_keywords = ["adjudant", "officier", "lieutenant", "capitaine", "commandant"]
+    
+    # Vérifier rôles système
+    if current_user.role in [r.value for r in allowed_system_roles]:
+        return current_user
+    
+    # Vérifier rôles personnalisés par mots-clés
+    role_lower = current_user.role.lower()
+    if any(keyword in role_lower for keyword in allowed_custom_keywords):
+        return current_user
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Accès refusé. Permissions requises: Adjudants, Officiers ou Encadrement."
+    )
+
+# Routes pour les paramètres
+@api_router.get("/settings", response_model=Settings)
+async def get_settings(current_user: User = Depends(require_admin_or_encadrement)):
+    """Récupérer les paramètres de l'application"""
+    settings_doc = await db.settings.find_one({"type": "app_settings"})
+    
+    if not settings_doc:
+        # Retourner les paramètres par défaut si aucun n'existe
+        return Settings()
+    
+    # Convertir le document MongoDB en modèle Settings
+    settings_dict = {
+        "escadronName": settings_doc.get("escadronName", ""),
+        "address": settings_doc.get("address", ""),
+        "contactEmail": settings_doc.get("contactEmail", ""),
+        "allowMotivatedAbsences": settings_doc.get("allowMotivatedAbsences", True),
+        "consecutiveAbsenceThreshold": settings_doc.get("consecutiveAbsenceThreshold", 3),
+        "inspectionCriteria": settings_doc.get("inspectionCriteria", {}),
+        "autoBackup": settings_doc.get("autoBackup", True)
+    }
+    
+    return Settings(**settings_dict)
+
+@api_router.post("/settings")
+async def save_settings(
+    settings: Settings,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """Sauvegarder les paramètres de l'application"""
+    settings_dict = settings.dict()
+    settings_dict["type"] = "app_settings"
+    settings_dict["updated_by"] = current_user.id
+    settings_dict["updated_at"] = datetime.utcnow().isoformat()
+    
+    # Upsert (update or insert)
+    await db.settings.update_one(
+        {"type": "app_settings"},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    
+    return {"message": "Paramètres sauvegardés avec succès"}
+
+# Routes pour la planification des tenues
+@api_router.get("/uniform-schedule")
+async def get_uniform_schedule(
+    date_param: Optional[date] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Récupérer la tenue programmée pour une date
+    Si aucune date n'est fournie, retourne la tenue du jour
+    """
+    target_date = date_param if date_param else date.today()
+    
+    schedule = await db.uniform_schedules.find_one({
+        "date": target_date.isoformat()
+    })
+    
+    if not schedule:
+        return {
+            "date": target_date.isoformat(),
+            "uniform_type": None,
+            "message": "Aucune tenue programmée pour cette date"
+        }
+    
+    return {
+        "id": schedule["id"],
+        "date": schedule["date"],
+        "uniform_type": schedule["uniform_type"],
+        "set_by": schedule["set_by"],
+        "set_at": schedule["set_at"]
+    }
+
+@api_router.post("/uniform-schedule")
+async def set_uniform_schedule(
+    schedule_data: UniformScheduleCreate,
+    current_user: User = Depends(require_uniform_schedule_permissions)
+):
+    """
+    Programmer la tenue pour une date donnée
+    Autorisé: Adjudants, Officiers, Encadrement
+    """
+    # Vérifier si une tenue est déjà programmée pour cette date
+    existing_schedule = await db.uniform_schedules.find_one({
+        "date": schedule_data.date.isoformat()
+    })
+    
+    if existing_schedule:
+        # Mettre à jour la tenue existante
+        await db.uniform_schedules.update_one(
+            {"id": existing_schedule["id"]},
+            {"$set": {
+                "uniform_type": schedule_data.uniform_type,
+                "set_by": current_user.id,
+                "set_at": datetime.utcnow().isoformat()
+            }}
+        )
+        return {"message": "Tenue mise à jour avec succès", "id": existing_schedule["id"]}
+    else:
+        # Créer une nouvelle planification
+        schedule = UniformSchedule(
+            date=schedule_data.date,
+            uniform_type=schedule_data.uniform_type,
+            set_by=current_user.id
+        )
+        
+        schedule_dict = schedule.dict()
+        schedule_dict["date"] = schedule_dict["date"].isoformat()
+        schedule_dict["set_at"] = schedule_dict["set_at"].isoformat()
+        
+        await db.uniform_schedules.insert_one(schedule_dict)
+        return {"message": "Tenue programmée avec succès", "id": schedule.id}
+
+@api_router.delete("/uniform-schedule/{schedule_id}")
+async def delete_uniform_schedule(
+    schedule_id: str,
+    current_user: User = Depends(require_uniform_schedule_permissions)
+):
+    """Supprimer une planification de tenue"""
+    result = await db.uniform_schedules.delete_one({"id": schedule_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Planification non trouvée"
+        )
+    
+    return {"message": "Planification supprimée avec succès"}
+
+# Routes pour les inspections d'uniformes
+@api_router.post("/uniform-inspections")
+async def create_uniform_inspection(
+    inspection: UniformInspectionCreate,
+    inspection_date: date = None,
+    current_user: User = Depends(require_inspection_permissions)
+):
+    """
+    Créer une inspection d'uniforme
+    - Calcule automatiquement le score basé sur les critères
+    - Vérifie le statut de présence et marque automatiquement présent si absent/inexistant
+    """
+    # Utiliser la date d'aujourd'hui si non fournie
+    if inspection_date is None:
+        inspection_date = date.today()
+    
+    # Vérifier que le cadet existe
+    cadet = await db.users.find_one({"id": inspection.cadet_id, "actif": True})
+    if not cadet:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cadet non trouvé"
+        )
+    
+    # Vérifier les permissions selon le rôle
+    if current_user.role == UserRole.CADET_RESPONSIBLE:
+        # Un chef de section ne peut inspecter que sa section
+        if cadet.get("section_id") != current_user.section_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous ne pouvez inspecter que les cadets de votre section"
+            )
+    
+    # Calculer le score total
+    total_criteria = len(inspection.criteria_scores)
+    if total_criteria == 0:
+        total_score = 0.0
+    else:
+        conforming_criteria = sum(1 for is_conforming in inspection.criteria_scores.values() if is_conforming)
+        total_score = round((conforming_criteria / total_criteria) * 100, 2)
+    
+    # Vérifier la présence du cadet pour cette date
+    existing_presence = await db.presences.find_one({
+        "cadet_id": inspection.cadet_id,
+        "date": inspection_date.isoformat()
+    })
+    
+    auto_marked_present = False
+    
+    if not existing_presence:
+        # Pas de présence -> créer automatiquement une présence "present"
+        presence_data = {
+            "id": str(uuid.uuid4()),
+            "cadet_id": inspection.cadet_id,
+            "date": inspection_date.isoformat(),
+            "status": "present",
+            "commentaire": "Présence automatique suite à inspection uniforme",
+            "enregistre_par": current_user.id,
+            "heure_enregistrement": datetime.utcnow().isoformat(),
+            "section_id": cadet.get("section_id"),
+            "activite": f"Inspection uniforme - {inspection.uniform_type}"
+        }
+        await db.presences.insert_one(presence_data)
+        auto_marked_present = True
+    elif existing_presence.get("status") == "absent":
+        # Présence marquée absente -> modifier en présent
+        await db.presences.update_one(
+            {"id": existing_presence["id"]},
+            {"$set": {
+                "status": "present",
+                "commentaire": f"Modifié automatiquement suite à inspection uniforme. Ancien commentaire: {existing_presence.get('commentaire', '')}",
+                "enregistre_par": current_user.id,
+                "heure_enregistrement": datetime.utcnow().isoformat()
+            }}
+        )
+        auto_marked_present = True
+    
+    # Créer l'inspection
+    inspection_data = UniformInspection(
+        cadet_id=inspection.cadet_id,
+        date=inspection_date,
+        uniform_type=inspection.uniform_type,
+        criteria_scores=inspection.criteria_scores,
+        total_score=total_score,
+        commentaire=inspection.commentaire,
+        inspected_by=current_user.id,
+        section_id=cadet.get("section_id"),
+        auto_marked_present=auto_marked_present
+    )
+    
+    # Convertir en dict pour MongoDB
+    inspection_dict = inspection_data.dict()
+    inspection_dict["date"] = inspection_dict["date"].isoformat()
+    inspection_dict["inspection_time"] = inspection_dict["inspection_time"].isoformat()
+    
+    await db.uniform_inspections.insert_one(inspection_dict)
+    
+    result = {
+        "message": "Inspection enregistrée avec succès",
+        "inspection_id": inspection_data.id,
+        "total_score": total_score
+    }
+    
+    if auto_marked_present:
+        result["auto_marked_present"] = True
+        result["presence_message"] = "Le cadet a été automatiquement marqué présent"
+    
+    return result
+
+@api_router.get("/uniform-inspections", response_model=List[UniformInspectionResponse])
+async def get_uniform_inspections(
+    date: Optional[date] = None,
+    cadet_id: Optional[str] = None,
+    section_id: Optional[str] = None,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user)
+):
+    """Récupérer les inspections d'uniformes avec filtres"""
+    # Construire le filtre selon les permissions
+    filter_dict = {}
+    
+    if current_user.role == UserRole.CADET:
+        # Un cadet ne peut voir que ses propres inspections
+        filter_dict["cadet_id"] = current_user.id
+    elif current_user.role == UserRole.CADET_RESPONSIBLE:
+        # Un chef de section ne peut voir que sa section
+        if current_user.section_id:
+            filter_dict["section_id"] = current_user.section_id
+        else:
+            return []
+    # CADET_ADMIN et ENCADREMENT peuvent tout voir
+    
+    # Appliquer les filtres additionnels
+    if date:
+        filter_dict["date"] = date.isoformat()
+    if cadet_id and current_user.role in [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        filter_dict["cadet_id"] = cadet_id
+    if section_id and current_user.role in [UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        filter_dict["section_id"] = section_id
+    
+    # Récupérer les inspections
+    inspections_cursor = db.uniform_inspections.find(filter_dict).limit(limit).sort("date", -1)
+    inspections = await inspections_cursor.to_list(limit)
+    
+    # Enrichir avec les informations des cadets, inspecteurs et sections
+    enriched_inspections = []
+    for inspection in inspections:
+        # Récupérer les infos du cadet
+        cadet = await db.users.find_one({"id": inspection["cadet_id"]})
+        if not cadet:
+            continue
+        
+        # Récupérer les infos de l'inspecteur
+        inspector = await db.users.find_one({"id": inspection["inspected_by"]})
+        inspector_name = f"{inspector['prenom']} {inspector['nom']}" if inspector else "Inconnu"
+        
+        # Récupérer les infos de la section si applicable
+        section_nom = None
+        if inspection.get("section_id"):
+            section = await db.sections.find_one({"id": inspection["section_id"]})
+            if section:
+                section_nom = section["nom"]
+        
+        enriched_inspection = UniformInspectionResponse(
+            id=inspection["id"],
+            cadet_id=inspection["cadet_id"],
+            cadet_nom=cadet["nom"],
+            cadet_prenom=cadet["prenom"],
+            cadet_grade=cadet["grade"],
+            date=datetime.fromisoformat(inspection["date"]).date(),
+            uniform_type=inspection["uniform_type"],
+            criteria_scores=inspection["criteria_scores"],
+            total_score=inspection["total_score"],
+            commentaire=inspection.get("commentaire"),
+            inspected_by=inspection["inspected_by"],
+            inspector_name=inspector_name,
+            inspection_time=datetime.fromisoformat(inspection["inspection_time"]),
+            section_id=inspection.get("section_id"),
+            section_nom=section_nom,
+            auto_marked_present=inspection.get("auto_marked_present", False)
+        )
+        enriched_inspections.append(enriched_inspection)
+    
+    return enriched_inspections
+
 # Route de test
 @api_router.get("/")
 async def root():
