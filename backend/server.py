@@ -2173,9 +2173,41 @@ async def sync_offline_data(
                 }
                 await db.presences.insert_one(presence_data)
             
-            # TODO: Ajouter une collection "inspections" si nécessaire
-            # Pour l'instant, on enregistre juste l'inspection dans les commentaires
+            # Créer l'inspection d'uniforme dans la collection uniform_inspections
             inspection_id = str(uuid.uuid4())
+            
+            # Calculer le score total
+            total_criteria = len(offline_inspection.criteria_scores)
+            if total_criteria == 0:
+                total_score = 0.0
+                max_score = 0
+            else:
+                obtained_score = sum(offline_inspection.criteria_scores.values())
+                max_score = total_criteria * 4
+                total_score = round((obtained_score / max_score) * 100, 2) if max_score > 0 else 0.0
+            
+            # Convertir le timestamp
+            inspection_timestamp = datetime.fromisoformat(offline_inspection.timestamp.replace('Z', '+00:00'))
+            if inspection_timestamp.tzinfo is None:
+                inspection_timestamp = inspection_timestamp.replace(tzinfo=timezone.utc)
+            
+            inspection_data = {
+                "id": inspection_id,
+                "cadet_id": offline_inspection.cadet_id,
+                "date": offline_inspection.date,
+                "uniform_type": offline_inspection.uniform_type,
+                "criteria_scores": offline_inspection.criteria_scores,
+                "max_score": max_score,
+                "total_score": total_score,
+                "commentaire": offline_inspection.commentaire,
+                "inspected_by": current_user.id,
+                "inspection_time": inspection_timestamp.isoformat(),
+                "section_id": cadet.get("section_id"),
+                "auto_marked_present": not bool(existing_presence)
+            }
+            
+            await db.uniform_inspections.insert_one(inspection_data)
+            
             inspection_results.append(SyncResult(
                 temp_id=offline_inspection.temp_id,
                 success=True,
