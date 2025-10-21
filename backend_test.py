@@ -633,7 +633,7 @@ class UniformInspectionTester:
             if response.status_code == 200:
                 result = response.json()
                 
-                # Vérifier le calcul du score (2/3 = 66.67%)
+                # Vérifier le calcul du score avec nouveau barème (4+3+1)/12 * 100 = 66.67%
                 expected_score = 66.67
                 actual_score = result.get("total_score")
                 score_correct = abs(actual_score - expected_score) < 0.01
