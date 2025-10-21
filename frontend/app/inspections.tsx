@@ -273,10 +273,12 @@ export default function Inspections() {
       });
 
       if (response.ok) {
+        console.log('✅ Tenue programmée avec succès');
         Alert.alert('Succès', 'Tenue programmée avec succès');
         setShowScheduleModal(false);
         await loadTodaySchedule();
         await loadRecentInspections(); // Recharger les inspections pour réinitialiser la liste
+        console.log('✅ Tenue du jour et inspections rechargées');
       } else {
         const errorData = await response.json();
         Alert.alert('Erreur', errorData.detail || 'Erreur lors de la programmation');
