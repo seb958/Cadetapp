@@ -58,7 +58,8 @@ interface UniformInspection {
   cadet_grade: string;
   date: string;
   uniform_type: string;
-  criteria_scores: { [criterion: string]: boolean };
+  criteria_scores: { [criterion: string]: number };  // Changé de boolean à number
+  max_score: number;
   total_score: number;
   commentaire?: string;
   inspected_by: string;
