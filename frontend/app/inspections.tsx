@@ -364,7 +364,6 @@ export default function Inspections() {
       
       // Si hors ligne, utiliser le service offline
       if (!isOnline) {
-        const offlineService = await import('../services/offlineService');
         const result = await offlineService.recordUniformInspection(
           selectedCadet.id,
           today,
