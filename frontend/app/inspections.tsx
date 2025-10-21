@@ -355,6 +355,17 @@ export default function Inspections() {
     if (!selectedCadet || !todaySchedule?.uniform_type) return;
 
     console.log('💾 Début sauvegarde inspection pour cadet:', selectedCadet.nom, selectedCadet.prenom);
+    console.log(`📶 Statut connexion: ${isOnline ? 'EN LIGNE' : 'HORS LIGNE'}`);
+    
+    // Si hors ligne, afficher un message pour l'instant
+    if (!isOnline) {
+      Alert.alert(
+        'Mode Hors Ligne',
+        'La fonctionnalité hors ligne pour les inspections sera disponible prochainement. Veuillez vous reconnecter à Internet pour enregistrer cette inspection.'
+      );
+      return;
+    }
+    
     setSavingInspection(true);
     try {
       const token = await AsyncStorage.getItem('access_token');
