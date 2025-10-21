@@ -3004,9 +3004,14 @@ export default function Admin() {
                   const responsableRoles = [
                     'sergent de section',
                     'commandant de section', 
+                    'commandant de la garde',
+                    'commandant de musique',
                     'adjudant-chef d\'escadron',
                     'adjudant d\'escadron',
-                    'officier'
+                    'officier',
+                    'sergent',
+                    'adjudant',
+                    'commandant'
                   ];
                   return responsableRoles.some(role => 
                     u.role.toLowerCase().includes(role.toLowerCase()) || 
