@@ -303,18 +303,19 @@ export default function Inspections() {
     setShowInspectionModal(true);
   };
 
-  const toggleCriterion = (criterion: string) => {
+  const updateCriterionScore = (criterion: string, score: number) => {
     setCriteriaScores(prev => ({
       ...prev,
-      [criterion]: !prev[criterion]
+      [criterion]: score
     }));
   };
 
   const calculateScore = () => {
     const total = Object.keys(criteriaScores).length;
     if (total === 0) return 0;
-    const conforming = Object.values(criteriaScores).filter(v => v).length;
-    return Math.round((conforming / total) * 100);
+    const obtained = Object.values(criteriaScores).reduce((sum, score) => sum + score, 0);
+    const maxScore = total * 4;
+    return Math.round((obtained / maxScore) * 100);
   };
 
   const saveInspection = async () => {
