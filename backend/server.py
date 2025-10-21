@@ -2588,6 +2588,7 @@ async def create_uniform_inspection(
         date=inspection_date,
         uniform_type=inspection.uniform_type,
         criteria_scores=inspection.criteria_scores,
+        max_score=max_score,
         total_score=total_score,
         commentaire=inspection.commentaire,
         inspected_by=current_user.id,
