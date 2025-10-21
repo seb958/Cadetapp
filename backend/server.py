@@ -2309,8 +2309,9 @@ class UniformInspectionResponse(BaseModel):
     cadet_grade: str
     date: date
     uniform_type: str
-    criteria_scores: Dict[str, bool]
-    total_score: float
+    criteria_scores: Dict[str, int]  # Critère -> Score (0-4)
+    max_score: int  # Score maximum possible
+    total_score: float  # Pourcentage
     commentaire: Optional[str]
     inspected_by: str
     inspector_name: str
