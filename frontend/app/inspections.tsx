@@ -270,6 +270,7 @@ export default function Inspections() {
         Alert.alert('Succès', 'Tenue programmée avec succès');
         setShowScheduleModal(false);
         await loadTodaySchedule();
+        await loadRecentInspections(); // Recharger les inspections pour réinitialiser la liste
       } else {
         const errorData = await response.json();
         Alert.alert('Erreur', errorData.detail || 'Erreur lors de la programmation');
