@@ -693,10 +693,13 @@ class UniformInspectionTester:
             print("❌ ÉCHEC DE L'AUTHENTIFICATION - ARRÊT DES TESTS")
             return
         
-        # Exécuter les tests par catégorie
+        # Exécuter les tests par catégorie - Focus sur le nouveau barème 0-4
         self.test_settings_endpoints()
         self.test_uniform_schedule_endpoints()
         self.test_uniform_inspections_endpoints()
+        self.test_score_calculation_scenarios()
+        self.test_retrocompatibility()
+        self.test_data_validation()
         self.test_permissions()
         self.test_error_handling()
         self.test_complete_inspection_workflow()
