@@ -169,7 +169,19 @@ export default function Inspections() {
 
       if (response.ok) {
         const data = await response.json();
-        setCadets(data.filter((u: User) => u.role.includes('cadet') || u.role.includes('Cadet')));
+        // Filtrer pour inclure les cadets ET les membres de sections spéciales (Garde, Musique)
+        // Exclure uniquement les rôles purement administratifs/encadrement
+        const excludedRoles = ['encadrement', 'administrateur'];
+        setCadets(data.filter((u: User) => {
+          const roleLower = u.role.toLowerCase();
+          // Exclure les rôles administratifs purs
+          if (excludedRoles.some(excluded => roleLower === excluded)) {
+            return false;
+          }
+          // Inclure tout le monde qui a une section_id (membre d'une section)
+          // OU qui a "cadet" dans son rôle
+          return u.section_id || roleLower.includes('cadet');
+        }));
       }
     } catch (error) {
       console.error('Erreur lors du chargement des cadets:', error);
