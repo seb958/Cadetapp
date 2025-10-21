@@ -108,25 +108,22 @@ class OfflineSyncTester:
             return False
         
         try:
-            # Données d'inspection selon le format attendu dans la review request
+            # Données d'inspection selon le format backend
             inspection_data = {
                 "presences": [],
                 "inspections": [{
-                    "type": "inspection",
-                    "data": {
-                        "cadet_id": cadet_id,
-                        "date": "2024-01-15",
-                        "uniform_type": "C1",
-                        "criteria_scores": {
-                            "Tenue générale": 3,
-                            "Propreté": 4,
-                            "Accessoires": 2,
-                            "Chaussures": 3
-                        },
-                        "commentaire": "Test synchronisation offline",
-                        "timestamp": "2024-01-15T10:30:00Z",
-                        "temp_id": "inspection_test_001"
-                    }
+                    "cadet_id": cadet_id,
+                    "date": "2024-01-15",
+                    "uniform_type": "C1",
+                    "criteria_scores": {
+                        "Tenue générale": 3,
+                        "Propreté": 4,
+                        "Accessoires": 2,
+                        "Chaussures": 3
+                    },
+                    "commentaire": "Test synchronisation offline",
+                    "timestamp": "2024-01-15T10:30:00Z",
+                    "temp_id": "inspection_test_001"
                 }]
             }
             
