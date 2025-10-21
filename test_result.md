@@ -120,6 +120,18 @@ user_problem_statement: "Développer une application mobile/web pour gérer pré
           comment: "✅ TESTS SYSTÈME SYNCHRONISATION HORS LIGNE RÉUSSIS - 15/18 tests passés (83.3% réussite). Fonctionnalités validées: 1) GET /api/sync/cache-data: Structure correcte (users, sections, activities, timestamp), données récupérées (12 utilisateurs, 5 sections, activités 30 derniers jours), mots de passe hashés supprimés, timestamp valide, authentification requise (403). 2) POST /api/sync/batch: Synchronisation présences simples OK, fusion intelligente basée timestamp OK (plus récent gagne), création automatique présence lors inspection OK, gestion erreurs (cadet inexistant) OK, authentification requise (403). Bug corrigé: SyncResult.action manquant dans cas d'erreur. 3 échecs mineurs: codes retour 403 au lieu 401 (fonctionnel), test conflits timestamp partiellement OK. Système de synchronisation hors ligne parfaitement fonctionnel pour mode offline. Base URL: https://squadnet-1.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
 
 backend:
+  - task: "Système d'inspection des uniformes"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Système complet d'inspection des uniformes implémenté avec 8 nouveaux endpoints: 1) GET/POST /api/settings (gestion des critères d'inspection), 2) GET/POST/DELETE /api/uniform-schedule (planification tenue du jour), 3) POST /api/uniform-inspections (création inspection avec auto-présence), 4) GET /api/uniform-inspections (récupération avec filtres). Modèles: Settings, UniformSchedule, UniformInspection. Permissions: programmation tenue (Adjudants/Officiers), inspection (chefs de section+). Fonctionnalités: calcul automatique score, création automatique présence si absent/inexistant, flag notification auto_marked_present. Prêt pour tests backend."
+
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
     working: true
