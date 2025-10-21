@@ -2678,6 +2678,7 @@ async def get_uniform_inspections(
             date=datetime.fromisoformat(inspection["date"]).date(),
             uniform_type=inspection["uniform_type"],
             criteria_scores=inspection["criteria_scores"],
+            max_score=inspection.get("max_score", 0),
             total_score=inspection["total_score"],
             commentaire=inspection.get("commentaire"),
             inspected_by=inspection["inspected_by"],
