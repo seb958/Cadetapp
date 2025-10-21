@@ -883,6 +883,127 @@ export default function Inspections() {
           </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Modal de détail d'inspection */}
+      <Modal
+        visible={showDetailModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowDetailModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView style={styles.detailModalScroll}>
+              {selectedInspection && (
+                <>
+                  {/* En-tête */}
+                  <View style={styles.detailHeader}>
+                    <Text style={styles.detailTitle}>Détail de l'inspection</Text>
+                    <TouchableOpacity 
+                      onPress={() => setShowDetailModal(false)}
+                      style={styles.closeButton}
+                    >
+                      <Text style={styles.closeButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Informations du cadet */}
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailSectionTitle}>Cadet</Text>
+                    <Text style={styles.detailCadetName}>
+                      {getGradeDisplayName(selectedInspection.cadet_grade)} {selectedInspection.cadet_nom} {selectedInspection.cadet_prenom}
+                    </Text>
+                    {selectedInspection.section_nom && (
+                      <Text style={styles.detailSectionName}>{selectedInspection.section_nom}</Text>
+                    )}
+                  </View>
+
+                  {/* Tenue et Score */}
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailSectionTitle}>Tenue inspectée</Text>
+                    <Text style={styles.detailUniformType}>{selectedInspection.uniform_type}</Text>
+                    
+                    <View style={styles.detailScoreContainer}>
+                      <Text style={styles.detailScoreLabel}>Score total:</Text>
+                      <View style={[
+                        styles.detailScoreBadge,
+                        { backgroundColor: selectedInspection.total_score >= 80 ? '#10b981' : selectedInspection.total_score >= 60 ? '#f59e0b' : '#ef4444' }
+                      ]}>
+                        <Text style={styles.detailScoreText}>{selectedInspection.total_score}%</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Détail des critères */}
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailSectionTitle}>Détail des critères (sur 4 points)</Text>
+                    {Object.entries(selectedInspection.criteria_scores).map(([criterion, score]) => (
+                      <View key={criterion} style={styles.criteriaDetailRow}>
+                        <Text style={styles.criteriaDetailName}>{criterion}</Text>
+                        <View style={styles.criteriaDetailScoreContainer}>
+                          <View style={[
+                            styles.criteriaDetailScoreBadge,
+                            { 
+                              backgroundColor: 
+                                score === 4 ? '#059669' :
+                                score === 3 ? '#10b981' : 
+                                score === 2 ? '#fbbf24' : 
+                                score === 1 ? '#f97316' : '#dc2626'
+                            }
+                          ]}>
+                            <Text style={styles.criteriaDetailScoreText}>{score}/4</Text>
+                          </View>
+                          <Text style={styles.criteriaDetailScoreLabel}>
+                            {score === 4 ? 'Excellent' :
+                             score === 3 ? 'Bien' : 
+                             score === 2 ? 'Moyen' : 
+                             score === 1 ? 'Faible' : 'Insuffisant'}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Commentaire */}
+                  {selectedInspection.commentaire && (
+                    <View style={styles.detailSection}>
+                      <Text style={styles.detailSectionTitle}>Commentaire</Text>
+                      <Text style={styles.detailComment}>{selectedInspection.commentaire}</Text>
+                    </View>
+                  )}
+
+                  {/* Informations supplémentaires */}
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailSectionTitle}>Informations</Text>
+                    <Text style={styles.detailInfo}>Inspecté par: {selectedInspection.inspector_name}</Text>
+                    <Text style={styles.detailInfo}>
+                      Date: {new Date(selectedInspection.inspection_time).toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </Text>
+                    {selectedInspection.auto_marked_present && (
+                      <View style={styles.autoPresenceBadge}>
+                        <Text style={styles.autoPresenceText}>⚠️ Marqué présent automatiquement</Text>
+                      </View>
+                    )}
+                  </View>
+                </>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={styles.closeModalButton}
+              onPress={() => setShowDetailModal(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
