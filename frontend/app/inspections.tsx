@@ -185,13 +185,19 @@ export default function Inspections() {
   const loadSettings = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
-      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings?t=${timestamp}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
+        console.log('✅ Settings chargés dans inspections:', Object.keys(data.inspectionCriteria || {}));
       }
     } catch (error) {
       console.error('Erreur lors du chargement des paramètres:', error);
