@@ -502,10 +502,35 @@ export default function Inspections() {
                 style={[styles.scheduleButton, {backgroundColor: '#ef4444'}]} 
                 onPress={async () => {
                   console.log('🔄 Réinitialisation complète...');
+                  
+                  // Vider le state
                   setRecentInspections([]);
+                  
+                  // Vider le cache AsyncStorage des inspections
+                  try {
+                    const keys = await AsyncStorage.getAllKeys();
+                    console.log('🔑 Clés AsyncStorage:', keys);
+                    
+                    // Supprimer toutes les clés liées aux inspections
+                    const inspectionKeys = keys.filter(key => 
+                      key.includes('inspection') || 
+                      key.includes('sync_queue') ||
+                      key.includes('cache')
+                    );
+                    
+                    if (inspectionKeys.length > 0) {
+                      console.log('🗑️ Suppression des clés:', inspectionKeys);
+                      await AsyncStorage.multiRemove(inspectionKeys);
+                      console.log('✅ Cache AsyncStorage vidé');
+                    }
+                  } catch (error) {
+                    console.error('❌ Erreur vidage AsyncStorage:', error);
+                  }
+                  
                   // Forcer le rechargement des settings
                   await loadSettings();
-                  Alert.alert('Réinitialisé', 'Liste des inspections vidée et settings rechargés');
+                  
+                  Alert.alert('Réinitialisé', 'Liste vidée et cache nettoyé');
                 }}
               >
                 <Text style={styles.scheduleButtonText}>Réinitialiser</Text>
