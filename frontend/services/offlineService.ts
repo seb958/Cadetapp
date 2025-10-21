@@ -32,7 +32,9 @@ export interface OfflinePresence {
 export interface OfflineInspection {
   cadet_id: string;
   date: string;
-  note?: string;
+  uniform_type: string;
+  criteria_scores: { [criterion: string]: number };  // Score 0-4 par critère
+  commentaire?: string;
   timestamp: string;
   temp_id: string;
 }
