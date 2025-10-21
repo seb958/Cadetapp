@@ -1176,9 +1176,22 @@ export default function Admin() {
   const saveSettings = async () => {
     setSavingSettings(true);
     try {
-      // Simuler la sauvegarde des paramètres
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      showAlert('Succès', 'Paramètres sauvegardés avec succès');
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (response.ok) {
+        showAlert('Succès', 'Paramètres sauvegardés avec succès');
+      } else {
+        const errorData = await response.json();
+        showAlert('Erreur', errorData.detail || 'Erreur lors de la sauvegarde');
+      }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde des paramètres:', error);
       showAlert('Erreur', 'Impossible de sauvegarder les paramètres');
