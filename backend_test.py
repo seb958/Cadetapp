@@ -284,16 +284,30 @@ class UniformInspectionTester:
                 self.log_test("GET /api/uniform-inspections - Récupération", True,
                             f"{len(inspections)} inspections trouvées")
                 
-                # Vérifier la structure des données enrichies
+                # Vérifier la structure des données enrichies avec nouveau format
                 if inspections:
                     inspection = inspections[0]
                     required_fields = ["id", "cadet_id", "cadet_nom", "cadet_prenom", "cadet_grade",
-                                     "date", "uniform_type", "criteria_scores", "total_score",
+                                     "date", "uniform_type", "criteria_scores", "max_score", "total_score",
                                      "inspected_by", "inspector_name", "auto_marked_present"]
                     
                     has_all_fields = all(field in inspection for field in required_fields)
-                    self.log_test("GET /api/uniform-inspections - Structure enrichie", has_all_fields,
+                    self.log_test("GET /api/uniform-inspections - Structure enrichie nouveau format", has_all_fields,
                                 f"Champs présents: {list(inspection.keys())}")
+                    
+                    # Vérifier que criteria_scores contient des entiers (0-4) et non des booléens
+                    criteria_scores = inspection.get("criteria_scores", {})
+                    if criteria_scores:
+                        all_integers = all(isinstance(score, int) and 0 <= score <= 4 for score in criteria_scores.values())
+                        self.log_test("GET /api/uniform-inspections - criteria_scores format 0-4", all_integers,
+                                    f"Scores: {criteria_scores}")
+                    else:
+                        self.log_test("GET /api/uniform-inspections - criteria_scores présent", False, "criteria_scores manquant")
+                    
+                    # Vérifier la présence du champ max_score
+                    has_max_score = "max_score" in inspection and isinstance(inspection["max_score"], int)
+                    self.log_test("GET /api/uniform-inspections - max_score présent", has_max_score,
+                                f"max_score: {inspection.get('max_score')}")
                     
                     # Vérifier les données enrichies
                     has_enriched_data = (inspection.get("cadet_nom") and 
