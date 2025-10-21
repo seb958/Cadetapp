@@ -1183,18 +1183,21 @@ export default function Admin() {
 
       if (response.ok) {
         const data = await response.json();
-        // Si des settings existent dans la base, les charger
-        if (data && Object.keys(data.inspectionCriteria || {}).length > 0) {
+        // Vérifier si les settings contiennent des critères d'inspection
+        const hasInspectionCriteria = data.inspectionCriteria && Object.keys(data.inspectionCriteria).length > 0;
+        
+        if (hasInspectionCriteria) {
+          // Des settings existent avec des critères, les charger
           setSettings(data);
           console.log('✅ Settings chargés depuis le backend:', Object.keys(data.inspectionCriteria || {}));
         } else {
-          // Sinon, sauvegarder les settings par défaut
-          console.log('⚠️ Aucun settings trouvé, sauvegarde des valeurs par défaut');
+          // Aucun settings ou settings vides, sauvegarder les valeurs par défaut
+          console.log('⚠️ Settings vides détectés, sauvegarde des valeurs par défaut');
           await saveDefaultSettings();
         }
       } else {
-        // Si erreur 403 ou autre, utiliser les valeurs par défaut
-        console.log('⚠️ Erreur lors du chargement des settings, utilisation des valeurs par défaut');
+        // Si erreur, garder les valeurs par défaut déjà dans le state
+        console.log('⚠️ Erreur lors du chargement des settings, conservation des valeurs par défaut');
       }
     } catch (error) {
       console.error('Erreur lors du chargement des settings:', error);
