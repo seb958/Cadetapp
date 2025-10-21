@@ -357,19 +357,57 @@ export default function Inspections() {
     console.log('💾 Début sauvegarde inspection pour cadet:', selectedCadet.nom, selectedCadet.prenom);
     console.log(`📶 Statut connexion: ${isOnline ? 'EN LIGNE' : 'HORS LIGNE'}`);
     
-    // Si hors ligne, afficher un message pour l'instant
-    if (!isOnline) {
-      Alert.alert(
-        'Mode Hors Ligne',
-        'La fonctionnalité hors ligne pour les inspections sera disponible prochainement. Veuillez vous reconnecter à Internet pour enregistrer cette inspection.'
-      );
-      return;
-    }
-    
     setSavingInspection(true);
     try {
-      const token = await AsyncStorage.getItem('access_token');
       const today = new Date().toISOString().split('T')[0];
+      
+      // Si hors ligne, utiliser le service offline
+      if (!isOnline) {
+        const offlineService = await import('../services/offlineService');
+        const result = await offlineService.recordUniformInspection(
+          selectedCadet.id,
+          today,
+          todaySchedule.uniform_type,
+          criteriaScores,
+          inspectionComment || undefined
+        );
+        
+        if (result.success && result.offline) {
+          Alert.alert(
+            '📦 Enregistré hors ligne',
+            `Inspection de ${selectedCadet.prenom} ${selectedCadet.nom} enregistrée localement.\n\nElle sera synchronisée automatiquement au retour de la connexion.\n\nNote: La présence sera confirmée lors de la synchronisation.`
+          );
+          
+          setShowInspectionModal(false);
+          setSelectedCadet(null);
+          
+          // Ajouter l'inspection à la liste locale temporairement
+          const tempInspection: UniformInspection = {
+            id: `temp_${Date.now()}`,
+            cadet_id: selectedCadet.id,
+            cadet_nom: selectedCadet.nom,
+            cadet_prenom: selectedCadet.prenom,
+            cadet_grade: selectedCadet.grade,
+            date: today,
+            uniform_type: todaySchedule.uniform_type,
+            criteria_scores: criteriaScores,
+            max_score: Object.keys(criteriaScores).length * 4,
+            total_score: calculateScore(),
+            commentaire: inspectionComment || undefined,
+            inspected_by: user?.id || '',
+            inspector_name: `${user?.prenom} ${user?.nom}`,
+            inspection_time: new Date().toISOString(),
+            section_id: selectedCadet.section_id,
+            auto_marked_present: false
+          };
+          
+          setRecentInspections(prev => [...prev, tempInspection]);
+          return;
+        }
+      }
+      
+      // Mode en ligne - envoyer directement au backend
+      const token = await AsyncStorage.getItem('access_token');
       
       const requestBody = {
         cadet_id: selectedCadet.id,
