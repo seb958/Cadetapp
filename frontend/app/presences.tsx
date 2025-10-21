@@ -1185,8 +1185,8 @@ export default function Presences() {
                 .filter(cadet => cadet.section_id === section.id)
                 .map(cadet => ({
                   id: cadet.id,
-                  nom: cadet.last_name || '',
-                  prenom: cadet.first_name || '',
+                  nom: cadet.nom || '',
+                  prenom: cadet.prenom || '',
                   grade: cadet.grade || '',
                   section_id: cadet.section_id || '',
                 }))
