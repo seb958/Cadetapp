@@ -451,8 +451,10 @@ export default function Inspections() {
         Alert.alert('Erreur', errorData.detail || 'Erreur lors de l\'enregistrement');
       }
     } catch (error) {
-      console.error('Erreur:', error);
-      Alert.alert('Erreur', 'Impossible d\'enregistrer l\'inspection');
+      console.error('❌ Erreur saveInspection:', error);
+      console.error('❌ Erreur détails:', JSON.stringify(error));
+      console.error('❌ Stack:', error instanceof Error ? error.stack : 'N/A');
+      Alert.alert('Erreur', `Impossible d'enregistrer l'inspection: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     } finally {
       setSavingInspection(false);
     }
