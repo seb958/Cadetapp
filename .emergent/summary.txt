@@ -1,55 +1,36 @@
 <analysis>
-The AI engineer's work spanned several critical features and bug fixes. Initially, it involved generating missing usernames for test users and attempting to resolve a React Native version mismatch by updating Expo SDK. This led to the discovery that Expo SDK 55 was not yet stable, prompting a recommendation for a custom development build or web preview, with the web preview successfully demonstrating the application's functionality.
+The previous AI engineer's trajectory involved a detailed implementation of a uniform inspection feature for the existing Expo application, followed by a significant debugging phase, and finally the integration of offline capabilities. Initially, the engineer focused on backend development, creating models and API endpoints for uniform inspections and scheduling. This was followed by building the frontend UI, including a dedicated screen and linking it from the main menu. A crucial user request for numerical scoring of uniform criteria led to further modifications in both backend and frontend to support a 0-4 point scale.
 
-Subsequently, a major initiative for offline functionality with data synchronization was implemented. This involved significant modifications to the FastAPI backend for sync endpoints, Pydantic models, and extensive frontend work in Expo. The frontend incorporated local caching using , network detection with , and a synchronization queue. Debugging this feature was iterative, focusing on Pydantic validation errors, JWT token authentication for sync, and particularly a persistent offset-naive and offset-aware datetimes error. This was resolved by meticulously normalizing all timestamps to UTC in the backend.
+The subsequent debugging cycles were extensive, primarily revolving around two persistent issues: incorrect uniform criteria being displayed/saved and the saving one cadet inspects all bug. The criteria problem stemmed from a combination of initial frontend default overwriting, incomplete backend settings, and eventually, the user's manual Tenue test conflicting with predefined settings. This required aggressive cache clearing, a backend script to re-seed correct settings, and a frontend Réinitialiser button. The inspects all bug, which caused 20-25 phantom inspections to appear, was ultimately traced to the backend querying the wrong MongoDB database/collection ( vs. ), a critical environment misconfiguration.
 
-Finally, the focus shifted to enhancing attendance taking. A new  component was developed, integrating section-based collapsible lists, real-time search, and a swipe right for present mechanism that automatically marks unswiped cadets as absent. The existing presence modification feature was updated with a 24-hour edit window for all authorized users and permanent admin-only editing thereafter. A final bug regarding cadet name display in the new UI was fixed by correcting property names from  to  based on the  interface.
+Finally, the engineer integrated offline support for uniform inspections, mirroring the presence feature. This involved extending  and  to record inspections locally and updating the backend's  to process them. A last-minute bug in offline saving was identified as a  due to  of  while offline, which the engineer is currently addressing by changing to a static import.
 </analysis>
 
 <product_requirements>
-The application serves as a cadet squadron management system, designed to manage cadet attendance, administration, and organizational structure.
+The application is a cadet squadron management system with core features like JWT authentication, attendance recording, and an administration panel for CRUD operations on activities, users, sections, and squadron settings.
 
-**Initial Core Features:**
--   **Authentication:** JWT-based system with email invitations for four distinct roles.
--   **Attendance:** Flexible recording system, including motivated absence.
--   **Administration Panel:** Provides comprehensive CRUD (Create, Read, Update, Delete) operations for activities, user management (invitation, editing, deletion), sections, and squadron-specific settings such as presence recording, uniform inspections, and data backup.
+Key enhancements prior to this trajectory included:
+- **Role Synchronization:** Dynamic integration of admin-defined roles.
+- **Subgroup Management:** Hierarchical subgroups within sections with responsibles.
+- **Organigramme:** Tree-like visualization of squadron hierarchy.
+- **Offline Mode with Synchronization:** For presences and uniform inspections, merging data upon reconnection and 6-hour offline usage.
+- **Improved Attendance Taking:** Collapsible, section-based lists, real-time search, swipe-right for present, auto-mark absent, 24-hour modification window for users, admin-only thereafter.
 
-**Implemented Enhancements:**
--   **Role Synchronization:** User-defined roles, created within the Rôles administration tab, are seamlessly integrated and selectable in user creation and editing forms.
--   **Subgroup Management:**
-    -   Sections can now optionally contain hierarchical subgroups.
-    -   Each subgroup can have its own designated responsible, who reports to the parent section's responsible.
-    -   Cadets are primarily assigned to a subgroup, while still being members of their parent section.
-    -   Cadet counts within subgroups contribute to the overall section total.
--   **Organigramme (Organizational Chart):**
-    -   Provides a traditional tree-like visualization of the squadron hierarchy with clear connection lines.
-    -   Displays Name, Grade, and Role for each individual.
-    -   Sections and subgroups are presented in expandable boxes, showing their responsible and cadet count.
-    -   Hierarchy levels include Commandant, Officers, Adjudant-Chef d'escadron, Adjudant d'escadron, Sections, Sub-groups, and individual Cadets.
-    -   Staff positions (e.g., Cadet Senior à l'administration) are integrated.
-    -   Accessible from the main menu.
-    -   Initial requests for zoom/pan and horizontal alignment were temporarily reverted due to technical issues.
--   **Offline Mode with Synchronization:**
-    -   Allows recording of presences and uniform inspections without a stable internet connection.
-    -   Data is intelligently merged upon connection restoration; for instance, a uniform inspection recording by a section commander will automatically mark a cadet as present if not already recorded.
-    -   Supports both automatic and manual data synchronization with a maximum offline usage duration of 6 hours.
--   **Improved Attendance Taking Ergonomics:**
-    -   Cadets are organized by collapsible sections for easier navigation.
-    -   Includes a real-time search bar for quick cadet lookup.
-    -   A swipe right gesture marks a cadet as present, and the cadet is then removed from the visible list.
-    -   Any cadet not swiped (i.e., remaining in the list) is automatically marked as absent.
-    -   The list dynamically compacts, showing only unswiped cadets.
--   **Presence Modification:**
-    -   Allows direct modification of recorded presences by clicking on them.
-    -   Permissions: Any authorized user can modify presences within a 24-hour window from the recording time. After 24 hours, only an administrator can modify them.
-    -   Modifications involve a simple replacement of the presence status without maintaining a historical log within the app.
+The current trajectory focused on developing **Uniform Inspection functionality**:
+- **Detailed Inspection:** Based on criteria and a numerical scoring scale (0-4 points) defined in admin settings.
+- **Permissions:** Restricted to section leaders and superiors.
+- **UI/UX:** Detailed form with suggestions for list condensation or swipeable elements as cadets are inspected.
+- **Presence Integration:** Saving an inspection automatically marks an absent cadet as present, with a notification.
+- **Uniform Scheduling:** Ability to select the uniform of the day in advance or immediately, configurable by Adjudant d'escadron, Adjudant Chef d'escadron, or Officer. Predefined uniform types only, no score/element modification at selection.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-Stack:** Expo (React Native for frontend), FastAPI (Python for backend), MongoDB (NoSQL database).
--   **Authentication:** JWT-based,  for password hashing, username-based login.
--   **Frontend:** Expo Router for navigation, React Native components, , , , ,  (for offline cache),  (network detection).
--   **Backend:** Pydantic models for data validation,  for async MongoDB interaction,  for timezone-aware date handling.
+- **Full-Stack:** Expo (React Native), FastAPI (Python), MongoDB.
+- **Data Persistence:**  for frontend offline caching, MongoDB for backend.
+- **Network Management:**  for offline detection.
+- **Frontend UI/UX:**  for navigation, , , custom components (, ).
+- **Backend Data Validation:** Pydantic models.
+- **Synchronization:** Offline queue for presences and uniform inspections, batch sync endpoint.
 </key_technical_concepts>
 
 <code_architecture>
@@ -58,54 +39,49 @@ The application features a full-stack architecture with an Expo (React Native) f
 
 
 -   :
-    -   **Summary:** Main FastAPI application defining API routes, database models, and business logic.
+    -   **Summary:** Main FastAPI application.
     -   **Changes:**
-        -   Added  for one-off username generation for users without them, creating a helper method for backend.
-        -   Introduced , , and  Pydantic models for offline data synchronization.
-        -   Implemented  endpoint to handle bulk synchronization of offline presence and uniform inspection data.
-        -   Modified the  PUT endpoint to include a 24-hour modification window for non-admin users and admin-only access thereafter.
-        -   Implemented robust timezone handling, converting all  objects to timezone-aware UTC for consistent comparison to resolve offset-naive and offset-aware datetimes errors.
-        -   Added  and  imports for proper timezone management.
+        -   Added Pydantic models , , ,  (updated for uniform settings).
+        -   Implemented  (POST to create, GET to retrieve filtered).
+        -   Implemented  (POST to create/update, GET to retrieve today's schedule).
+        -   Updated  to correctly process  items from the offline queue, saving them to the  collection and automatically marking cadets as  if they were  or had no presence status.
+        -   Updated  GET endpoint to return a default  object if no settings are found, preventing frontend from overwriting.
+        -   Fixed issue where initial backend response for  was an empty  object, causing frontend defaults to be overwritten.
 -   :
-    -   **Summary:** A Python script created to identify users in MongoDB missing usernames and generate new ones based on their roles.
-    -   **Changes:** Initially created, then modified to handle cases where users lacked name/email by generating usernames purely based on their role.
+    -   **Summary:** Application entry point.
+    -   **Changes:** Added navigation link to the new  screen.
 -   :
-    -   **Summary:** Application entry point and initial screen.
-    -   **Changes:** No new changes mentioned in the provided trajectory.
--   :
-    -   **Summary:** Administrative panel for managing users, activities, sections, and roles.
-    -   **Changes:** No new changes mentioned in the provided trajectory.
--   :
-    -   **Summary:** Screen for displaying the organizational chart.
-    -   **Changes:** No new changes mentioned in the provided trajectory.
--   :
-    -   **Summary:** Primary screen for taking and viewing attendance.
+    -   **Summary:** Administrative panel.
     -   **Changes:**
-        -   Integrated  and  hook for offline functionality, displaying network status and managing offline/online states.
-        -   Modified  to use  for local caching when offline.
-        -   Updated  to download and initialize the cache from  on component mount.
-        -   Added a new  interface and state variables (, , ) to manage and display cadets organized by sections.
-        -   Implemented  to fetch and process section data, organizing cadets into a hierarchical structure.
-        -   Introduced new functions (, , ) to support the swipe-based attendance system.
-        -   Replaced the old Prendre les Présences button with two buttons: one for the old system and one for the new swipe-based system.
-        -   Added a new  component to host the  component, allowing the improved attendance UI to appear.
-        -   Added  styling.
-        -   Corrected a data mapping error for cadet names, changing references from / to / to correctly display names in the format grade / nom / prénom.
+        -   Modified  to actually call the backend API instead of simulating.
+        -   Updated  to fetch from the backend and use default values only if backend settings are truly empty/non-existent, preventing overwrites.
+        -   Added logic to automatically save default settings to backend if not present.
+        -   Removed  dependency on  to prevent infinite loops.
 -   :
-    -   **Summary:** New component displaying the current network connection status (online/offline).
-    -   **Changes:** Created to visually inform the user about their online/offline state.
+    -   **Summary:** New screen for uniform inspections.
+    -   **Changes:**
+        -   Initial creation, including UI for listing cadets, selecting a uniform, displaying criteria, and an inspection modal.
+        -   Implemented numerical scoring (0-4) for criteria within the modal, replacing simple toggles.
+        -   Integrated  hook and  component.
+        -   Added a Réinitialiser button to clear local state () and  for inspections, and reload data.
+        -   Modified  to reload  after scheduling a new uniform.
+        -   Modified  to use  when offline.
+        -   Added anti-cache headers to API calls.
+        -   **Current:** Replaced dynamic  with static  to enable offline saving.
 -   :
-    -   **Summary:** New component implementing the enhanced attendance taking UI with swipe gestures.
-    -   **Changes:** Created to support section-based lists, real-time search, swipe-to-mark-present functionality, and automatic marking of unswiped cadets as absent.
+    -   **Summary:** Custom hook for offline mode.
+    -   **Changes:** No direct changes in trajectory, but implicitly uses updated .
 -   :
-    -   **Summary:** New custom React hook for managing the application's offline mode state and network connectivity.
-    -   **Changes:** Created to provide network status, authentication token retrieval, and a  function for syncing offline data with the backend. Corrected JWT token retrieval from  to . Modified to return detailed error messages from synchronization attempts.
+    -   **Summary:** Service for offline data caching and synchronization.
+    -   **Changes:**
+        -   Updated  interface to include detailed ,  (as ), and .
+        -   Refactored  to store the detailed  data in the offline queue.
+        -   Added a new key  for offline inspection data.
+        -   Fixed a syntax error ( instead of ).
 -   :
-    -   **Summary:** New service responsible for local data caching, queuing offline actions, and orchestrating synchronization with the backend.
-    -   **Changes:** Created to provide functions like , , , , and . Enhanced  to handle backend errors and return detailed messages.
--   :
-    -   **Summary:** Babel configuration file.
-    -   **Changes:** No new changes mentioned in the provided trajectory.
+    -   **Summary:** Script to create test data.
+    -   **Changes:** Modified to include default uniform settings (C1 and a Tenue test with specified criteria) directly into MongoDB, and also to clear any existing inspection data for robust testing.
+
 </code_architecture>
 
 <pending_tasks>
@@ -115,21 +91,15 @@ The application features a full-stack architecture with an Expo (React Native) f
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer successfully completed a major feature set focused on improving attendance taking and presence modification.
+Immediately before this summary request, the AI engineer was working on resolving an issue where uniform inspections could not be saved while the application was offline. The  and  hook were successfully integrated into , and  was updated to correctly queue detailed uniform inspections, with the backend's  endpoint configured to process them.
 
-1.  **Improved Attendance Taking:** The  screen was significantly refactored.
-    *   It now organizes cadets by  in collapsible lists.
-    *   A new  component was introduced to handle the core interaction: users swipe right on a cadet to mark them , and the cadet disappears from the list. Cadets not swiped are automatically marked .
-    *   A real-time search bar was integrated into  for efficient cadet lookup.
-2.  **Presence Modification:** The backend's  PUT endpoint in  was modified to enforce business rules for modification:
-    *   Presences can be modified by any authorized user within 24 hours of recording.
-    *   After 24 hours, only an administrator can modify a presence.
-    *   Modification is a simple replacement of the existing presence status.
-3.  **Bug Fix - Cadet Name Display:** A critical UI bug was resolved in  where cadet names were not displaying correctly (only grades appeared). This was due to a mismatch between the  interface properties (, ) and the properties being accessed in the  component (, ). The mapping was corrected to use  and  when passing data to the  component.
+The user reported an error: impossible denregistrer linspection when attempting an offline save. Through debug logs, it was discovered that a  occurred when the application tried to dynamically  the  module () while the device was disconnected from the internet. Dynamic imports fetch the module at runtime, which is problematic for offline scenarios.
 
-The user confirmed Tout fonctionne bien after this last fix, indicating that the improved attendance taking and modification features, including the name display, are now fully functional. The AI engineer's last action was to restart the frontend.
+The AI engineer's last action was to modify  to change the dynamic import of  to a static import.
+
+This change aims to ensure  is bundled with the application from the start, making it available even when offline, thus resolving the  error.
 </current_work>
 
 <optional_next_step>
-The last explicit task (fixing cadet name display) was concluded. I will await the user's next request for further features or improvements.
+Remove the  line in  and directly use  globally.
 </optional_next_step>
