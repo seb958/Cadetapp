@@ -12,7 +12,7 @@ import sys
 import time
 
 # Configuration
-BASE_URL = "https://cadet-command.preview.emergentagent.com/api"
+BASE_URL = "https://squadnet-1.preview.emergentagent.com/api"
 ADMIN_USERNAME = "admin@escadron.fr"
 ADMIN_PASSWORD = "admin123"
 
