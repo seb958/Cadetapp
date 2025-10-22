@@ -1,7 +1,7 @@
 {
-  "name": "CommandHub - Escadron Sherbrooke-Laurier",
+  "name": "CommandHub - Escadron 879 Sir-Wilfrid-Laurier",
   "short_name": "CommandHub",
-  "description": "Application de gestion pour l'escadron de cadets - Présences, inspections et administration",
+  "description": "Application de gestion pour l'Escadron 879 Sir-Wilfrid-Laurier - Présences, inspections et administration",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
