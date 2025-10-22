@@ -2,6 +2,7 @@
   "expo": {
     "name": "CommandHub",
     "slug": "commandhub",
+    "owner": "seb958",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./public/icon-512.png",
