@@ -2175,8 +2175,54 @@ async def sync_offline_data(
                 }
                 await db.presences.insert_one(presence_data)
             
-            # Créer l'inspection d'uniforme dans la collection uniform_inspections
-            inspection_id = str(uuid.uuid4())
+            # Vérifier s'il existe déjà une inspection pour ce cadet à cette date
+            existing_inspection = await db.uniform_inspections.find_one({
+                "cadet_id": offline_inspection.cadet_id,
+                "date": offline_inspection.date
+            })
+            
+            # Convertir le timestamp de l'inspection offline
+            inspection_timestamp = datetime.fromisoformat(offline_inspection.timestamp.replace('Z', '+00:00'))
+            if inspection_timestamp.tzinfo is None:
+                inspection_timestamp = inspection_timestamp.replace(tzinfo=timezone.utc)
+            
+            # Si une inspection existe déjà, comparer les timestamps
+            if existing_inspection:
+                existing_timestamp_raw = existing_inspection.get("inspection_time")
+                
+                try:
+                    existing_timestamp = datetime.fromisoformat(existing_timestamp_raw.replace('Z', '+00:00'))
+                    if existing_timestamp.tzinfo is None:
+                        existing_timestamp = existing_timestamp.replace(tzinfo=timezone.utc)
+                    
+                    # Si l'inspection existante est plus récente, ignorer cette sync
+                    if existing_timestamp >= inspection_timestamp:
+                        inspection_results.append(SyncResult(
+                            temp_id=offline_inspection.temp_id,
+                            success=True,
+                            server_id=existing_inspection["id"],
+                            action="ignored_newer_exists"
+                        ))
+                        continue
+                    
+                    # Sinon, l'inspection offline est plus ancienne (faite en premier)
+                    # On écrase l'inspection existante (priorité au premier timestamp)
+                    action = "updated_by_older"
+                    inspection_id = existing_inspection["id"]
+                    
+                except (ValueError, TypeError):
+                    # En cas d'erreur de parsing, garder l'existante
+                    inspection_results.append(SyncResult(
+                        temp_id=offline_inspection.temp_id,
+                        success=True,
+                        server_id=existing_inspection["id"],
+                        action="ignored_timestamp_error"
+                    ))
+                    continue
+            else:
+                # Pas d'inspection existante, créer une nouvelle
+                action = "created"
+                inspection_id = str(uuid.uuid4())
             
             # Calculer le score total
             total_criteria = len(offline_inspection.criteria_scores)
@@ -2187,11 +2233,6 @@ async def sync_offline_data(
                 obtained_score = sum(offline_inspection.criteria_scores.values())
                 max_score = total_criteria * 4
                 total_score = round((obtained_score / max_score) * 100, 2) if max_score > 0 else 0.0
-            
-            # Convertir le timestamp
-            inspection_timestamp = datetime.fromisoformat(offline_inspection.timestamp.replace('Z', '+00:00'))
-            if inspection_timestamp.tzinfo is None:
-                inspection_timestamp = inspection_timestamp.replace(tzinfo=timezone.utc)
             
             inspection_data = {
                 "id": inspection_id,
@@ -2208,13 +2249,19 @@ async def sync_offline_data(
                 "auto_marked_present": not bool(existing_presence)
             }
             
-            await db.uniform_inspections.insert_one(inspection_data)
+            if action == "created":
+                await db.uniform_inspections.insert_one(inspection_data)
+            else:  # action == "updated_by_older"
+                await db.uniform_inspections.replace_one(
+                    {"id": inspection_id},
+                    inspection_data
+                )
             
             inspection_results.append(SyncResult(
                 temp_id=offline_inspection.temp_id,
                 success=True,
                 server_id=inspection_id,
-                action="created"
+                action=action
             ))
             
         except Exception as e:
