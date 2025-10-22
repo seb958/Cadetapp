@@ -264,6 +264,7 @@ export default function Index() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+        <InstallPWA />
       </SafeAreaView>
     );
   }
