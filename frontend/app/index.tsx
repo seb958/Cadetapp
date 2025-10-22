@@ -46,6 +46,9 @@ export default function Index() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Hook PWA pour le Service Worker
+  const { isInstalled, updateAvailable, updateApp } = usePWA();
 
   // Vérifier si l'utilisateur est déjà connecté
   useEffect(() => {
