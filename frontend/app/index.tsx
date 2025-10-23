@@ -52,6 +52,9 @@ export default function Index() {
   
   // Hook PWA pour le Service Worker
   const { isInstalled, updateAvailable, updateApp } = usePWA();
+  
+  // Hook mode offline pour synchronisation
+  const { isOnline, handleManualSync, syncQueueCount } = useOfflineMode();
 
   // Vérifier si l'utilisateur est déjà connecté
   useEffect(() => {
