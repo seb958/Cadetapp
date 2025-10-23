@@ -293,6 +293,16 @@ export default function Index() {
     );
   }
 
+  // Gérer la synchronisation avec feedback
+  const handleSyncPress = async () => {
+    const result = await handleManualSync();
+    if (result.success) {
+      Alert.alert('Succès', result.message);
+    } else {
+      Alert.alert('Erreur', result.message);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.dashboardContainer}>
@@ -303,6 +313,11 @@ export default function Index() {
           <TouchableOpacity style={styles.logoutButton} onPress={logout}>
             <Text style={styles.logoutButtonText}>Déconnexion</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Indicateur de connexion et synchronisation */}
+        <View style={styles.connectionContainer}>
+          <ConnectionIndicator onSyncPress={handleSyncPress} />
         </View>
 
         <View style={styles.profileCard}>
