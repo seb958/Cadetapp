@@ -110,6 +110,10 @@ export default function Index() {
 
     setIsLoading(true);
     try {
+      // Créer une promesse avec timeout de 10 secondes
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
@@ -119,7 +123,10 @@ export default function Index() {
           username: username.toLowerCase().trim(),
           password,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data: AuthResponse = await response.json();
@@ -138,9 +145,13 @@ export default function Index() {
         const errorData = await response.json();
         Alert.alert('Erreur de connexion', errorData.detail || 'Email ou mot de passe incorrect');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur de connexion:', error);
-      Alert.alert('Erreur', 'Impossible de se connecter au serveur');
+      if (error.name === 'AbortError') {
+        Alert.alert('Erreur', 'Le serveur ne répond pas. Vérifiez votre connexion internet et réessayez.');
+      } else {
+        Alert.alert('Erreur', 'Impossible de se connecter au serveur. Assurez-vous d\'avoir une connexion internet.');
+      }
     } finally {
       setIsLoading(false);
     }
