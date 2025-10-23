@@ -1,0 +1,69 @@
+{
+  "expo": {
+    "name": "CommandHub",
+    "slug": "commandhub",
+    "owner": "seb958",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/icon-512.png",
+    "scheme": "commandhub",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.escadron879.commandhub"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/icon-512.png",
+        "backgroundColor": "#3b82f6"
+      },
+      "package": "com.escadron879.commandhub",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./public/favicon.ico",
+      "name": "CommandHub",
+      "shortName": "CommandHub",
+      "description": "Application de gestion pour l'Escadron 879 Sir-Wilfrid-Laurier",
+      "themeColor": "#3b82f6",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "startUrl": "/",
+      "scope": "/",
+      "orientation": "portrait"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/a7003ce2-d0f5-44c1-b1c8-47aac49695ba"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7003ce2-d0f5-44c1-b1c8-47aac49695ba"
+      }
+    }
+  }
+}
