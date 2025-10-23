@@ -494,6 +494,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 15,
+  },
+  connectionContainer: {
     marginBottom: 20,
   },
   welcomeText: {
