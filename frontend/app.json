@@ -50,8 +50,20 @@
     "experiments": {
       "typedRoutes": true
     },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/a7003ce2-d0f5-44c1-b1c8-47aac49695ba"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "a7003ce2-d0f5-44c1-b1c8-47aac49695ba"
+      }
     }
   }
 }
