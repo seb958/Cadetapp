@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { usePWA } from '../hooks/usePWA';
 import { InstallPWA } from '../components/InstallPWA';
+import { ConnectionIndicator } from '../components/ConnectionIndicator';
+import { useOfflineMode } from '../hooks/useOfflineMode';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
