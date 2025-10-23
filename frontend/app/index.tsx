@@ -62,13 +62,20 @@ export default function Index() {
       const userData = await AsyncStorage.getItem('user_data');
       
       if (token && userData) {
-        // Vérifier si le token est encore valide côté serveur
+        // Vérifier si le token est encore valide côté serveur (avec timeout)
         try {
+          // Créer une promesse avec timeout de 5 secondes
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+          
           const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
+            signal: controller.signal,
           });
+          
+          clearTimeout(timeoutId);
           
           if (response.ok) {
             setUser(JSON.parse(userData));
@@ -80,9 +87,10 @@ export default function Index() {
             setUser(null);
             setIsAuthenticated(false);
           }
-        } catch (error) {
-          console.error('Erreur lors de la vérification du token:', error);
-          // En cas d'erreur réseau, on garde la session locale
+        } catch (error: any) {
+          console.log('⚠️ Backend non accessible au démarrage, mode offline activé');
+          // En cas d'erreur réseau ou timeout, on garde la session locale
+          // L'app fonctionnera en mode offline jusqu'à ce que la connexion soit rétablie
           setUser(JSON.parse(userData));
           setIsAuthenticated(true);
         }
