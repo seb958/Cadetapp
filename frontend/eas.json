@@ -15,10 +15,14 @@
     },
     "production": {
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "APP_ENV": "production"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_PUBLIC_BACKEND_URL": "$EXPO_PUBLIC_BACKEND_URL"
+        }
       },
       "ios": {
         "buildConfiguration": "Release"
