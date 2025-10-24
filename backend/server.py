@@ -943,6 +943,38 @@ async def generate_initial_password(
             detail="Utilisateur non trouvé"
         )
     
+    # Générer un username si l'utilisateur n'en a pas
+    username = existing_user.get("username")
+    if not username:
+        import re
+        prenom = existing_user.get("prenom", "")
+        nom = existing_user.get("nom", "")
+        
+        # Générer username : prenom.nom en minuscules sans accents
+        def remove_accents(text):
+            import unicodedata
+            return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn')
+        
+        username_base = f"{remove_accents(prenom).lower()}.{remove_accents(nom).lower()}"
+        username_base = re.sub(r'[^a-z.]', '', username_base)
+        
+        # Vérifier si le username existe déjà
+        existing_username = await db.users.find_one({"username": username_base})
+        if existing_username:
+            # Ajouter un numéro
+            counter = 2
+            while await db.users.find_one({"username": f"{username_base}{counter}"}):
+                counter += 1
+            username = f"{username_base}{counter}"
+        else:
+            username = username_base
+        
+        # Mettre à jour l'utilisateur avec le nouveau username
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"username": username}}
+        )
+    
     # Générer un mot de passe aléatoire de 8 caractères
     import random
     import string
@@ -964,12 +996,9 @@ async def generate_initial_password(
         }
     )
     
-    # Créer un identifiant utilisateur (username ou nom complet)
-    username_display = existing_user.get("username") or f"{existing_user.get('prenom', '')} {existing_user.get('nom', '')}".strip() or "Utilisateur"
-    
     return GeneratePasswordResponse(
         user_id=user_id,
-        username=username_display,
+        username=username,
         temporary_password=temporary_password,
         message="Mot de passe temporaire généré avec succès. L'utilisateur devra le changer à sa première connexion."
     )
