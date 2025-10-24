@@ -85,7 +85,7 @@ export default function Index() {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
           
-          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/me`, {
+          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/profile`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
