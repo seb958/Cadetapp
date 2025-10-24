@@ -208,14 +208,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2d3748',
   },
-  passwordContainer: {
+  credentialsContainer: {
     marginBottom: 20,
+    gap: 16,
   },
-  passwordLabel: {
+  credentialRow: {
+    gap: 8,
+  },
+  credentialLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#2d3748',
-    marginBottom: 8,
+    marginBottom: 4,
+  },
+  credentialBox: {
+    backgroundColor: '#f7fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 12,
+  },
+  credentialText: {
+    fontSize: 16,
+    color: '#1a365d',
+    fontWeight: '600',
   },
   passwordBox: {
     backgroundColor: '#f7fafc',
