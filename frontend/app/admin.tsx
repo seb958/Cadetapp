@@ -2915,12 +2915,11 @@ export default function Admin() {
               </View>
             )}
 
-            {/* Gestion du mot de passe - uniquement pour utilisateurs existants */}
             {editingUser && (
               <View style={styles.formSection}>
-                <Text style={styles.formSectionTitle}>🔒 Gestion du mot de passe</Text>
+                <Text style={styles.formSectionTitle}>Gestion du mot de passe</Text>
                 <Text style={styles.helperText}>
-                  Générez un mot de passe temporaire que l'utilisateur devra changer à sa première connexion.
+                  Generez un mot de passe temporaire que l utilisateur devra changer a sa premiere connexion.
                 </Text>
                 <TouchableOpacity
                   style={styles.generatePasswordButton}
@@ -2933,7 +2932,7 @@ export default function Admin() {
                   }}
                 >
                   <Text style={styles.generatePasswordButtonText}>
-                    🔑 Générer un mot de passe temporaire
+                    Generer un mot de passe temporaire
                   </Text>
                 </TouchableOpacity>
               </View>
