@@ -2911,33 +2911,28 @@ export default function Admin() {
               </View>
             )}
 
-            {/* Gestion du mot de passe - uniquement pour utilisateurs existants */}
-            {editingUser ? (
-              <View style={[styles.formSection, { backgroundColor: '#e6f7ff', borderWidth: 2, borderColor: 'blue' }]}>
-                <Text style={[styles.formSectionTitle, { color: 'blue' }]}>🔒 TEST VISIBLE - Gestion du mot de passe</Text>
+            {editingUser && (
+              <View style={styles.formSection}>
+                <Text style={styles.formSectionTitle}>Gestion du mot de passe</Text>
                 <Text style={styles.helperText}>
-                  Générez un mot de passe temporaire que l'utilisateur devra changer à sa première connexion.
+                  Generez un mot de passe temporaire que l utilisateur devra changer a sa premiere connexion.
                 </Text>
                 <TouchableOpacity
-                  style={[styles.generatePasswordButton, { backgroundColor: '#ff6b6b' }]}
+                  style={styles.generatePasswordButton}
                   onPress={() => {
-                    console.log('Bouton cliqué!');
-                    Alert.alert('Test', 'Bouton fonctionnel!');
-                    if (editingUser) {
-                      setSelectedUserForPassword({
-                        id: editingUser.id,
-                        username: editingUser.username
-                      });
-                      setShowGeneratePasswordModal(true);
-                    }
+                    setSelectedUserForPassword({
+                      id: editingUser.id,
+                      username: editingUser.username
+                    });
+                    setShowGeneratePasswordModal(true);
                   }}
                 >
                   <Text style={styles.generatePasswordButtonText}>
-                    🔑 BOUTON TEST - Générer mot de passe
+                    Generer un mot de passe temporaire
                   </Text>
                 </TouchableOpacity>
               </View>
-            ) : null}
+            )}
 
             {/* Zone de suppression dangereuse - uniquement pour utilisateurs existants */}
             {editingUser && (
