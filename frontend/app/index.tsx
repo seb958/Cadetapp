@@ -57,6 +57,9 @@ export default function Index() {
   
   // Hook mode offline pour synchronisation
   const { isOnline, handleManualSync, syncQueueCount } = useOfflineMode();
+  
+  // État pour le modal de changement de mot de passe forcé
+  const [showForceChangePassword, setShowForceChangePassword] = useState(false);
 
   // Vérifier si l'utilisateur est déjà connecté
   useEffect(() => {
