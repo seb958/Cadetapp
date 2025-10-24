@@ -153,6 +153,7 @@ class UserInDB(UserBase):
 class User(UserBase):
     id: str
     created_at: datetime
+    must_change_password: bool = False
 
 class UserInvitation(BaseModel):
     email: Optional[EmailStr] = None
