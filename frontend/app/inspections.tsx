@@ -121,6 +121,10 @@ export default function Inspections() {
   // Permissions
   const [canScheduleUniform, setCanScheduleUniform] = useState(false);
   const [canInspect, setCanInspect] = useState(false);
+  
+  // États pour la vue cadet (statistiques personnelles)
+  const [myStats, setMyStats] = useState<InspectionStats | null>(null);
+  const [isViewingMyStats, setIsViewingMyStats] = useState(false);
 
   useEffect(() => {
     checkAuth();
