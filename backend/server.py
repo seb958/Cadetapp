@@ -964,9 +964,12 @@ async def generate_initial_password(
         }
     )
     
+    # Créer un identifiant utilisateur (username ou nom complet)
+    username_display = existing_user.get("username") or f"{existing_user.get('prenom', '')} {existing_user.get('nom', '')}".strip() or "Utilisateur"
+    
     return GeneratePasswordResponse(
         user_id=user_id,
-        username=existing_user.get("username", ""),
+        username=username_display,
         temporary_password=temporary_password,
         message="Mot de passe temporaire généré avec succès. L'utilisateur devra le changer à sa première connexion."
     )
