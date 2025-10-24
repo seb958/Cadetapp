@@ -2937,29 +2937,6 @@ export default function Admin() {
               </View>
             )}
 
-            {editingUser && (
-              <View style={{ backgroundColor: 'yellow', padding: 20, marginVertical: 10 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-                  TEST SECTION MOT DE PASSE
-                </Text>
-                <TouchableOpacity
-                  style={{ backgroundColor: 'red', padding: 15, borderRadius: 8 }}
-                  onPress={() => {
-                    Alert.alert('Test', 'Bouton fonctionne!');
-                    setSelectedUserForPassword({
-                      id: editingUser.id,
-                      username: editingUser.username
-                    });
-                    setShowGeneratePasswordModal(true);
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>
-                    GENERER MOT DE PASSE
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
             {/* Bouton de sauvegarde */}
             <TouchableOpacity
               style={[styles.saveButton, savingUser && styles.saveButtonDisabled]}
