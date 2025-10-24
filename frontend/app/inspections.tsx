@@ -572,7 +572,7 @@ export default function Inspections() {
     );
   }
 
-  if (!canInspect) {
+  if (!canInspect && !isViewingMyStats) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
@@ -582,11 +582,192 @@ export default function Inspections() {
           <Text style={styles.title}>Inspections</Text>
         </View>
         <View style={styles.centerContent}>
-          <Text style={styles.errorText}>❌ Accès refusé</Text>
-          <Text style={styles.errorSubtext}>
-            Vous devez être chef de section ou supérieur pour accéder aux inspections
-          </Text>
+          <ActivityIndicator size="large" color="#3182ce" />
+          <Text style={styles.loadingText}>Chargement de vos statistiques...</Text>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Vue spéciale pour les cadets réguliers
+  if (isViewingMyStats && myStats) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>← Retour</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Mes Inspections</Text>
+        </View>
+
+        <ScrollView
+          style={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          {/* Vue d'ensemble des statistiques */}
+          <View style={styles.statsOverviewCard}>
+            <Text style={styles.statsTitle}>📊 Mes Statistiques d'Inspection</Text>
+            <Text style={styles.statsSubtitle}>
+              {myStats.total_inspections} inspection{myStats.total_inspections > 1 ? 's' : ''} effectuée{myStats.total_inspections > 1 ? 's' : ''}
+            </Text>
+          </View>
+
+          {/* Cartes de comparaison */}
+          <View style={styles.comparisonContainer}>
+            {/* Ma moyenne */}
+            <View style={[styles.statCard, styles.personalStatCard]}>
+              <Text style={styles.statLabel}>Ma Moyenne</Text>
+              <Text style={styles.statValue}>{myStats.personal_average.toFixed(1)}%</Text>
+              <View style={styles.scoreRange}>
+                <Text style={styles.scoreRangeText}>
+                  Meilleur: {myStats.best_score.toFixed(1)}%
+                </Text>
+                <Text style={styles.scoreRangeText}>
+                  Plus bas: {myStats.worst_score.toFixed(1)}%
+                </Text>
+              </View>
+            </View>
+
+            {/* Moyenne de la section */}
+            <View style={[styles.statCard, styles.sectionStatCard]}>
+              <Text style={styles.statLabel}>Moyenne Section</Text>
+              <Text style={styles.statValue}>{myStats.section_average.toFixed(1)}%</Text>
+              {myStats.personal_average >= myStats.section_average ? (
+                <Text style={styles.comparisonText}>
+                  ✅ Au-dessus de la moyenne
+                </Text>
+              ) : (
+                <Text style={styles.comparisonTextBellow}>
+                  📈 En dessous de {(myStats.section_average - myStats.personal_average).toFixed(1)}%
+                </Text>
+              )}
+            </View>
+
+            {/* Moyenne de l'escadron */}
+            <View style={[styles.statCard, styles.squadronStatCard]}>
+              <Text style={styles.statLabel}>Moyenne Escadron</Text>
+              <Text style={styles.statValue}>{myStats.squadron_average.toFixed(1)}%</Text>
+              {myStats.personal_average >= myStats.squadron_average ? (
+                <Text style={styles.comparisonText}>
+                  ✅ Au-dessus de la moyenne
+                </Text>
+              ) : (
+                <Text style={styles.comparisonTextBellow}>
+                  📈 En dessous de {(myStats.squadron_average - myStats.personal_average).toFixed(1)}%
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Historique des inspections */}
+          <View style={styles.historyCard}>
+            <Text style={styles.historyTitle}>📋 Mes Dernières Inspections</Text>
+            {myStats.recent_inspections.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>Aucune inspection enregistrée</Text>
+              </View>
+            ) : (
+              myStats.recent_inspections.map((inspection) => (
+                <TouchableOpacity
+                  key={inspection.id}
+                  style={styles.inspectionHistoryItem}
+                  onPress={() => {
+                    setSelectedInspection(inspection);
+                    setShowDetailModal(true);
+                  }}
+                >
+                  <View style={styles.inspectionHistoryHeader}>
+                    <Text style={styles.inspectionDate}>
+                      {new Date(inspection.date).toLocaleDateString('fr-CA')}
+                    </Text>
+                    <View style={[
+                      styles.scoreBadge,
+                      inspection.total_score >= 85 ? styles.scoreExcellent :
+                      inspection.total_score >= 70 ? styles.scoreGood :
+                      inspection.total_score >= 50 ? styles.scoreFair : styles.scorePoor
+                    ]}>
+                      <Text style={styles.scoreBadgeText}>
+                        {inspection.total_score.toFixed(1)}%
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.inspectionUniform}>{inspection.uniform_type}</Text>
+                  <Text style={styles.inspectionInspector}>
+                    Inspecté par: {inspection.inspector_name}
+                  </Text>
+                  {inspection.commentaire && (
+                    <Text style={styles.inspectionComment} numberOfLines={2}>
+                      💬 {inspection.commentaire}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Modal de détail d'inspection */}
+        {showDetailModal && selectedInspection && (
+          <Modal visible={showDetailModal} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={styles.detailModalContent}>
+                <ScrollView>
+                  <Text style={styles.detailModalTitle}>Détail de l'Inspection</Text>
+                  
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailLabel}>Date:</Text>
+                    <Text style={styles.detailValue}>
+                      {new Date(selectedInspection.date).toLocaleDateString('fr-CA')}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailLabel}>Type de tenue:</Text>
+                    <Text style={styles.detailValue}>{selectedInspection.uniform_type}</Text>
+                  </View>
+
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailLabel}>Score total:</Text>
+                    <Text style={[styles.detailValue, styles.detailScore]}>
+                      {selectedInspection.total_score.toFixed(1)}%
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailLabel}>Inspecté par:</Text>
+                    <Text style={styles.detailValue}>{selectedInspection.inspector_name}</Text>
+                  </View>
+
+                  <View style={styles.detailSection}>
+                    <Text style={styles.detailLabel}>Détail des critères:</Text>
+                    {Object.entries(selectedInspection.criteria_scores).map(([criterion, score]) => (
+                      <View key={criterion} style={styles.criterionRow}>
+                        <Text style={styles.criterionName}>{criterion}</Text>
+                        <Text style={styles.criterionScore}>{score}/4</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {selectedInspection.commentaire && (
+                    <View style={styles.detailSection}>
+                      <Text style={styles.detailLabel}>Commentaire:</Text>
+                      <Text style={styles.detailCommentText}>
+                        {selectedInspection.commentaire}
+                      </Text>
+                    </View>
+                  )}
+                </ScrollView>
+
+                <TouchableOpacity
+                  style={styles.closeModalButton}
+                  onPress={() => setShowDetailModal(false)}
+                >
+                  <Text style={styles.closeModalButtonText}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
       </SafeAreaView>
     );
   }
