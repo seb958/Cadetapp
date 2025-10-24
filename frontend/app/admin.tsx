@@ -289,11 +289,14 @@ export default function Admin() {
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem('access_token');
+      const accessToken = await AsyncStorage.getItem('access_token');
       const userData = await AsyncStorage.getItem('user_data');
       
-      if (token && userData) {
+      if (accessToken && userData) {
         const parsedUser = JSON.parse(userData);
+        
+        // Stocker le token dans le state
+        setToken(accessToken);
         
         // Vérifier les permissions d'administration
         if (!['cadet_admin', 'encadrement'].includes(parsedUser.role)) {
@@ -306,7 +309,7 @@ export default function Admin() {
         try {
           const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${accessToken}`,
             },
           });
           
