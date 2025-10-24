@@ -321,6 +321,9 @@ export default function Index() {
           <ConnectionIndicator onSyncPress={handleSyncPress} />
         </View>
 
+        {/* Bannière de téléchargement APK */}
+        <APKDownloadBanner backendUrl={EXPO_PUBLIC_BACKEND_URL || ''} />
+
         <View style={styles.profileCard}>
           <Text style={styles.cardTitle}>Mon Profil</Text>
           <View style={styles.profileInfo}>
