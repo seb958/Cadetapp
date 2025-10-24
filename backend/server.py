@@ -2584,6 +2584,19 @@ class UniformInspectionResponse(BaseModel):
     section_nom: Optional[str]
     auto_marked_present: bool
 
+class InspectionStatsResponse(BaseModel):
+    """Statistiques d'inspection pour un cadet"""
+    cadet_id: str
+    cadet_nom: str
+    cadet_prenom: str
+    total_inspections: int
+    personal_average: float  # Moyenne personnelle en pourcentage
+    section_average: float   # Moyenne de la section en pourcentage
+    squadron_average: float  # Moyenne de l'escadron en pourcentage
+    recent_inspections: List[UniformInspectionResponse]  # 10 dernières inspections
+    best_score: float
+    worst_score: float
+
 # Fonction pour vérifier les permissions d'inspection
 async def require_inspection_permissions(current_user: User = Depends(get_current_user)):
     """
