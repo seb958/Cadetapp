@@ -2974,6 +2974,93 @@ async def get_uniform_inspections(
     
     return enriched_inspections
 
+@api_router.get("/uniform-inspections/stats/me", response_model=InspectionStatsResponse)
+async def get_my_inspection_stats(current_user: User = Depends(get_current_user)):
+    """
+    Récupérer les statistiques d'inspection personnelles d'un cadet
+    et les comparer avec les moyennes de section et d'escadron
+    """
+    # Récupérer toutes les inspections du cadet
+    my_inspections_cursor = db.uniform_inspections.find({"cadet_id": current_user.id}).sort("date", -1)
+    my_inspections = await my_inspections_cursor.to_list(None)
+    
+    # Calculer la moyenne personnelle
+    total_inspections = len(my_inspections)
+    personal_average = 0.0
+    best_score = 0.0
+    worst_score = 100.0
+    
+    if total_inspections > 0:
+        total_personal_score = sum(insp["total_score"] for insp in my_inspections)
+        personal_average = total_personal_score / total_inspections
+        best_score = max(insp["total_score"] for insp in my_inspections)
+        worst_score = min(insp["total_score"] for insp in my_inspections)
+    
+    # Calculer la moyenne de la section
+    section_average = 0.0
+    if current_user.section_id:
+        section_inspections_cursor = db.uniform_inspections.find({"section_id": current_user.section_id})
+        section_inspections = await section_inspections_cursor.to_list(None)
+        if section_inspections:
+            total_section_score = sum(insp["total_score"] for insp in section_inspections)
+            section_average = total_section_score / len(section_inspections)
+    
+    # Calculer la moyenne de l'escadron
+    squadron_inspections_cursor = db.uniform_inspections.find({})
+    squadron_inspections = await squadron_inspections_cursor.to_list(None)
+    squadron_average = 0.0
+    if squadron_inspections:
+        total_squadron_score = sum(insp["total_score"] for insp in squadron_inspections)
+        squadron_average = total_squadron_score / len(squadron_inspections)
+    
+    # Préparer les 10 dernières inspections avec enrichissement
+    recent_inspections = []
+    for inspection in my_inspections[:10]:
+        # Récupérer les infos de l'inspecteur
+        inspector = await db.users.find_one({"id": inspection["inspected_by"]})
+        inspector_name = f"{inspector['prenom']} {inspector['nom']}" if inspector else "Inconnu"
+        
+        # Récupérer les infos de la section
+        section_nom = None
+        if inspection.get("section_id"):
+            section = await db.sections.find_one({"id": inspection["section_id"]})
+            if section:
+                section_nom = section["nom"]
+        
+        enriched_inspection = UniformInspectionResponse(
+            id=inspection["id"],
+            cadet_id=inspection["cadet_id"],
+            cadet_nom=current_user.nom,
+            cadet_prenom=current_user.prenom,
+            cadet_grade=current_user.grade,
+            date=datetime.fromisoformat(inspection["date"]).date(),
+            uniform_type=inspection["uniform_type"],
+            criteria_scores=inspection["criteria_scores"],
+            max_score=inspection.get("max_score", 0),
+            total_score=inspection["total_score"],
+            commentaire=inspection.get("commentaire"),
+            inspected_by=inspection["inspected_by"],
+            inspector_name=inspector_name,
+            inspection_time=datetime.fromisoformat(inspection["inspection_time"]),
+            section_id=inspection.get("section_id"),
+            section_nom=section_nom,
+            auto_marked_present=inspection.get("auto_marked_present", False)
+        )
+        recent_inspections.append(enriched_inspection)
+    
+    return InspectionStatsResponse(
+        cadet_id=current_user.id,
+        cadet_nom=current_user.nom,
+        cadet_prenom=current_user.prenom,
+        total_inspections=total_inspections,
+        personal_average=round(personal_average, 2),
+        section_average=round(section_average, 2),
+        squadron_average=round(squadron_average, 2),
+        recent_inspections=recent_inspections,
+        best_score=round(best_score, 2),
+        worst_score=round(worst_score, 2) if total_inspections > 0 else 0.0
+    )
+
 # Route de test
 @api_router.get("/")
 async def root():
