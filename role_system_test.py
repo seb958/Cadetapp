@@ -20,7 +20,7 @@ from datetime import datetime
 import os
 
 # Configuration
-BASE_URL = "https://uniformcheck-1.preview.emergentagent.com/api"
+BASE_URL = "https://uniform-track.preview.emergentagent.com/api"
 
 # Credentials de test
 ADMIN_CREDENTIALS = {

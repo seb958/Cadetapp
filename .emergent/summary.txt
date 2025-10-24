@@ -1,105 +1,107 @@
 <analysis>
-The previous AI engineer's trajectory involved a detailed implementation of a uniform inspection feature for the existing Expo application, followed by a significant debugging phase, and finally the integration of offline capabilities. Initially, the engineer focused on backend development, creating models and API endpoints for uniform inspections and scheduling. This was followed by building the frontend UI, including a dedicated screen and linking it from the main menu. A crucial user request for numerical scoring of uniform criteria led to further modifications in both backend and frontend to support a 0-4 point scale.
+The previous AI engineer focused on enhancing the CommandHub application, initially implementing uniform inspection features with offline capabilities. A major pivot occurred when PWA offline functionality proved inadequate, necessitating a native Android build via EAS. This build process was fraught with debugging Node.js version mismatches, missing dependencies, npm conflicts, and configuration errors (, ). A critical issue was the app crashing in production due to development environment variables. After resolving these, a  dependency failure halted the build.
 
-The subsequent debugging cycles were extensive, primarily revolving around two persistent issues: incorrect uniform criteria being displayed/saved and the saving one cadet inspects all bug. The criteria problem stemmed from a combination of initial frontend default overwriting, incomplete backend settings, and eventually, the user's manual Tenue test conflicting with predefined settings. This required aggressive cache clearing, a backend script to re-seed correct settings, and a frontend Réinitialiser button. The inspects all bug, which caused 20-25 phantom inspections to appear, was ultimately traced to the backend querying the wrong MongoDB database/collection ( vs. ), a critical environment misconfiguration.
-
-Finally, the engineer integrated offline support for uniform inspections, mirroring the presence feature. This involved extending  and  to record inspections locally and updating the backend's  to process them. A last-minute bug in offline saving was identified as a  due to  of  while offline, which the engineer is currently addressing by changing to a static import.
+The work then shifted to making the app offline-first, implementing a robust versioning system, and then password management. Significant debugging cycles were spent resolving backend  (e.g., ), frontend  errors, and persistent issues with frontend component visibility. The most recent, recurring problem involved the Service Worker aggressively caching old code, preventing new fixes from appearing without manual cache clearing. The trajectory concludes with attempts to fully disable the problematic Service Worker.
 </analysis>
 
 <product_requirements>
-The application is a cadet squadron management system with core features like JWT authentication, attendance recording, and an administration panel for CRUD operations on activities, users, sections, and squadron settings.
+The CommandHub application manages cadet squadrons, including JWT auth, attendance, and an admin panel for CRUD on activities, users, sections, and squadron settings. It supports role sync, subgroups, and an organigramme. Offline mode for presences was an existing feature.
 
-Key enhancements prior to this trajectory included:
-- **Role Synchronization:** Dynamic integration of admin-defined roles.
-- **Subgroup Management:** Hierarchical subgroups within sections with responsibles.
-- **Organigramme:** Tree-like visualization of squadron hierarchy.
-- **Offline Mode with Synchronization:** For presences and uniform inspections, merging data upon reconnection and 6-hour offline usage.
-- **Improved Attendance Taking:** Collapsible, section-based lists, real-time search, swipe-right for present, auto-mark absent, 24-hour modification window for users, admin-only thereafter.
-
-The current trajectory focused on developing **Uniform Inspection functionality**:
-- **Detailed Inspection:** Based on criteria and a numerical scoring scale (0-4 points) defined in admin settings.
-- **Permissions:** Restricted to section leaders and superiors.
-- **UI/UX:** Detailed form with suggestions for list condensation or swipeable elements as cadets are inspected.
-- **Presence Integration:** Saving an inspection automatically marks an absent cadet as present, with a notification.
-- **Uniform Scheduling:** Ability to select the uniform of the day in advance or immediately, configurable by Adjudant d'escadron, Adjudant Chef d'escadron, or Officer. Predefined uniform types only, no score/element modification at selection.
+Recent development centered on **Uniform Inspection**:
+1.  **Detailed Inspection**: Based on admin-defined criteria with a 0-4 numerical score.
+2.  **Permissions**: Restricted to section leaders and superiors.
+3.  **UI/UX**: Detailed form, modal for viewing past inspection scores.
+4.  **Presence Integration**: Saving an inspection marks an absent cadet as present.
+5.  **Uniform Scheduling**: Select uniform of the day.
+6.  **Offline Capability**: Transitioned from insufficient PWA to native Android APK with future iOS, direct download, and OTA updates.
+7.  **Data Consistency**: Correct cadet section assignments, conflict resolution (oldest inspection, latest presence).
+8.  **Branding**: CommandHub app name, custom logo/colors.
+9.  **Scalability**: Support for 300-500 cadets.
+10. **Version Management**: Implement a system to notify users of new versions, with options for soft or mandatory updates, and download via GitHub Releases.
+11. **User Password Management**:
+    *   Admin can set/reset temporary passwords for existing users.
+    *   Generate a password and display it for the admin to convey.
+    *   Force users to change their password on first login.
+12. **User Profile Page**: Allow users to view their details and change their password.
 </product_requirements>
 
 <key_technical_concepts>
-- **Full-Stack:** Expo (React Native), FastAPI (Python), MongoDB.
-- **Data Persistence:**  for frontend offline caching, MongoDB for backend.
-- **Network Management:**  for offline detection.
-- **Frontend UI/UX:**  for navigation, , , custom components (, ).
-- **Backend Data Validation:** Pydantic models.
-- **Synchronization:** Offline queue for presences and uniform inspections, batch sync endpoint.
+-   **Full-Stack**: Expo (React Native), FastAPI (Python), MongoDB.
+-   **Mobile Dev**: Expo Router, EAS Build for APK, Expo Updates for OTA,  for offline.
+-   **Auth**: JWT token validation, password hashing ().
+-   **Data Sync**: Batch sync (), timestamp/first-inspection-wins conflict resolution.
+-   **PWA**:  (currently problematic due to caching).
+-   **Versioning**: Semantic versioning, backend endpoint (), admin controls.
 </key_technical_concepts>
 
 <code_architecture>
-The application features a full-stack architecture with an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
+The application uses a full-stack architecture with an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
 
 
 
 -   :
-    -   **Summary:** Main FastAPI application.
-    -   **Changes:**
-        -   Added Pydantic models , , ,  (updated for uniform settings).
-        -   Implemented  (POST to create, GET to retrieve filtered).
-        -   Implemented  (POST to create/update, GET to retrieve today's schedule).
-        -   Updated  to correctly process  items from the offline queue, saving them to the  collection and automatically marking cadets as  if they were  or had no presence status.
-        -   Updated  GET endpoint to return a default  object if no settings are found, preventing frontend from overwriting.
-        -   Fixed issue where initial backend response for  was an empty  object, causing frontend defaults to be overwritten.
+    -   **Summary**: Main FastAPI application.
+    -   **Changes**: Added , , , ,  fields to  model. Implemented  endpoint. Added  field to  and  models. Implemented  (generates temporary password, sets , ensures username is present) and  (allows user to change password, sets ). Corrected  calls to .
 -   :
-    -   **Summary:** Application entry point.
-    -   **Changes:** Added navigation link to the new  screen.
+    -   **Summary**: Production environment variables.
+    -   **Changes**: Created with a placeholder  for the Emergent backend.
 -   :
-    -   **Summary:** Administrative panel.
-    -   **Changes:**
-        -   Modified  to actually call the backend API instead of simulating.
-        -   Updated  to fetch from the backend and use default values only if backend settings are truly empty/non-existent, preventing overwrites.
-        -   Added logic to automatically save default settings to backend if not present.
-        -   Removed  dependency on  to prevent infinite loops.
+    -   **Summary**: Main dashboard screen and entry point for auth/offline logic.
+    -   **Changes**: Integrated  and . Added navigation link to . Integrated  to enforce password change on first login if  flag is set.
 -   :
-    -   **Summary:** New screen for uniform inspections.
-    -   **Changes:**
-        -   Initial creation, including UI for listing cadets, selecting a uniform, displaying criteria, and an inspection modal.
-        -   Implemented numerical scoring (0-4) for criteria within the modal, replacing simple toggles.
-        -   Integrated  hook and  component.
-        -   Added a Réinitialiser button to clear local state () and  for inspections, and reload data.
-        -   Modified  to reload  after scheduling a new uniform.
-        -   Modified  to use  when offline.
-        -   Added anti-cache headers to API calls.
-        -   **Current:** Replaced dynamic  with static  to enable offline saving.
+    -   **Summary**: Administrative interface.
+    -   **Changes**: Integrated  into the user editing modal. Added a  state to resolve  errors. Removed problematic French accents and emojis causing rendering issues. Added protection for  prop in  call.
 -   :
-    -   **Summary:** Custom hook for offline mode.
-    -   **Changes:** No direct changes in trajectory, but implicitly uses updated .
+    -   **Summary**: *New* screen for user profile management.
+    -   **Changes**: Created to allow users to view their details and change their password. (Content was not fully fleshed out in trajectory, only file creation and link).
 -   :
-    -   **Summary:** Service for offline data caching and synchronization.
-    -   **Changes:**
-        -   Updated  interface to include detailed ,  (as ), and .
-        -   Refactored  to store the detailed  data in the offline queue.
-        -   Added a new key  for offline inspection data.
-        -   Fixed a syntax error ( instead of ).
+    -   **Summary**: Component to show network status.
+    -   **Changes**: Integrated for visual feedback on connectivity.
 -   :
-    -   **Summary:** Script to create test data.
-    -   **Changes:** Modified to include default uniform settings (C1 and a Tenue test with specified criteria) directly into MongoDB, and also to clear any existing inspection data for robust testing.
-
+    -   **Summary**: *New* component to notify users of available APK updates and provide a download link.
+    -   **Changes**: Created to replace the PWA install prompt. It fetches version info from backend.
+-   :
+    -   **Summary**: *New* modal to force password change on first login.
+    -   **Changes**: Created. Handles API call to  and calls  callback. Logic modified to close immediately.
+-   :
+    -   **Summary**: *New* modal for admin to generate temporary passwords.
+    -   **Changes**: Created. Displays generated username and password. Stores API-returned username in state for display. Requires .
+-   :
+    -   **Summary**: Expo application configuration.
+    -   **Changes**: Updated for app name, owner, version, icons, bundle identifiers, PWA web config, and Expo Updates settings. Added  and  properties.
+-   :
+    -   **Summary**: EAS build configuration.
+    -   **Changes**: Configured Node.js version () and  for production profile. Modified to ensure  is used for production builds.
+-   :
+    -   **Summary**: NPM configuration.
+    -   **Changes**: Added .
+-   :
+    -   **Summary**: PWA service worker for offline caching.
+    -   **Changes**: Modified to temporarily disable its functionality due to aggressive caching issues preventing frontend updates during development.
+-   :
+    -   **Summary**: Script to generate usernames.
+    -   **Changes**: Backend logic for  endpoint now also ensures username is created if missing.
+-   :
+    -   **Summary**: A new dependency.
+    -   **Changes**: Installed to enable clipboard functionality in .
 </code_architecture>
 
 <pending_tasks>
 -   Develop remaining core functionalities: reports, communication, import/export Excel.
 -   Fully implement the organigramme feature, including re-implementing zoom/pan functionality.
--   Permanently resolve the  mismatch by potentially creating a custom development build or guiding the user on Expo Go version management.
+-   Permanently resolve any underlying  mismatch issues that might resurface.
+-   Configure and build the iOS native application (deferred by the user).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was working on resolving an issue where uniform inspections could not be saved while the application was offline. The  and  hook were successfully integrated into , and  was updated to correctly queue detailed uniform inspections, with the backend's  endpoint configured to process them.
+Immediately before this summary request, the AI engineer was deep into debugging the  in the frontend. The user reported that this modal, which requires a new user to change their password on first login, would not close after clicking Changer le mot de passe, even after previous fixes and confirming the backend API () was returning a  status.
 
-The user reported an error: impossible denregistrer linspection when attempting an offline save. Through debug logs, it was discovered that a  occurred when the application tried to dynamically  the  module () while the device was disconnected from the internet. Dynamic imports fetch the module at runtime, which is problematic for offline scenarios.
+This issue (modal not closing and no network request appearing) led to the recurring problem of the PWA  aggressively caching old frontend code, preventing updated JavaScript from being served. Despite previous attempts to clear cache or use incognito mode, the service worker continued to cause problems.
 
-The AI engineer's last action was to modify  to change the dynamic import of  to a static import.
-
-This change aims to ensure  is bundled with the application from the start, making it available even when offline, thus resolving the  error.
+The last action taken by the AI engineer was to modify  to attempt to temporarily disable its caching functionality and prevent it from interfering with frontend development and debugging. The trajectory ends with this modification being applied to the service worker file. The effectiveness of this particular modification and the underlying cause of the modal not closing are the immediate focus.
 </current_work>
 
 <optional_next_step>
-Remove the  line in  and directly use  globally.
+Verify if disabling the service worker resolves the frontend caching issue and allows the password change modal to close correctly.
 </optional_next_step>
+

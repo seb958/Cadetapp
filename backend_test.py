@@ -12,7 +12,7 @@ import sys
 import os
 
 # Configuration
-BASE_URL = "https://uniformcheck-1.preview.emergentagent.com/api"
+BASE_URL = "https://uniform-track.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {
     "username": "aadministrateur",
     "password": "admin123"
