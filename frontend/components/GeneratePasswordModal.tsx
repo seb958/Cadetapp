@@ -34,6 +34,7 @@ export const GeneratePasswordModal: React.FC<GeneratePasswordModalProps> = ({
 }) => {
   const [generating, setGenerating] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
+  const [generatedUsername, setGeneratedUsername] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!userId) return;
