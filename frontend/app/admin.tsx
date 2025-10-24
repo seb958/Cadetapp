@@ -2918,9 +2918,13 @@ export default function Admin() {
                 <Text style={styles.helperText}>
                   Générez un mot de passe temporaire que l'utilisateur devra changer à sa première connexion.
                 </Text>
+                <Text style={{ color: 'red', marginBottom: 8, fontSize: 12 }}>
+                  DEBUG: editingUser.id = {editingUser.id}, username = {editingUser.username}
+                </Text>
                 <TouchableOpacity
                   style={styles.generatePasswordButton}
                   onPress={() => {
+                    console.log('Bouton générer mot de passe cliqué pour:', editingUser.username);
                     setSelectedUserForPassword({
                       id: editingUser.id,
                       username: editingUser.username
