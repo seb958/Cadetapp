@@ -307,7 +307,7 @@ export default function Admin() {
         
         // Vérifier si le token est encore valide
         try {
-          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+          const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/me`, {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
             },
