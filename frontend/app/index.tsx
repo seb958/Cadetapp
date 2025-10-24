@@ -319,6 +319,33 @@ export default function Index() {
     }
   };
 
+  const handlePasswordChangeSuccess = async () => {
+    // Recharger les données utilisateur pour mettre à jour must_change_password
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const userData = await AsyncStorage.getItem('user_data');
+      
+      if (token && userData) {
+        const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const updatedUser = await response.json();
+          setUser(updatedUser);
+          await AsyncStorage.setItem('user_data', JSON.stringify(updatedUser));
+          setShowForceChangePassword(false);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur rechargement profil:', error);
+      // Fermer le modal quand même
+      setShowForceChangePassword(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.dashboardContainer}>
