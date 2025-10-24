@@ -926,6 +926,113 @@ async def delete_user(
             detail=f"Erreur lors de la suppression: {str(e)}"
         )
 
+@api_router.post("/users/{user_id}/generate-password", response_model=GeneratePasswordResponse)
+async def generate_initial_password(
+    user_id: str,
+    current_user: User = Depends(require_admin_or_encadrement)
+):
+    """
+    Génère un mot de passe initial aléatoire pour un utilisateur
+    L'utilisateur devra changer ce mot de passe à sa première connexion
+    """
+    # Vérifier que l'utilisateur existe
+    existing_user = await db.users.find_one({"id": user_id})
+    if not existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    # Générer un mot de passe aléatoire de 8 caractères
+    import random
+    import string
+    characters = string.ascii_letters + string.digits
+    temporary_password = ''.join(random.choice(characters) for _ in range(8))
+    
+    # Hasher le mot de passe
+    hashed_password = hash_password(temporary_password)
+    
+    # Mettre à jour l'utilisateur avec le nouveau mot de passe et le flag must_change_password
+    await db.users.update_one(
+        {"id": user_id},
+        {
+            "$set": {
+                "hashed_password": hashed_password,
+                "must_change_password": True,
+                "actif": True  # S'assurer que l'utilisateur est actif
+            }
+        }
+    )
+    
+    return GeneratePasswordResponse(
+        user_id=user_id,
+        username=existing_user.get("username", ""),
+        temporary_password=temporary_password,
+        message="Mot de passe temporaire généré avec succès. L'utilisateur devra le changer à sa première connexion."
+    )
+
+@api_router.post("/auth/change-password")
+async def change_password(
+    request: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Permet à un utilisateur de changer son mot de passe
+    Nécessite l'ancien mot de passe pour validation
+    """
+    # Récupérer l'utilisateur avec son mot de passe
+    user_data = await db.users.find_one({"id": current_user.id})
+    if not user_data or not user_data.get("hashed_password"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Aucun mot de passe défini pour cet utilisateur"
+        )
+    
+    # Vérifier l'ancien mot de passe
+    if not verify_password(request.old_password, user_data["hashed_password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Mot de passe actuel incorrect"
+        )
+    
+    # Valider le nouveau mot de passe
+    if len(request.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le nouveau mot de passe doit contenir au moins 6 caractères"
+        )
+    
+    # Hasher le nouveau mot de passe
+    new_hashed_password = hash_password(request.new_password)
+    
+    # Mettre à jour le mot de passe et retirer le flag must_change_password
+    await db.users.update_one(
+        {"id": current_user.id},
+        {
+            "$set": {
+                "hashed_password": new_hashed_password,
+                "must_change_password": False
+            }
+        }
+    )
+    
+    return {"message": "Mot de passe changé avec succès"}
+
+@api_router.get("/auth/profile", response_model=User)
+async def get_profile(current_user: User = Depends(get_current_user)):
+    """
+    Retourne les informations du profil de l'utilisateur connecté
+    """
+    # Récupérer les informations complètes depuis la base de données
+    user_data = await db.users.find_one({"id": current_user.id})
+    if not user_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Utilisateur non trouvé"
+        )
+    
+    return User(**user_data)
+
 # Routes pour les sections
 @api_router.post("/sections", response_model=Section)
 async def create_section(
