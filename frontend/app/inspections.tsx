@@ -73,6 +73,19 @@ interface UniformInspection {
   auto_marked_present: boolean;
 }
 
+interface InspectionStats {
+  cadet_id: string;
+  cadet_nom: string;
+  cadet_prenom: string;
+  total_inspections: number;
+  personal_average: number;
+  section_average: number;
+  squadron_average: number;
+  recent_inspections: UniformInspection[];
+  best_score: number;
+  worst_score: number;
+}
+
 export default function Inspections() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
