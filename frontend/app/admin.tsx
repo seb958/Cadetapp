@@ -3896,6 +3896,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  generatePasswordButton: {
+    backgroundColor: '#3182ce',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  generatePasswordButtonText: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '600',
+  },
   userStatus: {
     fontSize: 12,
     color: '#f59e0b',
