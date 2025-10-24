@@ -950,7 +950,7 @@ async def generate_initial_password(
     temporary_password = ''.join(random.choice(characters) for _ in range(8))
     
     # Hasher le mot de passe
-    hashed_password = hash_password(temporary_password)
+    hashed_password = get_password_hash(temporary_password)
     
     # Mettre à jour l'utilisateur avec le nouveau mot de passe et le flag must_change_password
     await db.users.update_one(
