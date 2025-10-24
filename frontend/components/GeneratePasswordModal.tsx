@@ -51,6 +51,7 @@ export const GeneratePasswordModal: React.FC<GeneratePasswordModalProps> = ({
       if (response.ok) {
         const data = await response.json();
         setGeneratedPassword(data.temporary_password);
+        setGeneratedUsername(data.username);
       } else {
         const errorData = await response.json();
         Alert.alert('Erreur', errorData.detail || 'Impossible de générer le mot de passe');
