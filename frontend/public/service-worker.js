@@ -1,31 +1,12 @@
-// CommandHub PWA Service Worker
+// CommandHub PWA Service Worker - DESACTIVE TEMPORAIREMENT
 // Escadron Sherbrooke-Laurier
 
-const CACHE_NAME = 'commandhub-v1';
-const RUNTIME_CACHE = 'commandhub-runtime';
+console.log('[SW] Service Worker desactive - pas de cache');
 
-// Fichiers essentiels à mettre en cache lors de l'installation
-const PRECACHE_URLS = [
-  '/',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
-];
-
-// Installation du Service Worker
+// Installation du Service Worker - DESACTIVE
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installation en cours...');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Cache ouvert');
-        return cache.addAll(PRECACHE_URLS);
-      })
-      .then(() => {
-        console.log('[SW] Installation terminée');
-        return self.skipWaiting();
-      })
-  );
+  console.log('[SW] Installation desactivee');
+  self.skipWaiting();
 });
 
 // Activation du Service Worker
