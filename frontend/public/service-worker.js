@@ -1,12 +1,12 @@
 // CommandHub PWA Service Worker - DESACTIVE TEMPORAIREMENT
-// Escadron Sherbrooke-Laurier
+console.log('[SW] Service Worker desactive');
 
-console.log('[SW] Service Worker desactive - pas de cache');
-
-// Installation du Service Worker - DESACTIVE
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installation desactivee');
-  self.skipWaiting();
+// Pas de cache, pas de fetch interception
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', () => self.clients.claim());
+self.addEventListener('fetch', (event) => {
+  // Ne pas intercepter les requêtes - laisser passer normalement
+  return;
 });
 
 // Activation du Service Worker
