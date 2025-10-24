@@ -328,8 +328,8 @@ export default function Index() {
         {/* Bannière de téléchargement APK */}
         <APKDownloadBanner backendUrl={EXPO_PUBLIC_BACKEND_URL || ''} />
 
-        <View style={styles.profileCard}>
-          <Text style={styles.cardTitle}>Mon Profil</Text>
+        <TouchableOpacity style={styles.profileCard} onPress={navigateToProfile}>
+          <Text style={styles.cardTitle}>👤 Mon Profil</Text>
           <View style={styles.profileInfo}>
             <Text style={styles.profileItem}>
               <Text style={styles.profileLabel}>Grade: </Text>
@@ -339,12 +339,15 @@ export default function Index() {
               <Text style={styles.profileLabel}>Rôle: </Text>
               {getRoleDisplayName(user?.role || '')}
             </Text>
-            <Text style={styles.profileItem}>
-              <Text style={styles.profileLabel}>Email: </Text>
-              {user?.email}
-            </Text>
+            {user?.email && (
+              <Text style={styles.profileItem}>
+                <Text style={styles.profileLabel}>Email: </Text>
+                {user?.email}
+              </Text>
+            )}
           </View>
-        </View>
+          <Text style={styles.viewProfileLink}>Voir mon profil →</Text>
+        </TouchableOpacity>
 
         <View style={styles.featuresContainer}>
           <Text style={styles.sectionTitle}>Fonctionnalités</Text>
