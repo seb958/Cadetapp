@@ -510,6 +510,32 @@ async def login(request: LoginRequest):
         "user": user
     }
 
+@api_router.get("/version-info")
+async def get_version_info():
+    """
+    Endpoint public pour vérifier les informations de version
+    Accessible sans authentification
+    """
+    settings_doc = await db.settings.find_one({"type": "app_settings"})
+    
+    if not settings_doc:
+        # Retourner les valeurs par défaut si aucun paramètre n'existe
+        return {
+            "currentApkVersion": "1.0.0",
+            "minimumSupportedVersion": "1.0.0",
+            "apkDownloadUrl": "",
+            "forceUpdate": False,
+            "releaseNotes": []
+        }
+    
+    return {
+        "currentApkVersion": settings_doc.get("currentApkVersion", "1.0.0"),
+        "minimumSupportedVersion": settings_doc.get("minimumSupportedVersion", "1.0.0"),
+        "apkDownloadUrl": settings_doc.get("apkDownloadUrl", ""),
+        "forceUpdate": settings_doc.get("forceUpdate", False),
+        "releaseNotes": settings_doc.get("releaseNotes", [])
+    }
+
 @api_router.post("/auth/invite")
 async def invite_user(
     invitation: UserInvitation,
