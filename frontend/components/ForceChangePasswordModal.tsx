@@ -71,21 +71,18 @@ export const ForceChangePasswordModal: React.FC<ForceChangePasswordModalProps> =
       });
 
       if (response.ok) {
-        Alert.alert(
-          'Succès',
-          'Votre mot de passe a été changé avec succès',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setOldPassword('');
-                setNewPassword('');
-                setConfirmPassword('');
-                onSuccess();
-              },
-            },
-          ]
-        );
+        // Réinitialiser les champs
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        
+        // Appeler onSuccess immédiatement
+        onSuccess();
+        
+        // Afficher le message de succès après (non bloquant)
+        setTimeout(() => {
+          Alert.alert('Succès', 'Votre mot de passe a été changé avec succès');
+        }, 100);
       } else {
         const errorData = await response.json();
         Alert.alert('Erreur', errorData.detail || 'Impossible de changer le mot de passe');
