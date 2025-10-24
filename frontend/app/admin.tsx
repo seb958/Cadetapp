@@ -150,6 +150,7 @@ interface ActivityFormData {
 
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
