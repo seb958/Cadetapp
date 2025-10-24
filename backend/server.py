@@ -2477,7 +2477,12 @@ async def get_settings(current_user: User = Depends(require_admin_or_encadrement
         "allowMotivatedAbsences": settings_doc.get("allowMotivatedAbsences", True),
         "consecutiveAbsenceThreshold": settings_doc.get("consecutiveAbsenceThreshold", 3),
         "inspectionCriteria": settings_doc.get("inspectionCriteria", {}),
-        "autoBackup": settings_doc.get("autoBackup", True)
+        "autoBackup": settings_doc.get("autoBackup", True),
+        "currentApkVersion": settings_doc.get("currentApkVersion", "1.0.0"),
+        "minimumSupportedVersion": settings_doc.get("minimumSupportedVersion", "1.0.0"),
+        "apkDownloadUrl": settings_doc.get("apkDownloadUrl", ""),
+        "forceUpdate": settings_doc.get("forceUpdate", False),
+        "releaseNotes": settings_doc.get("releaseNotes", [])
     }
     
     return Settings(**settings_dict)
