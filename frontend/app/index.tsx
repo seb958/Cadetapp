@@ -441,6 +441,13 @@ export default function Index() {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal de changement de mot de passe forcé */}
+      <ForceChangePasswordModal
+        visible={showForceChangePassword}
+        onSuccess={handlePasswordChangeSuccess}
+        backendUrl={EXPO_PUBLIC_BACKEND_URL || ''}
+      />
     </SafeAreaView>
   );
 }
