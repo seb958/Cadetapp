@@ -275,6 +275,7 @@ export default function Admin() {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [newTenueName, setNewTenueName] = useState('');
+  const [newReleaseNote, setNewReleaseNote] = useState('');
 
   useEffect(() => {
     checkAuth();
