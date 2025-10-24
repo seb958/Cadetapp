@@ -1035,7 +1035,7 @@ async def change_password(
         )
     
     # Hasher le nouveau mot de passe
-    new_hashed_password = hash_password(request.new_password)
+    new_hashed_password = get_password_hash(request.new_password)
     
     # Mettre à jour le mot de passe et retirer le flag must_change_password
     await db.users.update_one(
