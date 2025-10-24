@@ -148,6 +148,7 @@ class UserInDB(UserBase):
     invitation_expires: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: Optional[str] = None
+    must_change_password: bool = False  # Force le changement de mot de passe à la prochaine connexion
 
 class User(UserBase):
     id: str
