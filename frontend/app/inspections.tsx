@@ -206,14 +206,6 @@ export default function Inspections() {
       console.error('❌ Erreur lors du chargement des statistiques:', error);
     }
   };
-        setMyStats(data);
-      } else {
-        console.error('Erreur lors du chargement des statistiques');
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error);
-    }
-  };
 
   const loadCadets = async () => {
     try {
