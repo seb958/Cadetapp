@@ -108,11 +108,20 @@ export const GeneratePasswordModal: React.FC<GeneratePasswordModalProps> = ({
                 </Text>
               </View>
 
-              {/* Password Display */}
-              <View style={styles.passwordContainer}>
-                <Text style={styles.passwordLabel}>Mot de passe :</Text>
-                <View style={styles.passwordBox}>
-                  <Text style={styles.password}>{generatedPassword}</Text>
+              {/* Credentials Display */}
+              <View style={styles.credentialsContainer}>
+                <View style={styles.credentialRow}>
+                  <Text style={styles.credentialLabel}>Nom d'utilisateur :</Text>
+                  <View style={styles.credentialBox}>
+                    <Text style={styles.credentialText}>{username}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.credentialRow}>
+                  <Text style={styles.credentialLabel}>Mot de passe temporaire :</Text>
+                  <View style={styles.passwordBox}>
+                    <Text style={styles.password}>{generatedPassword}</Text>
+                  </View>
                 </View>
               </View>
 
