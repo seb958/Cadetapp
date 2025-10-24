@@ -224,6 +224,10 @@ export default function Index() {
     router.push('/admin');
   };
 
+  const navigateToProfile = () => {
+    router.push('/profile');
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
