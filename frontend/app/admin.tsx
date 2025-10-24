@@ -266,7 +266,12 @@ export default function Admin() {
         'Équipements sportifs'
       ]
     },
-    autoBackup: true
+    autoBackup: true,
+    currentApkVersion: '1.0.0',
+    minimumSupportedVersion: '1.0.0',
+    apkDownloadUrl: '',
+    forceUpdate: false,
+    releaseNotes: [] as string[]
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [newTenueName, setNewTenueName] = useState('');
