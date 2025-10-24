@@ -168,13 +168,38 @@ export default function Inspections() {
   };
 
   const loadAllData = async () => {
-    await Promise.all([
-      loadCadets(),
-      loadSections(),
-      loadSettings(),
-      loadTodaySchedule(),
-      loadRecentInspections()
-    ]);
+    // Si l'utilisateur est un cadet régulier, charger uniquement ses stats
+    if (user && user.role === 'cadet') {
+      await loadMyStats();
+      setIsViewingMyStats(true);
+    } else {
+      // Sinon, charger toutes les données pour les inspecteurs
+      await Promise.all([
+        loadCadets(),
+        loadSections(),
+        loadSettings(),
+        loadTodaySchedule(),
+        loadRecentInspections()
+      ]);
+    }
+  };
+
+  const loadMyStats = async () => {
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/uniform-inspections/stats/me`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMyStats(data);
+      } else {
+        console.error('Erreur lors du chargement des statistiques');
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+    }
   };
 
   const loadCadets = async () => {
