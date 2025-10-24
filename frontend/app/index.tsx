@@ -17,6 +17,7 @@ import { usePWA } from '../hooks/usePWA';
 import { InstallPWA } from '../components/InstallPWA';
 import { ConnectionIndicator } from '../components/ConnectionIndicator';
 import { useOfflineMode } from '../hooks/useOfflineMode';
+import { APKDownloadBanner } from '../components/APKDownloadBanner';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
