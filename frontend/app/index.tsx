@@ -66,6 +66,13 @@ export default function Index() {
     checkAuthStatus();
   }, []);
 
+  // Vérifier si l'utilisateur doit changer son mot de passe
+  useEffect(() => {
+    if (user && (user as any).must_change_password) {
+      setShowForceChangePassword(true);
+    }
+  }, [user]);
+
   const checkAuthStatus = async () => {
     try {
       const token = await AsyncStorage.getItem('access_token');
