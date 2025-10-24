@@ -142,8 +142,8 @@ export default function Inspections() {
         // Vérifier les permissions
         checkPermissions(parsedUser);
         
-        // Charger les données
-        await loadAllData();
+        // Charger les données en passant l'utilisateur
+        await loadAllData(parsedUser);
       } else {
         router.push('/');
       }
@@ -167,9 +167,10 @@ export default function Inspections() {
     setCanInspect(canInspectKeywords.some(keyword => role.includes(keyword)));
   };
 
-  const loadAllData = async () => {
+  const loadAllData = async (currentUser: User) => {
     // Si l'utilisateur est un cadet régulier, charger uniquement ses stats
-    if (user && user.role === 'cadet') {
+    if (currentUser && currentUser.role === 'cadet') {
+      console.log('📊 Chargement des stats pour cadet:', currentUser.prenom, currentUser.nom);
       await loadMyStats();
       setIsViewingMyStats(true);
     } else {
@@ -186,13 +187,25 @@ export default function Inspections() {
 
   const loadMyStats = async () => {
     try {
+      console.log('🔍 Appel API stats/me...');
       const token = await AsyncStorage.getItem('access_token');
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/uniform-inspections/stats/me`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
+      console.log('📥 Réponse stats/me:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Stats reçues:', data);
+        setMyStats(data);
+      } else {
+        console.error('❌ Erreur lors du chargement des statistiques:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des statistiques:', error);
+    }
+  };
         setMyStats(data);
       } else {
         console.error('Erreur lors du chargement des statistiques');
