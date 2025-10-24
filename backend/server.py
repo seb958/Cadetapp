@@ -2360,6 +2360,12 @@ class Settings(BaseModel):
     consecutiveAbsenceThreshold: int = 3
     inspectionCriteria: Dict[str, List[str]] = {}  # Type de tenue -> liste de critères
     autoBackup: bool = True
+    # Gestion des versions APK
+    currentApkVersion: str = "1.0.0"
+    minimumSupportedVersion: str = "1.0.0"
+    apkDownloadUrl: str = ""
+    forceUpdate: bool = False
+    releaseNotes: List[str] = []
 
 class UniformInspection(BaseModel):
     """Inspection d'uniforme d'un cadet"""
