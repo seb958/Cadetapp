@@ -220,6 +220,10 @@ export default function Admin() {
     has_admin_privileges: false
   });
   const [savingUser, setSavingUser] = useState(false);
+  
+  // Gestion du modal de génération de mot de passe
+  const [showGeneratePasswordModal, setShowGeneratePasswordModal] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<{id: string, username: string} | null>(null);
 
   // Gestion des sections
   const [showSectionModal, setShowSectionModal] = useState(false);
