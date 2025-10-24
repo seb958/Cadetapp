@@ -1833,4 +1833,216 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Styles pour la vue cadet
+  statsOverviewCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  statsSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  comparisonContainer: {
+    marginBottom: 16,
+  },
+  statCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  personalStatCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#3b82f6',
+  },
+  sectionStatCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#10b981',
+  },
+  squadronStatCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#f59e0b',
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  scoreRange: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  scoreRangeText: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  comparisonText: {
+    fontSize: 14,
+    color: '#10b981',
+    fontWeight: '600',
+  },
+  comparisonTextBellow: {
+    fontSize: 14,
+    color: '#f59e0b',
+    fontWeight: '600',
+  },
+  historyCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  inspectionHistoryItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  inspectionHistoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  inspectionDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  scoreBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  scoreExcellent: {
+    backgroundColor: '#d1fae5',
+  },
+  scoreGood: {
+    backgroundColor: '#dbeafe',
+  },
+  scoreFair: {
+    backgroundColor: '#fef3c7',
+  },
+  scorePoor: {
+    backgroundColor: '#fee2e2',
+  },
+  scoreBadgeText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  inspectionUniform: {
+    fontSize: 14,
+    color: '#3b82f6',
+    marginBottom: 4,
+  },
+  inspectionInspector: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  inspectionComment: {
+    fontSize: 12,
+    color: '#4b5563',
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+  detailModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    maxHeight: '80%',
+    width: '90%',
+  },
+  detailModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 16,
+  },
+  detailSection: {
+    marginBottom: 16,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  detailValue: {
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  detailScore: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+  },
+  criterionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  criterionName: {
+    fontSize: 14,
+    color: '#4b5563',
+  },
+  criterionScore: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3b82f6',
+  },
+  detailCommentText: {
+    fontSize: 14,
+    color: '#4b5563',
+    fontStyle: 'italic',
+    padding: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+  },
 });
