@@ -2911,29 +2911,6 @@ export default function Admin() {
               </View>
             )}
 
-            {editingUser && (
-              <View style={styles.formSection}>
-                <Text style={styles.formSectionTitle}>Gestion du mot de passe</Text>
-                <Text style={styles.helperText}>
-                  Generez un mot de passe temporaire que l utilisateur devra changer a sa premiere connexion.
-                </Text>
-                <TouchableOpacity
-                  style={styles.generatePasswordButton}
-                  onPress={() => {
-                    setSelectedUserForPassword({
-                      id: editingUser.id,
-                      username: editingUser.username
-                    });
-                    setShowGeneratePasswordModal(true);
-                  }}
-                >
-                  <Text style={styles.generatePasswordButtonText}>
-                    Generer un mot de passe temporaire
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
             {/* Zone de suppression dangereuse - uniquement pour utilisateurs existants */}
             {editingUser && (
               <View style={styles.dangerZone}>
