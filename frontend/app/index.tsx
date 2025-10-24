@@ -558,6 +558,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2d3748',
   },
+  viewProfileLink: {
+    marginTop: 12,
+    color: '#3182ce',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   featuresContainer: {
     gap: 15,
   },
