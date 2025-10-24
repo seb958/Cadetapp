@@ -3271,6 +3271,19 @@ export default function Admin() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Modal pour générer un mot de passe temporaire */}
+      <GeneratePasswordModal
+        visible={showGeneratePasswordModal}
+        userId={selectedUserForPassword?.id || null}
+        username={selectedUserForPassword?.username || ''}
+        onClose={() => {
+          setShowGeneratePasswordModal(false);
+          setSelectedUserForPassword(null);
+        }}
+        backendUrl={EXPO_PUBLIC_BACKEND_URL || ''}
+        token={token}
+      />
     </SafeAreaView>
   );
 }
