@@ -169,6 +169,16 @@ class SetPasswordRequest(BaseModel):
     token: str
     password: str
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+class GeneratePasswordResponse(BaseModel):
+    user_id: str
+    username: str
+    temporary_password: str
+    message: str
+
 class UserUpdate(BaseModel):
     nom: Optional[str] = None
     prenom: Optional[str] = None
