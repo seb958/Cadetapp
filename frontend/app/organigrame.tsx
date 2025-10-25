@@ -187,10 +187,15 @@ export default function Organigrame() {
   const buildHorizontalHierarchy = () => {
     let filteredUsers = users;
     
+    // Filtrer par section si une section est sélectionnée
+    if (selectedSectionId) {
+      filteredUsers = filteredUsers.filter(u => u.section_id === selectedSectionId);
+    }
+    
     // Filtrer par recherche si nécessaire
     if (searchText.trim()) {
       const search = searchText.toLowerCase();
-      filteredUsers = users.filter(u => 
+      filteredUsers = filteredUsers.filter(u => 
         u.nom.toLowerCase().includes(search) ||
         u.prenom.toLowerCase().includes(search) ||
         u.grade.toLowerCase().includes(search) ||
