@@ -1398,9 +1398,10 @@ async def create_presence(
             is_guest=False
         )
     
-    # Enregistrer dans MongoDB (convertir date en string)
+    # Enregistrer dans MongoDB (convertir date et datetime en string)
     presence_dict = presence_data.dict()
     presence_dict['date'] = presence_data.date.isoformat()
+    presence_dict['heure_enregistrement'] = presence_data.heure_enregistrement.isoformat()
     await db.presences.insert_one(presence_dict)
     
     return presence_data
