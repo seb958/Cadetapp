@@ -242,11 +242,17 @@ class Presence(BaseModel):
     heure_enregistrement: datetime = Field(default_factory=datetime.utcnow)
     section_id: Optional[str] = None
     activite: Optional[str] = None  # Description de l'activité
+    is_guest: bool = False  # Indique si c'est un invité
+    guest_nom: Optional[str] = None  # Nom de l'invité
+    guest_prenom: Optional[str] = None  # Prénom de l'invité
 
 class PresenceCreate(BaseModel):
     cadet_id: str
     status: PresenceStatus
     commentaire: Optional[str] = None
+    is_guest: bool = False
+    guest_nom: Optional[str] = None
+    guest_prenom: Optional[str] = None
 
 class PresenceUpdate(BaseModel):
     status: Optional[PresenceStatus] = None
