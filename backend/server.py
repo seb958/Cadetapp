@@ -1212,7 +1212,10 @@ async def create_subgroup(
             )
     
     new_subgroup = SubGroup(**subgroup.dict())
-    await db.subgroups.insert_one(new_subgroup.dict())
+    # Convertir datetime en string pour MongoDB
+    subgroup_dict = new_subgroup.dict()
+    subgroup_dict['created_at'] = new_subgroup.created_at.isoformat()
+    await db.subgroups.insert_one(subgroup_dict)
     
     return new_subgroup
 
