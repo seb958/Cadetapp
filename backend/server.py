@@ -276,6 +276,9 @@ class PresenceResponse(BaseModel):
     section_id: Optional[str]
     section_nom: Optional[str]
     activite: Optional[str]
+    is_guest: bool = False
+    guest_nom: Optional[str] = None
+    guest_prenom: Optional[str] = None
 
 class PresenceStats(BaseModel):
     total_seances: int
