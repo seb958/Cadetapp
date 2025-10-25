@@ -3061,6 +3061,45 @@ async def get_my_inspection_stats(current_user: User = Depends(get_current_user)
         worst_score=round(worst_score, 2) if total_inspections > 0 else 0.0
     )
 
+@api_router.get("/organigram/public")
+async def get_public_organigram(current_user: User = Depends(get_current_user)):
+    """
+    Récupérer les données de l'organigrame pour tous les utilisateurs authentifiés (lecture seule)
+    Retourne: users, sections, roles, subgroups
+    """
+    try:
+        # Récupérer tous les utilisateurs actifs
+        users_cursor = db.users.find({"actif": True})
+        users_list = await users_cursor.to_list(1000)
+        
+        # Récupérer toutes les sections
+        sections_cursor = db.sections.find()
+        sections_list = await sections_cursor.to_list(1000)
+        
+        # Récupérer tous les rôles
+        roles_cursor = db.roles.find()
+        roles_list = await roles_cursor.to_list(1000)
+        
+        # Récupérer tous les sous-groupes
+        all_subgroups = []
+        for section in sections_list:
+            subgroups_cursor = db.subgroups.find({"section_id": section["id"]})
+            subgroups = await subgroups_cursor.to_list(1000)
+            all_subgroups.extend(subgroups)
+        
+        return {
+            "users": users_list,
+            "sections": sections_list,
+            "roles": roles_list,
+            "subgroups": all_subgroups
+        }
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération de l'organigrame: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la récupération de l'organigrame"
+        )
+
 # Route de test
 @api_router.get("/")
 async def root():
