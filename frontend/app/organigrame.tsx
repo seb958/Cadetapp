@@ -86,6 +86,7 @@ export default function Organigrame() {
   const [searchText, setSearchText] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [hierarchyData, setHierarchyData] = useState<HierarchyNode[]>([]);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   // Obtenir les dimensions de l'écran
   const screenWidth = Dimensions.get('window').width;
