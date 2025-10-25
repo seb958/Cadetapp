@@ -24,7 +24,7 @@ class BackendRegressionTester:
         self.passed_tests = 0
         
     def log_test(self, test_name, success, details=""):
-        """Enregistrer le résultat d'un test"""
+        """Log test result"""
         self.total_tests += 1
         if success:
             self.passed_tests += 1
@@ -39,21 +39,34 @@ class BackendRegressionTester:
         self.test_results.append(result)
         print(result)
         
-    def authenticate_admin(self):
-        """Authentification admin"""
+    def authenticate(self):
+        """Test authentication with admin credentials"""
         try:
-            response = self.session.post(f"{BASE_URL}/auth/login", json=ADMIN_CREDENTIALS)
+            login_data = {
+                "username": ADMIN_USERNAME,
+                "password": ADMIN_PASSWORD
+            }
+            
+            response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
+            
             if response.status_code == 200:
                 data = response.json()
-                self.admin_token = data["access_token"]
-                self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
-                self.log_test("Authentification admin", True, f"Token obtenu pour {data['user']['username']}")
+                self.auth_token = data.get("access_token")
+                self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
+                
+                user_info = data.get("user", {})
+                self.log_test(
+                    "Authentication", 
+                    True, 
+                    f"Login successful for user: {user_info.get('prenom', '')} {user_info.get('nom', '')} (Role: {user_info.get('role', '')})"
+                )
                 return True
             else:
-                self.log_test("Authentification admin", False, f"Status: {response.status_code}")
+                self.log_test("Authentication", False, f"Login failed: {response.status_code} - {response.text}")
                 return False
+                
         except Exception as e:
-            self.log_test("Authentification admin", False, f"Erreur: {str(e)}")
+            self.log_test("Authentication", False, f"Login error: {str(e)}")
             return False
     
     def get_test_cadet_id(self):
