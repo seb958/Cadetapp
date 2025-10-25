@@ -1261,6 +1261,10 @@ export default function Presences() {
             }))}
             onComplete={handleSwipeAttendanceComplete}
             onCancel={() => setShowNewAttendance(false)}
+            onAddGuest={() => {
+              setShowNewAttendance(false);
+              setShowAddGuest(true);
+            }}
           />
         </GestureHandlerRootView>
       </Modal>
