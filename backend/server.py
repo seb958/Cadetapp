@@ -1888,7 +1888,10 @@ async def create_role(
         )
     
     role_data = Role(**role.dict())
-    await db.roles.insert_one(role_data.dict())
+    # Convertir datetime en string pour MongoDB
+    role_dict = role_data.dict()
+    role_dict['created_at'] = role_data.created_at.isoformat()
+    await db.roles.insert_one(role_dict)
     return role_data
 
 @api_router.put("/roles/{role_id}")
