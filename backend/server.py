@@ -1679,7 +1679,10 @@ async def create_activity(
         created_by=current_user.id
     )
     
-    await db.activities.insert_one(activity_data.dict())
+    # Convertir datetime en string pour MongoDB
+    activity_dict = activity_data.dict()
+    activity_dict['created_at'] = activity_data.created_at.isoformat()
+    await db.activities.insert_one(activity_dict)
     return activity_data
 
 @api_router.get("/activities", response_model=List[ActivityResponse])
