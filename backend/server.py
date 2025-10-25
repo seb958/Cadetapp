@@ -1319,45 +1319,73 @@ async def create_presence(
     if presence_date is None:
         presence_date = date.today()
     
-    # Vérifier que le cadet existe
-    cadet = await db.users.find_one({"id": presence.cadet_id, "actif": True})
-    if not cadet:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cadet non trouvé"
-        )
-    
-    # Vérifier les permissions selon le rôle
-    if current_user.role == UserRole.CADET_RESPONSIBLE:
-        # Un cadet responsable ne peut enregistrer que pour sa section
-        if cadet.get("section_id") != current_user.section_id:
+    # Gérer les invités différemment
+    if presence.is_guest:
+        # Valider que les informations de l'invité sont présentes
+        if not presence.guest_nom or not presence.guest_prenom:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Vous ne pouvez enregistrer les présences que pour votre section"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le nom et le prénom de l'invité sont requis"
             )
-    
-    # Vérifier si une présence existe déjà pour ce cadet à cette date
-    existing_presence = await db.presences.find_one({
-        "cadet_id": presence.cadet_id,
-        "date": presence_date.isoformat()
-    })
-    
-    if existing_presence:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Une présence existe déjà pour ce cadet à cette date"
+        
+        # Générer un ID unique pour l'invité
+        guest_id = f"guest_{str(uuid.uuid4())}"
+        
+        # Créer la présence pour l'invité
+        presence_data = Presence(
+            cadet_id=guest_id,
+            date=presence_date,
+            status=presence.status,
+            commentaire=presence.commentaire,
+            enregistre_par=current_user.id,
+            section_id=current_user.section_id,  # Assigner à la section de celui qui enregistre
+            activite=activite,
+            is_guest=True,
+            guest_nom=presence.guest_nom,
+            guest_prenom=presence.guest_prenom
         )
-    
-    # Créer la présence
-    presence_data = Presence(
-        cadet_id=presence.cadet_id,
-        date=presence_date,
-        status=presence.status,
-        commentaire=presence.commentaire,
-        enregistre_par=current_user.id,
-        section_id=cadet.get("section_id"),
-        activite=activite
-    )
+    else:
+        # Logique existante pour les cadets réguliers
+        # Vérifier que le cadet existe
+        cadet = await db.users.find_one({"id": presence.cadet_id, "actif": True})
+        if not cadet:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Cadet non trouvé"
+            )
+        
+        # Vérifier les permissions selon le rôle
+        if current_user.role == UserRole.CADET_RESPONSIBLE:
+            # Un cadet responsable ne peut enregistrer que pour sa section
+            if cadet.get("section_id") != current_user.section_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Vous ne pouvez enregistrer les présences que pour votre section"
+                )
+        
+        # Vérifier si une présence existe déjà pour ce cadet à cette date
+        existing_presence = await db.presences.find_one({
+            "cadet_id": presence.cadet_id,
+            "date": presence_date.isoformat()
+        })
+        
+        if existing_presence:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Une présence existe déjà pour ce cadet à cette date"
+            )
+        
+        # Créer la présence
+        presence_data = Presence(
+            cadet_id=presence.cadet_id,
+            date=presence_date,
+            status=presence.status,
+            commentaire=presence.commentaire,
+            enregistre_par=current_user.id,
+            section_id=cadet.get("section_id"),
+            activite=activite,
+            is_guest=False
+        )
     
     await db.presences.insert_one(presence_data.dict())
     return presence_data
