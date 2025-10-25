@@ -2034,17 +2034,19 @@ const styles = StyleSheet.create({
     color: '#2d3748',
     fontWeight: '600',
   },
-  // Styles pour le bouton invité
-  guestButton: {
+  // Styles pour le bouton invité dans le modal prise détaillée
+  addGuestButtonInModal: {
     backgroundColor: '#10b981',
-    padding: 16,
+    padding: 14,
     borderRadius: 8,
-    marginTop: 12,
+    margin: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  guestButtonText: {
+  addGuestButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   // Styles pour le modal d'invité
