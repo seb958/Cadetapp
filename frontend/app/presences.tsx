@@ -114,6 +114,14 @@ export default function Presences() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [showActivityDetail, setShowActivityDetail] = useState(false);
 
+  // États pour l'ajout d'invités
+  const [showAddGuest, setShowAddGuest] = useState(false);
+  const [guestNom, setGuestNom] = useState('');
+  const [guestPrenom, setGuestPrenom] = useState('');
+  const [guestCommentaire, setGuestCommentaire] = useState('');
+  const [savingGuest, setSavingGuest] = useState(false);
+
+  // États pour les notifications toast
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastVisible, setToastVisible] = useState(false);
 
