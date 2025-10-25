@@ -1547,9 +1547,23 @@ const styles = StyleSheet.create({
     color: '#3182ce',
     fontWeight: '600',
   },
-  modalContent: {
+  modalOverlay: {
     flex: 1,
-    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   sessionConfig: {
     backgroundColor: 'white',
