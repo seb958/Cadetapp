@@ -210,16 +210,31 @@ export default function Presences() {
 
       if (response.ok) {
         const data = await response.json();
-        // Filtrer pour exclure uniquement les officiers (lieutenants, capitaines, commandants)
-        // Inclure : cadets, cadets responsables, chefs de section, sergents, adjudants
-        const officerKeywords = ['lieutenant', 'capitaine', 'commandant', 'major', 'colonel'];
+        // Filtrer pour exclure uniquement les vrais officiers
+        // Ne pas exclure "Commandant de la Garde" ou "Commandant de la Musique" qui sont des postes de chefs
         
         let filteredCadets = data.filter((u: User) => {
           const roleLower = u.role.toLowerCase();
-          // Exclure les officiers et l'encadrement
-          return !officerKeywords.some(keyword => roleLower.includes(keyword)) && 
-                 !roleLower.includes('encadrement') &&
-                 !roleLower.includes('admin');
+          
+          // Exclure l'encadrement et les admins
+          if (roleLower.includes('encadrement') || roleLower.includes('admin')) {
+            return false;
+          }
+          
+          // Exclure les officiers SAUF "Commandant de..." (Garde, Musique)
+          if (roleLower.includes('lieutenant') || 
+              roleLower.includes('capitaine') || 
+              roleLower.includes('major') || 
+              roleLower.includes('colonel')) {
+            return false;
+          }
+          
+          // Pour "commandant", exclure seulement si ce n'est PAS "commandant de"
+          if (roleLower.includes('commandant') && !roleLower.includes('commandant de')) {
+            return false;
+          }
+          
+          return true;
         });
 
         if (currentUser.role === 'cadet_responsible') {
