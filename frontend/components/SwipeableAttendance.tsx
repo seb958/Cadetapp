@@ -87,18 +87,15 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
     const totalCadets = sections.reduce((sum, s) => sum + s.cadets.length, 0);
     const absentCount = totalCadets - presentIds.length;
     
-    Alert.alert(
-      'Confirmer la présence',
-      `${presentIds.length} présent(s)\n${absentCount} absent(s)\n\nLes cadets non-swipés seront marqués absents.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Confirmer', 
-          onPress: () => onComplete(presentIds),
-          style: 'default'
-        },
-      ]
-    );
+    // Utiliser window.confirm pour web (fonctionne aussi sur mobile)
+    const message = `${presentIds.length} présent(s)\n${absentCount} absent(s)\n\nLes cadets non-swipés seront marqués absents.\n\nConfirmer ?`;
+    
+    if (window.confirm(message)) {
+      console.log('✅ Confirmation utilisateur - appel onComplete avec', presentIds.length, 'présents');
+      onComplete(presentIds);
+    } else {
+      console.log('❌ Annulé par l\'utilisateur');
+    }
   };
 
   const renderRightActions = () => (
