@@ -119,6 +119,7 @@ export default function Organigrame() {
       const userData = await AsyncStorage.getItem('user_data');
       
       if (!token || !userData) {
+        setLoading(false);
         router.replace('/');
         return;
       }
@@ -133,6 +134,7 @@ export default function Organigrame() {
       
       if (!hasOrganigramAccess) {
         // Cadet régulier sans accès
+        setLoading(false);
         Alert.alert(
           'Accès limité',
           'L\'organigrame est réservé aux responsables de section et supérieurs.',
@@ -149,6 +151,7 @@ export default function Organigrame() {
       setUser(parsedUser);
     } catch (error) {
       console.error('Erreur lors de la vérification d\'authentification:', error);
+      setLoading(false);
       router.replace('/');
     }
   };
