@@ -170,22 +170,6 @@ export default function Organigrame() {
         })
       ]);
 
-      // Vérifier si l'utilisateur n'a pas les permissions (403)
-      if (!usersRes.ok && usersRes.status === 403) {
-        // L'utilisateur est un cadet régulier sans permissions
-        Alert.alert(
-          'Accès limité',
-          'L\'organigrame complet est réservé aux responsables. Cette fonctionnalité sera bientôt disponible pour tous les cadets.',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.back()
-            }
-          ]
-        );
-        return;
-      }
-
       if (usersRes.ok && sectionsRes.ok && rolesRes.ok) {
         const usersData = await usersRes.json();
         const sectionsData = await sectionsRes.json();
