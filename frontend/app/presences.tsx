@@ -1260,6 +1260,84 @@ export default function Presences() {
           />
         </GestureHandlerRootView>
       </Modal>
+
+      {/* Modal pour ajouter un invité */}
+      <Modal
+        visible={showAddGuest}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAddGuest(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajouter un Invité</Text>
+              <TouchableOpacity onPress={() => setShowAddGuest(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.inputLabel}>Prénom *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez le prénom"
+                value={guestPrenom}
+                onChangeText={setGuestPrenom}
+              />
+
+              <Text style={styles.inputLabel}>Nom *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Entrez le nom"
+                value={guestNom}
+                onChangeText={setGuestNom}
+              />
+
+              <Text style={styles.inputLabel}>Commentaire (optionnel)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Notes additionnelles..."
+                value={guestCommentaire}
+                onChangeText={setGuestCommentaire}
+                multiline
+                numberOfLines={3}
+              />
+
+              <Text style={styles.guestInfo}>
+                ℹ️ Les invités sont des personnes qui ne sont pas encore inscrites dans le système.
+                Ils ne seront pas éligibles aux inspections d'uniforme.
+              </Text>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  setShowAddGuest(false);
+                  setGuestNom('');
+                  setGuestPrenom('');
+                  setGuestCommentaire('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Annuler</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.saveButton, savingGuest && styles.saveButtonDisabled]}
+                onPress={handleSaveGuest}
+                disabled={savingGuest}
+              >
+                {savingGuest ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.saveButtonText}>Enregistrer</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
