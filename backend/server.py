@@ -1387,7 +1387,11 @@ async def create_presence(
             is_guest=False
         )
     
-    await db.presences.insert_one(presence_data.dict())
+    # Enregistrer dans MongoDB (convertir date en string)
+    presence_dict = presence_data.dict()
+    presence_dict['date'] = presence_data.date.isoformat()
+    await db.presences.insert_one(presence_dict)
+    
     return presence_data
 
 @api_router.post("/presences/bulk")
