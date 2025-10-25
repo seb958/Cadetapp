@@ -1380,6 +1380,15 @@ export default function Presences() {
           </View>
         </View>
       </Modal>
+
+      {/* Toast de notification */}
+      {toastVisible && (
+        <View style={styles.toastContainer}>
+          <View style={styles.toast}>
+            <Text style={styles.toastText}>{toastMessage}</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
