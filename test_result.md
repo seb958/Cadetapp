@@ -327,6 +327,9 @@ frontend:
         - working: true
           agent: "main"
           comment: "Interface complète de gestion des présences: navigation depuis dashboard, prise de présence en modal avec tous les cadets, affichage présences récentes, statistiques par cadet, gestion permissions par rôle, interface responsive mobile. Navigation fonctionnelle avec expo-router."
+        - working: "NA"
+          agent: "main"
+          comment: "✅ ÉTAT-MAJOR VIRTUEL IMPLÉMENTÉ - Logique de section virtuelle '⭐ État-Major' ajoutée dans SwipeableAttendance. Modifications: presences.tsx ligne 1321-1353 pour inclure section virtuelle dans le mapping des sections. Les cadets avec section_id='etat-major-virtual' (Adjudant d'escadron, Adjudant-chef d'escadron) sont maintenant correctement groupés sous État-Major dans le mode de prise rapide par swipe. Cohérence assurée entre mode détaillé et mode rapide."
 
   - task: "Administration panel - Amélioration UX suppression sections"
     implemented: true
