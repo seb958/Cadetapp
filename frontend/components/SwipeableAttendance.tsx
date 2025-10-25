@@ -415,4 +415,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  guestButton: {
+    backgroundColor: '#10b981',
+  },
+  guestButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });
