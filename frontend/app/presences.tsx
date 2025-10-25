@@ -1320,19 +1320,38 @@ export default function Presences() {
       >
         <GestureHandlerRootView style={{ flex: 1 }}>
           <SwipeableAttendance
-            sections={sections.map(section => ({
-              id: section.id,
-              nom: section.nom,
-              cadets: cadets
-                .filter(cadet => cadet.section_id === section.id)
-                .map(cadet => ({
-                  id: cadet.id,
-                  nom: cadet.nom || '',
-                  prenom: cadet.prenom || '',
-                  grade: cadet.grade || '',
-                  section_id: cadet.section_id || '',
-                }))
-            }))}
+            sections={[
+              // Inclure toutes les sections réelles du backend
+              ...sections.map(section => ({
+                id: section.id,
+                nom: section.nom,
+                cadets: cadets
+                  .filter(cadet => cadet.section_id === section.id)
+                  .map(cadet => ({
+                    id: cadet.id,
+                    nom: cadet.nom || '',
+                    prenom: cadet.prenom || '',
+                    grade: cadet.grade || '',
+                    section_id: cadet.section_id || '',
+                  }))
+              })),
+              // Ajouter la section virtuelle État-Major si des cadets y sont assignés
+              ...(cadets.some(cadet => cadet.section_id === 'etat-major-virtual')
+                ? [{
+                    id: 'etat-major-virtual',
+                    nom: '⭐ État-Major',
+                    cadets: cadets
+                      .filter(cadet => cadet.section_id === 'etat-major-virtual')
+                      .map(cadet => ({
+                        id: cadet.id,
+                        nom: cadet.nom || '',
+                        prenom: cadet.prenom || '',
+                        grade: cadet.grade || '',
+                        section_id: cadet.section_id || '',
+                      }))
+                  }]
+                : [])
+            ]}
             onComplete={handleSwipeAttendanceComplete}
             onCancel={() => setShowNewAttendance(false)}
             onAddGuest={() => {
