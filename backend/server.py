@@ -1495,10 +1495,18 @@ async def get_presences(
     # Enrichir avec les informations des cadets et sections
     enriched_presences = []
     for presence in presences:
-        # Récupérer les infos du cadet
-        cadet = await db.users.find_one({"id": presence["cadet_id"]})
-        if not cadet:
-            continue
+        # Gérer les invités différemment
+        if presence.get("is_guest", False):
+            # Pour les invités, utiliser les infos stockées
+            cadet_nom = presence.get("guest_nom", "Inconnu")
+            cadet_prenom = presence.get("guest_prenom", "Inconnu")
+        else:
+            # Récupérer les infos du cadet
+            cadet = await db.users.find_one({"id": presence["cadet_id"]})
+            if not cadet:
+                continue
+            cadet_nom = cadet["nom"]
+            cadet_prenom = cadet["prenom"]
             
         # Récupérer les infos de la section si applicable
         section_nom = None
@@ -1510,8 +1518,8 @@ async def get_presences(
         enriched_presence = PresenceResponse(
             id=presence["id"],
             cadet_id=presence["cadet_id"],
-            cadet_nom=cadet["nom"],
-            cadet_prenom=cadet["prenom"],
+            cadet_nom=cadet_nom,
+            cadet_prenom=cadet_prenom,
             date=datetime.fromisoformat(presence["date"]).date(),
             status=PresenceStatus(presence["status"]),
             commentaire=presence.get("commentaire"),
@@ -1519,7 +1527,10 @@ async def get_presences(
             heure_enregistrement=datetime.fromisoformat(presence["heure_enregistrement"]),
             section_id=presence.get("section_id"),
             section_nom=section_nom,
-            activite=presence.get("activite")
+            activite=presence.get("activite"),
+            is_guest=presence.get("is_guest", False),
+            guest_nom=presence.get("guest_nom"),
+            guest_prenom=presence.get("guest_prenom")
         )
         enriched_presences.append(enriched_presence)
     
