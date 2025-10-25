@@ -2026,4 +2026,76 @@ const styles = StyleSheet.create({
     color: '#2d3748',
     fontWeight: '600',
   },
+  // Styles pour le bouton invité
+  guestButton: {
+    backgroundColor: '#10b981',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  guestButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // Styles pour le modal d'invité
+  guestInfo: {
+    backgroundColor: '#e0f2fe',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    fontSize: 14,
+    color: '#0369a1',
+    lineHeight: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#e5e7eb',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: '#374151',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: '#3b82f6',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#93c5fd',
+  },
 });
