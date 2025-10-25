@@ -1081,7 +1081,10 @@ async def create_section(
     current_user: User = Depends(require_admin_or_encadrement)
 ):
     section_data = Section(**section.dict())
-    await db.sections.insert_one(section_data.dict())
+    # Convertir datetime en string pour MongoDB
+    section_dict = section_data.dict()
+    section_dict['created_at'] = section_data.created_at.isoformat()
+    await db.sections.insert_one(section_dict)
     return section_data
 
 @api_router.get("/sections", response_model=List[Section])
