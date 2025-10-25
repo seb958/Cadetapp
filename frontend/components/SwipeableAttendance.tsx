@@ -226,10 +226,9 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
         <TouchableOpacity
           style={[styles.button, styles.confirmButton]}
           onPress={handleComplete}
-          disabled={totalPresent === 0}
         >
           <Text style={styles.confirmButtonText}>
-            Valider ({totalPresent})
+            Valider ({totalPresent} présent{totalPresent > 1 ? 's' : ''})
           </Text>
         </TouchableOpacity>
       </View>
