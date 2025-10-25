@@ -664,13 +664,6 @@ export default function Presences() {
             >
               <Text style={styles.secondaryButtonText}>Prise Détaillée</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.guestButton}
-              onPress={() => setShowAddGuest(true)}
-            >
-              <Text style={styles.guestButtonText}>👤 Ajouter un Invité</Text>
-            </TouchableOpacity>
           </View>
         )}
 
