@@ -138,29 +138,18 @@ export default function Organigrame() {
       setLoading(true);
       const token = await AsyncStorage.getItem('access_token');
       
-      const [usersRes, sectionsRes, rolesRes] = await Promise.all([
-        fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sections`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/roles`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
+      // Utiliser le nouvel endpoint public pour l'organigrame
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/organigram/public`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      if (usersRes.ok && sectionsRes.ok && rolesRes.ok) {
-        const usersData = await usersRes.json();
-        const sectionsData = await sectionsRes.json();
-        const rolesData = await rolesRes.json();
-
-        setUsers(usersData);
-        setSections(sectionsData);
-        setRoles(rolesData);
-
-        // Charger les sous-groupes pour chaque section
-        await loadSubGroups(sectionsData, token);
+      if (response.ok) {
+        const data = await response.json();
+        
+        setUsers(data.users);
+        setSections(data.sections);
+        setRoles(data.roles);
+        setSubGroups(data.subgroups);
       } else {
         Alert.alert('Erreur', 'Impossible de charger les données de l\'organigrame');
       }
