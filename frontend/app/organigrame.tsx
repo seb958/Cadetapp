@@ -456,6 +456,44 @@ export default function Organigrame() {
         />
       </View>
 
+      {/* Sélecteur de section */}
+      <View style={styles.sectionSelectorContainer}>
+        <Text style={styles.sectionSelectorLabel}>Filtrer par section:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.sectionButtonsContainer}>
+          <TouchableOpacity 
+            style={[
+              styles.sectionButton, 
+              selectedSectionId === null && styles.sectionButtonActive
+            ]}
+            onPress={() => setSelectedSectionId(null)}
+          >
+            <Text style={[
+              styles.sectionButtonText,
+              selectedSectionId === null && styles.sectionButtonTextActive
+            ]}>
+              Toutes
+            </Text>
+          </TouchableOpacity>
+          {sections.map((section) => (
+            <TouchableOpacity
+              key={section.id}
+              style={[
+                styles.sectionButton,
+                selectedSectionId === section.id && styles.sectionButtonActive
+              ]}
+              onPress={() => setSelectedSectionId(section.id)}
+            >
+              <Text style={[
+                styles.sectionButtonText,
+                selectedSectionId === section.id && styles.sectionButtonTextActive
+              ]}>
+                {section.nom}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <ScrollView style={styles.content} horizontal={true} showsHorizontalScrollIndicator={true}>
         <ScrollView showsVerticalScrollIndicator={true}>
           <Text style={styles.instructions}>
