@@ -15,10 +15,10 @@ BASE_URL = "https://squadcommand.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class OfflineSyncTester:
+class BackendRegressionTester:
     def __init__(self):
         self.session = requests.Session()
-        self.admin_token = None
+        self.auth_token = None
         self.test_results = []
         self.total_tests = 0
         self.passed_tests = 0
