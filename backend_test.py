@@ -253,25 +253,41 @@ class BackendRegressionTester:
         except Exception as e:
             self.log_test("Presences API - POST /api/presences", False, f"Request error: {str(e)}")
     
-    def test_sync_batch_endpoint_exists(self):
-        """Test 1: Vérifier que l'endpoint /api/sync/batch existe"""
-        try:
-            # Test avec requête vide pour vérifier la structure
-            response = self.session.post(f"{BASE_URL}/sync/batch", json={
-                "presences": [],
-                "inspections": []
-            })
-            
-            if response.status_code in [200, 422]:  # 422 = validation error acceptable
-                self.log_test("Endpoint /api/sync/batch accessible", True, f"Status: {response.status_code}")
-                return True
-            else:
-                self.log_test("Endpoint /api/sync/batch accessible", False, f"Status: {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.log_test("Endpoint /api/sync/batch accessible", False, f"Erreur: {str(e)}")
+    def run_all_tests(self):
+        """Run all regression tests"""
+        print("🧪 Starting Backend Regression Tests")
+        print("=" * 60)
+        
+        # Test authentication first
+        if not self.authenticate():
+            print("❌ Authentication failed - cannot proceed with other tests")
             return False
+            
+        # Run core API tests
+        self.test_users_api()
+        self.test_sections_api()
+        self.test_presences_get_api()
+        self.test_presences_post_api()
+        
+        # Summary
+        print("\n" + "=" * 60)
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
+        
+        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests}")
+        print(f"Failed: {self.total_tests - self.passed_tests}")
+        print(f"Success Rate: {success_rate:.1f}%")
+        
+        if self.passed_tests < self.total_tests:
+            print("\n❌ FAILED TESTS:")
+            for result in self.test_results:
+                if "❌ FAIL" in result:
+                    print(f"  - {result}")
+        
+        return self.passed_tests == self.total_tests
     
     def test_sync_inspection_basic(self):
         """Test 2: Synchronisation d'une inspection uniforme basique"""
