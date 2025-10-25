@@ -214,6 +214,15 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
           <Text style={styles.cancelButtonText}>Annuler</Text>
         </TouchableOpacity>
         
+        {onAddGuest && (
+          <TouchableOpacity
+            style={[styles.button, styles.guestButton]}
+            onPress={onAddGuest}
+          >
+            <Text style={styles.guestButtonText}>👤 Invité</Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity
           style={[styles.button, styles.confirmButton]}
           onPress={handleComplete}
