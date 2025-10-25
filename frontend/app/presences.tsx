@@ -244,6 +244,23 @@ export default function Presences() {
           );
         }
 
+        // Assigner une section virtuelle "État-Major" aux adjudants d'escadron sans section
+        filteredCadets = filteredCadets.map((cadet: User) => {
+          const roleLower = cadet.role.toLowerCase();
+          // Si c'est un adjudant d'escadron sans section, lui assigner l'état-major virtuel
+          if (!cadet.section_id && 
+              (roleLower.includes('adjudant d\'escadron') || 
+               roleLower.includes('adjudant-chef d\'escadron') ||
+               roleLower.includes('adjudant chef d\'escadron'))) {
+            return {
+              ...cadet,
+              section_id: 'etat-major-virtual',
+              section_nom: '⭐ État-Major'
+            };
+          }
+          return cadet;
+        });
+
         console.log(`📋 ${filteredCadets.length} cadets chargés (officiers exclus)`);
         setCadets(filteredCadets);
       }
