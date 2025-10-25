@@ -885,6 +885,17 @@ export default function Presences() {
               </View>
             </View>
 
+            {/* Bouton pour ajouter un invité */}
+            <TouchableOpacity 
+              style={styles.addGuestButtonInModal}
+              onPress={() => {
+                setShowTakeAttendance(false);
+                setShowAddGuest(true);
+              }}
+            >
+              <Text style={styles.addGuestButtonText}>👤 Ajouter un Invité</Text>
+            </TouchableOpacity>
+
             {/* Interface de sélection des cadets pour le mode 'selected' */}
             {attendanceMode === 'selected' && (
               <View style={styles.selectionInterface}>
