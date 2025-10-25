@@ -593,7 +593,12 @@ async def invite_user(
         actif=invitation.email is None  # Actif immédiatement si pas d'email
     )
     
-    await db.users.insert_one(user_data.dict())
+    # Convertir datetime en string pour MongoDB
+    user_dict = user_data.dict()
+    user_dict['created_at'] = user_data.created_at.isoformat()
+    if user_data.invitation_expires:
+        user_dict['invitation_expires'] = user_data.invitation_expires.isoformat()
+    await db.users.insert_one(user_dict)
     
     # Envoyer l'email d'invitation seulement si email fourni
     if invitation.email and invitation_token:
