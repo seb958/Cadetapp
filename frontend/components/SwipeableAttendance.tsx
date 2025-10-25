@@ -43,6 +43,7 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
   sections,
   onComplete,
   onCancel,
+  onAddGuest,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [presentCadets, setPresentCadets] = useState<Set<string>>(new Set());
