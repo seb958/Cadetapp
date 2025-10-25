@@ -1296,7 +1296,7 @@ export default function Presences() {
             onComplete={handleSwipeAttendanceComplete}
             onCancel={() => setShowNewAttendance(false)}
             onAddGuest={() => {
-              setShowNewAttendance(false);
+              // Ne pas fermer le modal swipe, juste ouvrir le modal invité par-dessus
               setShowAddGuest(true);
             }}
           />
