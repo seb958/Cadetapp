@@ -3087,6 +3087,16 @@ async def get_public_organigram(current_user: User = Depends(get_current_user)):
             subgroups = await subgroups_cursor.to_list(1000)
             all_subgroups.extend(subgroups)
         
+        # Supprimer le champ _id de MongoDB pour éviter les erreurs de sérialisation
+        for item in users_list:
+            item.pop('_id', None)
+        for item in sections_list:
+            item.pop('_id', None)
+        for item in roles_list:
+            item.pop('_id', None)
+        for item in all_subgroups:
+            item.pop('_id', None)
+        
         return {
             "users": users_list,
             "sections": sections_list,
