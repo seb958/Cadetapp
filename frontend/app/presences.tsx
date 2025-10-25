@@ -113,6 +113,13 @@ export default function Presences() {
   // États pour les groupements collapsibles
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [showActivityDetail, setShowActivityDetail] = useState(false);
+
+  // États pour l'ajout d'invités
+  const [showAddGuest, setShowAddGuest] = useState(false);
+  const [guestNom, setGuestNom] = useState('');
+  const [guestPrenom, setGuestPrenom] = useState('');
+  const [guestCommentaire, setGuestCommentaire] = useState('');
+  const [savingGuest, setSavingGuest] = useState(false);
   const [selectedActivityDetail, setSelectedActivityDetail] = useState<{activite: string, date: string, presences: Presence[]} | null>(null);
 
   // Constantes pour l'affichage
