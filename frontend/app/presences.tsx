@@ -449,10 +449,22 @@ export default function Presences() {
       return;
     }
 
+    console.log('👤 Enregistrement invité:', guestPrenom, guestNom);
     setSavingGuest(true);
 
     try {
       const token = await AsyncStorage.getItem('access_token');
+      
+      const payload = {
+        cadet_id: 'guest_temp', // Sera remplacé par le backend
+        status: 'present',
+        commentaire: guestCommentaire || `Invité: ${guestPrenom} ${guestNom}`,
+        is_guest: true,
+        guest_nom: guestNom,
+        guest_prenom: guestPrenom
+      };
+      
+      console.log('📤 Envoi invité:', JSON.stringify(payload));
       
       const response = await fetch(
         `${EXPO_PUBLIC_BACKEND_URL}/api/presences?presence_date=${selectedDate}`,
@@ -462,30 +474,27 @@ export default function Presences() {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            cadet_id: 'guest_temp', // Sera remplacé par le backend
-            status: 'present',
-            commentaire: guestCommentaire || `Invité: ${guestPrenom} ${guestNom}`,
-            is_guest: true,
-            guest_nom: guestNom,
-            guest_prenom: guestPrenom
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
+      console.log('📥 Réponse invité:', response.status, response.ok);
+
       if (response.ok) {
-        Alert.alert('Succès', `Présence de l'invité ${guestPrenom} ${guestNom} enregistrée`);
+        console.log('✅ Invité enregistré avec succès');
+        Alert.alert('✅ Succès', `Présence de l'invité ${guestPrenom} ${guestNom} enregistrée !`);
         setShowAddGuest(false);
         setGuestNom('');
         setGuestPrenom('');
         setGuestCommentaire('');
-        await loadPresences(); // Recharger les présences
+        await loadPresences(user!); // Recharger les présences
       } else {
         const error = await response.json();
+        console.log('❌ Erreur invité:', error);
         Alert.alert('Erreur', error.detail || 'Impossible d\'enregistrer l\'invité');
       }
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement de l\'invité:', error);
+      console.error('❌ Erreur lors de l\'enregistrement de l\'invité:', error);
       Alert.alert('Erreur', 'Impossible d\'enregistrer l\'invité');
     } finally {
       setSavingGuest(false);
