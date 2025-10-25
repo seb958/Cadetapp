@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 """
-Tests Backend pour l'Endpoint de Synchronisation Offline des Inspections Uniformes
-Focus: POST /api/sync/batch avec des inspections uniformes
-Référence: test_result.md - Section "Système de synchronisation hors ligne"
+Backend Regression Test Suite
+Testing core functionality after État-Major virtual section implementation
+Focus: Authentication, Users API, Sections API, Presences API
 """
 
 import requests
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import sys
-import os
 
 # Configuration
 BASE_URL = "https://squadcommand.preview.emergentagent.com/api"
-ADMIN_CREDENTIALS = {
-    "username": "aadministrateur",
-    "password": "admin123"
-}
+ADMIN_USERNAME = "aadministrateur"
+ADMIN_PASSWORD = "admin123"
 
 class OfflineSyncTester:
     def __init__(self):
