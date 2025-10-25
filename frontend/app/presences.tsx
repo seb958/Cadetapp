@@ -495,7 +495,7 @@ export default function Presences() {
 
       if (response.ok) {
         console.log('✅ Invité enregistré avec succès');
-        Alert.alert('✅ Succès', `Présence de l'invité ${guestPrenom} ${guestNom} enregistrée !`);
+        showToast(`✅ Invité ${guestPrenom} ${guestNom} enregistré !`);
         setShowAddGuest(false);
         setGuestNom('');
         setGuestPrenom('');
@@ -504,11 +504,11 @@ export default function Presences() {
       } else {
         const error = await response.json();
         console.log('❌ Erreur invité:', error);
-        Alert.alert('Erreur', error.detail || 'Impossible d\'enregistrer l\'invité');
+        showToast(`❌ Erreur: ${error.detail || 'Impossible d\'enregistrer'}`);
       }
     } catch (error) {
       console.error('❌ Erreur lors de l\'enregistrement de l\'invité:', error);
-      Alert.alert('Erreur', 'Impossible d\'enregistrer l\'invité');
+      showToast('❌ Impossible d\'enregistrer l\'invité');
     } finally {
       setSavingGuest(false);
     }
