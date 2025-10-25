@@ -493,6 +493,7 @@ export default function Presences() {
   };
 
   const handleSwipeAttendanceComplete = async (presentIds: string[]) => {
+    console.log('🎯 handleSwipeAttendanceComplete appelé avec:', presentIds.length, 'présents');
     setSavingAttendance(true);
     setShowNewAttendance(false);
 
@@ -503,6 +504,8 @@ export default function Presences() {
       const allCadetIds = cadets.map(c => c.id);
       const absentIds = allCadetIds.filter(id => !presentIds.includes(id));
       
+      console.log('📊 Total cadets:', allCadetIds.length, '| Présents:', presentIds.length, '| Absents:', absentIds.length);
+      
       const presencesData = [
         ...presentIds.map(id => ({ cadet_id: id, status: 'present', commentaire: null })),
         ...absentIds.map(id => ({ cadet_id: id, status: 'absent', commentaire: null }))
@@ -511,6 +514,7 @@ export default function Presences() {
       // Vérifier si on est en ligne
       if (!isOnline) {
         // Mode hors ligne : enregistrer localement
+        console.log('📴 Mode hors ligne - enregistrement local');
         for (const presence of presencesData) {
           await addToSyncQueue({
             type: 'presence',
@@ -531,16 +535,20 @@ export default function Presences() {
           '📴 Mode Hors Ligne', 
           `${presencesData.length} présence(s) enregistrée(s) localement.\n\n${presentIds.length} présent(s), ${absentIds.length} absent(s)`
         );
+        await loadPresences(user!);
         return;
       }
 
       // Mode en ligne : enregistrer sur le serveur
+      console.log('🌐 Mode en ligne - envoi au serveur');
       const payload = {
         date: selectedDate,
         activite: activite || null,
         presences: presencesData
       };
 
+      console.log('📤 Envoi payload:', JSON.stringify(payload).substring(0, 200));
+      
       const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/presences/bulk`, {
         method: 'POST',
         headers: {
@@ -550,19 +558,23 @@ export default function Presences() {
         body: JSON.stringify(payload),
       });
 
+      console.log('📥 Réponse serveur:', response.status, response.ok);
+
       if (response.ok) {
         const result = await response.json();
+        console.log('✅ Succès:', result);
         Alert.alert(
-          'Succès', 
-          `${result.created_count} présences enregistrées\n${presentIds.length} présent(s), ${absentIds.length} absent(s)`
+          '✅ Succès', 
+          `${result.created_count} présences enregistrées\n\n${presentIds.length} présent(s), ${absentIds.length} absent(s)`
         );
         await loadPresences(user!);
       } else {
         const errorData = await response.json();
+        console.log('❌ Erreur serveur:', errorData);
         Alert.alert('Erreur', errorData.detail || 'Erreur lors de l\'enregistrement');
       }
     } catch (error) {
-      console.error('Erreur lors de l\'enregistrement:', error);
+      console.error('❌ Erreur lors de l\'enregistrement:', error);
       Alert.alert('Erreur', 'Impossible d\'enregistrer les présences');
     } finally {
       setSavingAttendance(false);
