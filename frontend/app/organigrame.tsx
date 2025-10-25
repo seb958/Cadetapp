@@ -112,7 +112,7 @@ export default function Organigrame() {
     if (users.length > 0) {
       buildHorizontalHierarchy();
     }
-  }, [users, sections, subGroups, searchText, expandedNodes]);
+  }, [users, sections, subGroups, searchText, expandedNodes, selectedSectionId]);
 
   const checkAuth = async () => {
     try {
