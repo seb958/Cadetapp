@@ -210,10 +210,17 @@ export default function Presences() {
 
       if (response.ok) {
         const data = await response.json();
-        // Filtrer pour ne montrer que les cadets selon les permissions
-        let filteredCadets = data.filter((u: User) => 
-          ['cadet', 'cadet_responsible'].includes(u.role)
-        );
+        // Filtrer pour exclure uniquement les officiers (lieutenants, capitaines, commandants)
+        // Inclure : cadets, cadets responsables, chefs de section, sergents, adjudants
+        const officerKeywords = ['lieutenant', 'capitaine', 'commandant', 'major', 'colonel'];
+        
+        let filteredCadets = data.filter((u: User) => {
+          const roleLower = u.role.toLowerCase();
+          // Exclure les officiers et l'encadrement
+          return !officerKeywords.some(keyword => roleLower.includes(keyword)) && 
+                 !roleLower.includes('encadrement') &&
+                 !roleLower.includes('admin');
+        });
 
         if (currentUser.role === 'cadet_responsible') {
           // Un cadet responsable ne voit que sa section
@@ -222,6 +229,7 @@ export default function Presences() {
           );
         }
 
+        console.log(`📋 ${filteredCadets.length} cadets chargés (officiers exclus)`);
         setCadets(filteredCadets);
       }
     } catch (error) {
