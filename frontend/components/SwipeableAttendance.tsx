@@ -36,6 +36,7 @@ interface SwipeableAttendanceProps {
   sections: Section[];
   onComplete: (presentIds: string[]) => void;
   onCancel: () => void;
+  onAddGuest?: () => void;
 }
 
 export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
