@@ -123,7 +123,30 @@ export default function Organigrame() {
         return;
       }
 
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      
+      // Vérifier si l'utilisateur a les permissions pour l'organigrame
+      const role = parsedUser.role.toLowerCase();
+      const hasOrganigramAccess = ['cadet_responsible', 'cadet_admin', 'encadrement'].some(
+        keyword => role.includes(keyword)
+      );
+      
+      if (!hasOrganigramAccess) {
+        // Cadet régulier sans accès
+        Alert.alert(
+          'Accès limité',
+          'L\'organigrame est réservé aux responsables de section et supérieurs.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.back()
+            }
+          ]
+        );
+        return;
+      }
+
+      setUser(parsedUser);
     } catch (error) {
       console.error('Erreur lors de la vérification d\'authentification:', error);
       router.replace('/');
