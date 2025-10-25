@@ -1,107 +1,100 @@
 <analysis>
-The previous AI engineer focused on enhancing the CommandHub application, initially implementing uniform inspection features with offline capabilities. A major pivot occurred when PWA offline functionality proved inadequate, necessitating a native Android build via EAS. This build process was fraught with debugging Node.js version mismatches, missing dependencies, npm conflicts, and configuration errors (, ). A critical issue was the app crashing in production due to development environment variables. After resolving these, a  dependency failure halted the build.
-
-The work then shifted to making the app offline-first, implementing a robust versioning system, and then password management. Significant debugging cycles were spent resolving backend  (e.g., ), frontend  errors, and persistent issues with frontend component visibility. The most recent, recurring problem involved the Service Worker aggressively caching old code, preventing new fixes from appearing without manual cache clearing. The trajectory concludes with attempts to fully disable the problematic Service Worker.
+The previous AI engineer effectively navigated a complex set of bug fixes and feature enhancements for the CommandHub application. Key challenges included stabilizing the PWA and native Android build process, resolving persistent caching issues with the Service Worker, and correcting authentication logic that caused automatic logouts. Subsequently, the focus shifted to implementing new product features: enabling read-only access to uniform inspections and the organigramme for regular cadets, incorporating a section selector in the organigramme, and developing a robust guest attendance feature with proper UI/UX. The engineer demonstrated proficiency in both frontend (Expo/React Native) and backend (FastAPI/MongoDB) development, consistently debugging API errors, state management, and UI rendering issues. The final work involves structuring the attendance for cadet staff into a virtual État-Major section.
 </analysis>
 
 <product_requirements>
-The CommandHub application manages cadet squadrons, including JWT auth, attendance, and an admin panel for CRUD on activities, users, sections, and squadron settings. It supports role sync, subgroups, and an organigramme. Offline mode for presences was an existing feature.
+The CommandHub application facilitates cadet squadron management, encompassing JWT authentication, attendance tracking, and an admin panel for CRUD operations on activities, users, sections, and squadron settings. It supports role synchronization, subgroups, and an organigramme. Offline mode for presence tracking was an existing feature.
 
-Recent development centered on **Uniform Inspection**:
-1.  **Detailed Inspection**: Based on admin-defined criteria with a 0-4 numerical score.
-2.  **Permissions**: Restricted to section leaders and superiors.
-3.  **UI/UX**: Detailed form, modal for viewing past inspection scores.
-4.  **Presence Integration**: Saving an inspection marks an absent cadet as present.
-5.  **Uniform Scheduling**: Select uniform of the day.
-6.  **Offline Capability**: Transitioned from insufficient PWA to native Android APK with future iOS, direct download, and OTA updates.
-7.  **Data Consistency**: Correct cadet section assignments, conflict resolution (oldest inspection, latest presence).
-8.  **Branding**: CommandHub app name, custom logo/colors.
-9.  **Scalability**: Support for 300-500 cadets.
-10. **Version Management**: Implement a system to notify users of new versions, with options for soft or mandatory updates, and download via GitHub Releases.
-11. **User Password Management**:
-    *   Admin can set/reset temporary passwords for existing users.
-    *   Generate a password and display it for the admin to convey.
-    *   Force users to change their password on first login.
-12. **User Profile Page**: Allow users to view their details and change their password.
+Recent development extended to:
+1.  **Uniform Inspection**: Admins define criteria, section leaders/superiors score 0-4. Features include a detailed form, modal for past scores, marking absent cadets as present upon inspection, and uniform scheduling. Cadets now view their own scores and compare them against averages.
+2.  **Platform Transition**: Due to PWA offline limitations, a shift to native Android APK (with future iOS support), direct downloads, and OTA updates was necessary.
+3.  **Data Consistency**: Correct cadet section assignments, conflict resolution, and consistent branding.
+4.  **Version Management**: Notify users of new versions, enabling soft/mandatory updates via GitHub Releases.
+5.  **User Password Management**: Admins set/reset temporary passwords, force first-time password changes, and generate usernames.
+6.  **User Profile Page**: Users view details and change passwords.
+7.  **Organigramme Access**: All authenticated users can view it; only superiors can modify. A section selector was added for filtering.
+8.  **Guest Attendance**: Allow recording presence for unregistered guests, integrated into quick and detailed attendance modes. Section leaders are included in attendance lists, while Commandant de la Garde roles are explicitly differentiated from officers for attendance purposes. A virtual État-Major section groups specific cadet staff in attendance.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-Stack**: Expo (React Native), FastAPI (Python), MongoDB.
--   **Mobile Dev**: Expo Router, EAS Build for APK, Expo Updates for OTA,  for offline.
--   **Auth**: JWT token validation, password hashing ().
--   **Data Sync**: Batch sync (), timestamp/first-inspection-wins conflict resolution.
--   **PWA**:  (currently problematic due to caching).
--   **Versioning**: Semantic versioning, backend endpoint (), admin controls.
+-   **Full-Stack Development**: Expo (React Native) frontend, FastAPI (Python) backend, MongoDB database.
+-   **Mobile Development**: Expo Router for routing, EAS Build for native APK,  for offline data.
+-   **Authentication**: JWT for secure sessions, password hashing.
+-   **Offline First**: Service Worker (initially problematic, now disabled), client-side caching.
+-   **Data Serialization**: Handling  and  objects in MongoDB/FastAPI.
+-   **Frontend UI/UX**: Modal management, Toast notifications,  for web compatibility.
 </key_technical_concepts>
 
 <code_architecture>
-The application uses a full-stack architecture with an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
+The application employs a full-stack architecture consisting of an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
 
 
 
 -   :
-    -   **Summary**: Main FastAPI application.
-    -   **Changes**: Added , , , ,  fields to  model. Implemented  endpoint. Added  field to  and  models. Implemented  (generates temporary password, sets , ensures username is present) and  (allows user to change password, sets ). Corrected  calls to .
--   :
-    -   **Summary**: Production environment variables.
-    -   **Changes**: Created with a placeholder  for the Emergent backend.
--   :
-    -   **Summary**: Main dashboard screen and entry point for auth/offline logic.
-    -   **Changes**: Integrated  and . Added navigation link to . Integrated  to enforce password change on first login if  flag is set.
--   :
-    -   **Summary**: Administrative interface.
-    -   **Changes**: Integrated  into the user editing modal. Added a  state to resolve  errors. Removed problematic French accents and emojis causing rendering issues. Added protection for  prop in  call.
--   :
-    -   **Summary**: *New* screen for user profile management.
-    -   **Changes**: Created to allow users to view their details and change their password. (Content was not fully fleshed out in trajectory, only file creation and link).
--   :
-    -   **Summary**: Component to show network status.
-    -   **Changes**: Integrated for visual feedback on connectivity.
--   :
-    -   **Summary**: *New* component to notify users of available APK updates and provide a download link.
-    -   **Changes**: Created to replace the PWA install prompt. It fetches version info from backend.
--   :
-    -   **Summary**: *New* modal to force password change on first login.
-    -   **Changes**: Created. Handles API call to  and calls  callback. Logic modified to close immediately.
--   :
-    -   **Summary**: *New* modal for admin to generate temporary passwords.
-    -   **Changes**: Created. Displays generated username and password. Stores API-returned username in state for display. Requires .
--   :
-    -   **Summary**: Expo application configuration.
-    -   **Changes**: Updated for app name, owner, version, icons, bundle identifiers, PWA web config, and Expo Updates settings. Added  and  properties.
--   :
-    -   **Summary**: EAS build configuration.
-    -   **Changes**: Configured Node.js version () and  for production profile. Modified to ensure  is used for production builds.
--   :
-    -   **Summary**: NPM configuration.
-    -   **Changes**: Added .
+    -   **Summary**: Main FastAPI application handling all API routes.
+    -   **Changes**:
+        -   Added  model and  endpoint to fetch personal inspection statistics.
+        -   Added  endpoint to retrieve all users, sections, and roles for public display, explicitly converting MongoDB  to string for JSON serialization.
+        -   Modified  and  models to include , , .
+        -   Updated  POST endpoint to handle guest creation (generates  ) and ensures  is stored as an ISO string.
+        -   Updated  GET endpoint to correctly deserialize  (handling both  objects and ISO strings from MongoDB) and to include guest details.
 -   :
     -   **Summary**: PWA service worker for offline caching.
-    -   **Changes**: Modified to temporarily disable its functionality due to aggressive caching issues preventing frontend updates during development.
+    -   **Changes**: Completely disabled its caching functionality and request interception to resolve persistent caching issues during development.
 -   :
-    -   **Summary**: Script to generate usernames.
-    -   **Changes**: Backend logic for  endpoint now also ensures username is created if missing.
+    -   **Summary**: Main dashboard, entry point for auth/offline logic.
+    -   **Changes**: Updated authentication status check to use  instead of  (which requires admin permissions).
 -   :
-    -   **Summary**: A new dependency.
-    -   **Changes**: Installed to enable clipboard functionality in .
+    -   **Summary**: Administrative interface for user management.
+    -   **Changes**: Updated authentication status check to use .
+-   :
+    -   **Summary**: Screen for managing uniform inspections.
+    -   **Changes**: Implemented conditional rendering to show a cadet-specific view (displaying personal inspection stats) or an inspector view based on user roles. Integrated fetching personal stats using . Added styles for the new cadet view. Corrected data loading logic to properly use .
+-   :
+    -   **Summary**: Organigramme (organizational chart) display.
+    -   **Changes**:
+        -   Initially, attempted graceful 403 error handling for cadets, then shifted to redirecting unauthorized users.
+        -   Updated  to redirect cadets to the previous screen with an alert, preventing unnecessary data loading for restricted roles.
+        -   Fixed  state not resetting on early return, preventing infinite loading loops.
+        -   Removed cadet blocking logic to allow read-only access for all users.
+        -   Updated to use the new  endpoint.
+        -   Implemented a section selector UI using  buttons and modified  and  to filter displayed data by the selected section. Added corresponding styles.
+-   :
+    -   **Summary**: Screen for managing attendance.
+    -   **Changes**:
+        -   Added state variables for guest modal (, , ).
+        -   Implemented  function to add guest presences via the backend API.
+        -   Integrated Ajouter un invité button and  into both Prise Détaillée and Prise Rapide (via ) modals. Removed standalone guest button.
+        -   Replaced  with  for guest confirmation and added a visible  component for displaying messages.
+        -   Ensured  modal remains open when adding a guest.
+        -   Modified  filter to include section leaders (e.g., Commandant de la Garde) while explicitly excluding Officier roles, and introduced a virtual État-Major section for specific cadet staff.
+        -   Corrected date serialization issues for presence objects.
+        -   Added debugging logs.
+-   :
+    -   **Summary**: Component for quick attendance marking.
+    -   **Changes**:
+        -   Modified  to replace  with  for web compatibility during attendance validation.
+        -   Enabled the Valider button to be active even with zero selected presences, allowing to mark all others as absent.
+        -   Added  prop and integrated an Invité button in its footer to trigger the guest modal. Added corresponding styles.
 </code_architecture>
 
 <pending_tasks>
 -   Develop remaining core functionalities: reports, communication, import/export Excel.
 -   Fully implement the organigramme feature, including re-implementing zoom/pan functionality.
 -   Permanently resolve any underlying  mismatch issues that might resurface.
--   Configure and build the iOS native application (deferred by the user).
+-   Configure and build the iOS native application.
+-   Hide modification buttons for cadets in the organigramme view.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was deep into debugging the  in the frontend. The user reported that this modal, which requires a new user to change their password on first login, would not close after clicking Changer le mot de passe, even after previous fixes and confirming the backend API () was returning a  status.
+Immediately before this summary, the AI engineer was working on ensuring that cadet staff (e.g., , ) are correctly identified and displayed within the attendance list under a virtual État-Major section.
 
-This issue (modal not closing and no network request appearing) led to the recurring problem of the PWA  aggressively caching old frontend code, preventing updated JavaScript from being served. Despite previous attempts to clear cache or use incognito mode, the service worker continued to cause problems.
+The problem arose because these specific roles were not regular cadets or section leaders, nor were they officers, yet their presence needed to be recorded and displayed appropriately. The previous action involved modifying the  function in  to group these roles into this virtual section for display.
 
-The last action taken by the AI engineer was to modify  to attempt to temporarily disable its caching functionality and prevent it from interfering with frontend development and debugging. The trajectory ends with this modification being applied to the service worker file. The effectiveness of this particular modification and the underlying cause of the modal not closing are the immediate focus.
+The last successful edit was to  to apply this grouping logic. The immediate next step in the trajectory was to restart the frontend and then replicate this virtual grouping logic within the  component to ensure consistency across both attendance modes.
 </current_work>
 
 <optional_next_step>
-Verify if disabling the service worker resolves the frontend caching issue and allows the password change modal to close correctly.
+Replicate the État-Major virtual section logic within .
 </optional_next_step>
 
