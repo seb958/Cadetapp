@@ -107,6 +107,7 @@ export default function Inspections() {
   const [criteriaScores, setCriteriaScores] = useState<{ [key: string]: number }>({});  // 0-4 points
   const [inspectionComment, setInspectionComment] = useState('');
   const [savingInspection, setSavingInspection] = useState(false);
+  const [inspectionUniformType, setInspectionUniformType] = useState(''); // Type d'uniforme choisi pour l'inspection
   
   // États pour la programmation de tenue
   const [showScheduleModal, setShowScheduleModal] = useState(false);
