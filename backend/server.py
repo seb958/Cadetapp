@@ -4047,7 +4047,9 @@ async def generate_cadets_list_report(
             }
     
     except Exception as e:
+        import traceback
         logger.error(f"Erreur génération liste cadets: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de la génération du rapport: {str(e)}")
 
 @api_router.post("/reports/inspection-sheet")
