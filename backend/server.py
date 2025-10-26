@@ -3334,7 +3334,14 @@ async def preview_import_cadets(
                 nom = cadet_data['Nom'].strip()
                 prenom = cadet_data['Prénom'].strip()
                 grade_acronym = cadet_data['Grade'].strip()
-                section_name = cadet_data['Groupe'].strip()
+                section_name_raw = cadet_data['Groupe'].strip()
+                
+                # Mapper "État major" (avec espace) vers "État-Major" (avec tiret)
+                # Pour correspondre au groupe virtuel déjà créé
+                if section_name_raw.lower() in ['état major', 'etat major', 'état-major', 'etat-major']:
+                    section_name = 'État-Major'
+                else:
+                    section_name = section_name_raw
                 
                 if grade_acronym not in GRADE_MAPPING:
                     errors.append({
