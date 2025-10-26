@@ -3461,7 +3461,7 @@ async def generate_inspection_sheet_pdf(cadets: List[dict], uniform_type: str,
     # Grouper par section
     cadets_by_section = {}
     for cadet in cadets:
-        section_id = cadet.get('section_id', 'no_section')
+        section_id = cadet.get('section_id') or 'no_section'
         if section_id not in cadets_by_section:
             cadets_by_section[section_id] = []
         cadets_by_section[section_id].append(cadet)
