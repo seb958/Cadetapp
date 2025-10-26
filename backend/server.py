@@ -490,6 +490,31 @@ async def require_presence_permissions(current_user: User = Depends(get_current_
         )
     return current_user
 
+async def require_inspection_permissions(current_user: User = Depends(get_current_user)):
+    """
+    Vérifie les permissions pour l'inspection des uniformes
+    Autorisé: Chefs de section et supérieurs
+    """
+    # Récupérer les rôles personnalisés qui peuvent inspecter
+    allowed_system_roles = [UserRole.CADET_RESPONSIBLE, UserRole.CADET_ADMIN, UserRole.ENCADREMENT]
+    
+    # Rôles personnalisés autorisés (contenant "chef", "sergent", "adjudant", "officier")
+    allowed_custom_keywords = ["chef", "sergent", "adjudant", "officier", "commandant"]
+    
+    # Vérifier rôles système
+    if current_user.role in [r.value for r in allowed_system_roles]:
+        return current_user
+    
+    # Vérifier rôles personnalisés par mots-clés
+    role_lower = current_user.role.lower()
+    if any(keyword in role_lower for keyword in allowed_custom_keywords):
+        return current_user
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Accès refusé. Permissions d'inspection requises (chefs de section et supérieurs)."
+    )
+
 # Email service (simplified - in production use proper email service)
 async def send_invitation_email(email: str, nom: str, prenom: str, token: str):
     # In production, use proper email service like SendGrid, AWS SES, etc.
