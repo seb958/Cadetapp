@@ -428,29 +428,31 @@ export default function Inspections() {
   };
 
   const openInspectionModal = (cadet: User) => {
-    if (!todaySchedule || !todaySchedule.uniform_type) {
-      Alert.alert('Attention', 'Veuillez d\'abord programmer la tenue du jour');
-      return;
-    }
-
     setSelectedCadet(cadet);
     
+    // Utiliser la tenue du jour si disponible, sinon laisser vide pour que l'utilisateur choisisse
+    const uniformType = todaySchedule?.uniform_type || '';
+    setInspectionUniformType(uniformType);
+    
     // Initialiser les scores des critères à 0 (barème de 0 à 4)
-    // IMPORTANT: Utiliser les critères ACTUELS des settings en mémoire
-    const uniformType = todaySchedule.uniform_type;
-    const criteria = settings?.inspectionCriteria[uniformType] || [];
+    if (uniformType && settings?.inspectionCriteria[uniformType]) {
+      const criteria = settings.inspectionCriteria[uniformType];
+      const initialScores: { [key: string]: number } = {};
+      criteria.forEach(criterion => {
+        initialScores[criterion] = 0;
+      });
+      setCriteriaScores(initialScores);
+      
+      console.log(`🔍 Ouverture inspection pour ${cadet.nom} ${cadet.prenom}`);
+      console.log(`👔 Tenue: ${uniformType}`);
+      console.log(`📋 Critères chargés:`, criteria);
+    } else {
+      // Pas de tenue sélectionnée, les critères seront chargés après sélection
+      setCriteriaScores({});
+      console.log(`🔍 Ouverture inspection pour ${cadet.nom} ${cadet.prenom} - Aucune tenue sélectionnée`);
+    }
     
-    console.log(`🔍 Ouverture inspection pour ${cadet.nom} ${cadet.prenom}`);
-    console.log(`👔 Tenue: ${uniformType}`);
-    console.log(`📋 Critères chargés:`, criteria);
-    
-    const initialScores: { [key: string]: number } = {};
-    criteria.forEach(criterion => {
-      initialScores[criterion] = 0;
-    });
-    setCriteriaScores(initialScores);
     setInspectionComment('');
-    
     setShowInspectionModal(true);
   };
 
