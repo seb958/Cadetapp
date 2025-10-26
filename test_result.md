@@ -281,6 +281,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS COMPLETS RÉUSSIS - 4/4 tests passés (100% réussite). Support privilèges administrateur parfaitement fonctionnel: Création utilisateur avec privilèges admin OK, Vérification champ has_admin_privileges OK, Mise à jour privilèges admin OK, Validation des changements OK. Le champ est correctement géré dans les opérations CRUD utilisateurs."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS PERMISSIONS PRÉSENCES has_admin_privileges RÉUSSIS - 12/12 tests passés (100% réussite). OBJECTIF PRINCIPAL ATTEINT: Utilisateur maryesoleil.bourassa (Marye Soleil Bourassa, Commandant de la Garde) avec has_admin_privileges=True peut maintenant accéder aux présences: 1) GET /api/presences: Status 200 OK avec 27 présences récupérées (plus de 403), 2) POST /api/presences: Fonctionnel (erreur 400 normale pour présence existante), 3) Régression validée: Cadets normaux voient seulement leurs propres présences, 4) 1 utilisateur avec has_admin_privileges trouvé dans le système. Fonction require_presence_permissions correctement implémentée pour vérifier has_admin_privileges=True. Base URL: https://squadcommand.preview.emergentagent.com/api. Authentification: aadministrateur/admin123, maryesoleil.bourassa avec mot de passe généré."
 
   - task: "Système de gestion des sous-groupes"
     implemented: true
