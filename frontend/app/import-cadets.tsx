@@ -245,7 +245,7 @@ export default function ImportCadets() {
             <Text style={styles.bold}>   • Nom | Prénom | Grade | Groupe</Text>
           </Text>
           <Text style={styles.instructionText}>
-            2. Grades acceptés : Cdt, Cdt1, Cpl, Cpls, Sgt, Sgts, Ajd2, Adj1
+            2. Grades acceptés : cdt, cdt 1, cpl, cpls, sgt, sgts, adj 2, adj 1
           </Text>
           <Text style={styles.instructionText}>
             3. Les sections manquantes seront créées automatiquement
