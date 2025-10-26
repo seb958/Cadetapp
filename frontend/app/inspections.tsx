@@ -463,6 +463,24 @@ export default function Inspections() {
     }));
   };
 
+  const handleUniformTypeChange = (uniformType: string) => {
+    setInspectionUniformType(uniformType);
+    
+    // Charger les critères pour ce type d'uniforme
+    if (uniformType && settings?.inspectionCriteria[uniformType]) {
+      const criteria = settings.inspectionCriteria[uniformType];
+      const initialScores: { [key: string]: number } = {};
+      criteria.forEach(criterion => {
+        initialScores[criterion] = 0;
+      });
+      setCriteriaScores(initialScores);
+      console.log(`👔 Tenue changée: ${uniformType}`);
+      console.log(`📋 Critères chargés:`, criteria);
+    } else {
+      setCriteriaScores({});
+    }
+  };
+
   const calculateScore = () => {
     const total = Object.keys(criteriaScores).length;
     if (total === 0) return 0;
