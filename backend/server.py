@@ -3413,8 +3413,13 @@ async def preview_import_cadets(
 @api_router.post("/import/cadets/confirm")
 async def confirm_import_cadets(
     request: ImportConfirmRequest,
-    current_user: User = Depends(lambda u: require_role([UserRole.CADET_ADMIN, UserRole.ENCADREMENT])(u))
+    current_user: User = Depends(get_current_user)
 ):
+    """Confirme et applique l'import de cadets"""
+    # Vérifier les permissions
+    if not any(role in current_user.role.lower() for role in ['cadet_admin', 'encadrement']):
+        raise HTTPException(status_code=403, detail="Permissions insuffisantes")
+    
     try:
         existing_sections = await db.sections.find().to_list(100)
         sections_by_name = {s['nom'].lower(): s for s in existing_sections}
