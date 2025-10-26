@@ -507,7 +507,7 @@ export default function Inspections() {
         const result = await offlineService.recordUniformInspection(
           selectedCadet.id,
           today,
-          todaySchedule.uniform_type,
+          inspectionUniformType,
           criteriaScores,
           inspectionComment || undefined
         );
