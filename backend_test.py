@@ -14,45 +14,65 @@ BASE_URL = "https://squadcommand.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class TestRunner:
+class TestResults:
     def __init__(self):
-        self.session = requests.Session()
-        self.admin_token = None
-        self.test_results = []
-        self.users_cache = {}
-        
-    def log_test(self, test_name, success, details=""):
-        """Enregistrer le résultat d'un test"""
-        status = "✅ PASS" if success else "❌ FAIL"
-        self.test_results.append({
-            "name": test_name,
-            "success": success,
-            "details": details
-        })
-        print(f"{status} - {test_name}")
-        if details and not success:
-            print(f"   Details: {details}")
+        self.total_tests = 0
+        self.passed_tests = 0
+        self.failed_tests = 0
+        self.test_details = []
     
-    def authenticate_admin(self):
-        """Authentification admin"""
-        try:
-            response = self.session.post(f"{BASE_URL}/auth/login", json={
-                "username": ADMIN_USERNAME,
-                "password": ADMIN_PASSWORD
-            })
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.admin_token = data["access_token"]
-                self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
-                self.log_test("Authentification Admin", True, f"Token obtenu pour {ADMIN_USERNAME}")
-                return True
-            else:
-                self.log_test("Authentification Admin", False, f"Status: {response.status_code}, Response: {response.text}")
-                return False
-        except Exception as e:
-            self.log_test("Authentification Admin", False, f"Exception: {str(e)}")
-            return False
+    def add_test(self, name, passed, details=""):
+        self.total_tests += 1
+        if passed:
+            self.passed_tests += 1
+            status = "✅ PASS"
+        else:
+            self.failed_tests += 1
+            status = "❌ FAIL"
+        
+        self.test_details.append(f"{status} - {name}: {details}")
+        print(f"{status} - {name}: {details}")
+    
+    def print_summary(self):
+        print(f"\n{'='*80}")
+        print(f"RÉSUMÉ DES TESTS - PERMISSIONS PRÉSENCES has_admin_privileges")
+        print(f"{'='*80}")
+        print(f"Total: {self.total_tests} | Réussis: {self.passed_tests} | Échoués: {self.failed_tests}")
+        print(f"Taux de réussite: {(self.passed_tests/self.total_tests*100):.1f}%")
+        print(f"{'='*80}")
+
+def get_auth_headers(token):
+    return {"Authorization": f"Bearer {token}"}
+
+def login_user(username, password):
+    """Connexion utilisateur et récupération du token"""
+    try:
+        response = requests.post(f"{BASE_URL}/auth/login", json={
+            "username": username,
+            "password": password
+        })
+        if response.status_code == 200:
+            data = response.json()
+            return data["access_token"], data["user"]
+        else:
+            return None, None
+    except Exception as e:
+        print(f"Erreur lors de la connexion: {e}")
+        return None, None
+
+def generate_password_for_user(admin_token, user_id):
+    """Génère un mot de passe temporaire pour un utilisateur"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/users/{user_id}/generate-password",
+            headers=get_auth_headers(admin_token)
+        )
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        print(f"Erreur génération mot de passe: {e}")
+        return None
     
     def get_users(self):
         """Récupérer la liste des utilisateurs"""
