@@ -111,10 +111,15 @@ export default function ImportCadets() {
       const formData = new FormData();
       
       if (Platform.OS === 'web') {
-        // Sur web, utiliser le fichier directement
-        const response = await fetch(selectedFile.uri);
-        const blob = await response.blob();
-        formData.append('file', blob, selectedFile.name);
+        // Sur web, le fichier est disponible via selectedFile.file (objet File natif)
+        if (selectedFile.file) {
+          formData.append('file', selectedFile.file, selectedFile.name);
+        } else {
+          // Fallback: essayer de récupérer depuis l'URI
+          const response = await fetch(selectedFile.uri);
+          const blob = await response.blob();
+          formData.append('file', blob, selectedFile.name);
+        }
       } else {
         // Sur mobile
         formData.append('file', {
