@@ -183,7 +183,7 @@ class InspectorPermissionsTest:
         print("\n=== TEST 3: POST SETTINGS TOUJOURS PROTÉGÉ ===")
         
         # Authentifier l'inspecteur
-        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "c8iLdxgx")
+        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "uoQgAwEQ")
         
         if not inspector_token:
             self.log_test("Authentification inspecteur pour POST settings", False, "Impossible d'authentifier l'inspecteur")
@@ -246,7 +246,7 @@ class InspectorPermissionsTest:
         print("\n=== TEST 4: RÉGRESSION INSPECTIONS ===")
         
         # Authentifier l'inspecteur
-        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "c8iLdxgx")
+        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "uoQgAwEQ")
         
         if not inspector_token:
             self.log_test("Authentification inspecteur pour inspections", False, "Impossible d'authentifier l'inspecteur")
