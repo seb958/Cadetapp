@@ -551,7 +551,7 @@ export default function Inspections() {
       
       const requestBody = {
         cadet_id: selectedCadet.id,
-        uniform_type: todaySchedule.uniform_type,
+        uniform_type: inspectionUniformType,
         criteria_scores: criteriaScores,
         commentaire: inspectionComment || null
       };
