@@ -246,7 +246,7 @@ export default function ImportCadets() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>📋 Instructions</Text>
           <Text style={styles.instructionText}>
-            1. Préparez un fichier Excel (.xlsx) avec les colonnes :{'\n'}
+            1. Préparez un fichier Excel (.xlsx ou .xls) avec les colonnes :{'\n'}
             <Text style={styles.bold}>   • Nom | Prénom | Grade | Groupe</Text>
           </Text>
           <Text style={styles.instructionText}>
