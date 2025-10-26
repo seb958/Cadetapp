@@ -3229,6 +3229,18 @@ async def get_public_organigram(current_user: User = Depends(get_current_user)):
 async def root():
     return {"message": "API Gestion Escadron Cadets - v1.0.0"}
 
+# Include router
+app.include_router(api_router)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # ============================================================================
 # SYSTÈME DE RAPPORTS - Endpoints pour générer des rapports
 # ============================================================================
@@ -3946,19 +3958,6 @@ async def generate_inspection_stats_report(
 
 # ============================================================================
 # FIN SYSTÈME DE RAPPORTS
-
-# Include router
-app.include_router(api_router)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # ============================================================================
 
 # Configure logging
