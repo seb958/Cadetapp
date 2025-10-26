@@ -425,6 +425,16 @@ export default function Index() {
             </Text>
           </TouchableOpacity>
 
+          {/* Import Excel - uniquement pour admin/encadrement */}
+          {(user?.role === 'cadet_admin' || user?.role === 'encadrement') && (
+            <TouchableOpacity style={[styles.featureCard, styles.importCard]} onPress={navigateToImport}>
+              <Text style={styles.featureTitle}>📥 Import Excel</Text>
+              <Text style={styles.featureDescription}>
+                Importer des cadets depuis Excel
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {/* Communication */}
           <TouchableOpacity style={styles.featureCard} onPress={navigateToCommunication}>
             <Text style={styles.featureTitle}>💬 Communication</Text>
