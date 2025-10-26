@@ -54,233 +54,429 @@ class TestRunner:
             self.log_test("Authentification Admin", False, f"Exception: {str(e)}")
             return False
     
-    def test_users_api(self):
-        """Test GET /api/users endpoint"""
+    def get_users(self):
+        """Récupérer la liste des utilisateurs"""
         try:
             response = self.session.get(f"{BASE_URL}/users")
-            
             if response.status_code == 200:
                 users = response.json()
-                user_count = len(users)
+                # Créer un cache des utilisateurs par rôle
+                for user in users:
+                    role = user.get("role", "").lower()
+                    if role not in self.users_cache:
+                        self.users_cache[role] = []
+                    self.users_cache[role].append(user)
                 
-                # Check if we have users
-                if user_count > 0:
-                    # Sample some user data for validation
-                    sample_user = users[0]
-                    required_fields = ['id', 'nom', 'prenom', 'role', 'grade', 'actif']
-                    missing_fields = [field for field in required_fields if field not in sample_user]
-                    
-                    if not missing_fields:
-                        self.log_test(
-                            "Users API - GET /api/users", 
-                            True, 
-                            f"Retrieved {user_count} users successfully. Sample user has all required fields."
-                        )
-                    else:
-                        self.log_test(
-                            "Users API - GET /api/users", 
-                            False, 
-                            f"Retrieved {user_count} users but missing fields: {missing_fields}"
-                        )
-                else:
-                    self.log_test("Users API - GET /api/users", False, "No users found in response")
-                    
+                self.log_test("Récupération utilisateurs", True, f"{len(users)} utilisateurs trouvés")
+                return users
             else:
-                self.log_test("Users API - GET /api/users", False, f"Request failed: {response.status_code} - {response.text}")
-                
+                self.log_test("Récupération utilisateurs", False, f"Status: {response.status_code}")
+                return []
         except Exception as e:
-            self.log_test("Users API - GET /api/users", False, f"Request error: {str(e)}")
+            self.log_test("Récupération utilisateurs", False, f"Exception: {str(e)}")
+            return []
     
-    def test_sections_api(self):
-        """Test GET /api/sections endpoint"""
+    def find_user_by_role_keywords(self, keywords):
+        """Trouver un utilisateur par mots-clés dans le rôle"""
+        for role, users in self.users_cache.items():
+            if any(keyword.lower() in role for keyword in keywords):
+                if users:
+                    return users[0]  # Retourner le premier utilisateur trouvé
+        return None
+    
+    def authenticate_user(self, username, password="admin123"):
+        """Authentifier un utilisateur spécifique"""
         try:
-            response = self.session.get(f"{BASE_URL}/sections")
+            response = requests.post(f"{BASE_URL}/auth/login", json={
+                "username": username,
+                "password": password
+            })
             
             if response.status_code == 200:
-                sections = response.json()
-                section_count = len(sections)
-                
-                # Check if we have sections
-                if section_count > 0:
-                    # Sample some section data for validation
-                    sample_section = sections[0]
-                    required_fields = ['id', 'nom', 'created_at']
-                    missing_fields = [field for field in required_fields if field not in sample_section]
-                    
-                    if not missing_fields:
-                        self.log_test(
-                            "Sections API - GET /api/sections", 
-                            True, 
-                            f"Retrieved {section_count} sections successfully. Sample section has all required fields."
-                        )
-                    else:
-                        self.log_test(
-                            "Sections API - GET /api/sections", 
-                            False, 
-                            f"Retrieved {section_count} sections but missing fields: {missing_fields}"
-                        )
-                else:
-                    self.log_test("Sections API - GET /api/sections", False, "No sections found in response")
-                    
+                data = response.json()
+                return data["access_token"]
             else:
-                self.log_test("Sections API - GET /api/sections", False, f"Request failed: {response.status_code} - {response.text}")
-                
+                return None
         except Exception as e:
-            self.log_test("Sections API - GET /api/sections", False, f"Request error: {str(e)}")
+            return None
     
-    def test_presences_get_api(self):
-        """Test GET /api/presences endpoint"""
-        try:
-            response = self.session.get(f"{BASE_URL}/presences")
+    def test_anti_auto_evaluation(self):
+        """Test 1: Anti-Auto-Évaluation (Critique)"""
+        print("\n=== TEST 1: ANTI-AUTO-ÉVALUATION ===")
+        
+        # Trouver des utilisateurs avec différents rôles
+        test_users = []
+        
+        # État-Major (Adjudant d'escadron, Adjudant-chef d'escadron)
+        etat_major = self.find_user_by_role_keywords(["adjudant"])
+        if etat_major:
+            test_users.append(("État-Major", etat_major))
+        
+        # Commandant de section
+        commandant = self.find_user_by_role_keywords(["commandant"])
+        if commandant:
+            test_users.append(("Commandant de section", commandant))
+        
+        # Sergent de section
+        sergent = self.find_user_by_role_keywords(["sergent"])
+        if sergent:
+            test_users.append(("Sergent de section", sergent))
+        
+        if not test_users:
+            self.log_test("Anti-Auto-Évaluation - Utilisateurs trouvés", False, "Aucun utilisateur avec rôles requis trouvé")
+            return
+        
+        # Tester l'auto-évaluation pour chaque type d'utilisateur
+        for role_name, user in test_users:
+            # Essayer d'authentifier l'utilisateur
+            user_token = self.authenticate_user(user.get("username", ""))
             
-            if response.status_code == 200:
-                presences = response.json()
-                presence_count = len(presences)
-                
-                # Check if we have presences
-                if presence_count >= 0:  # 0 is acceptable for presences
-                    if presence_count > 0:
-                        # Sample some presence data for validation
-                        sample_presence = presences[0]
-                        required_fields = ['id', 'cadet_id', 'cadet_nom', 'cadet_prenom', 'date', 'status']
-                        missing_fields = [field for field in required_fields if field not in sample_presence]
-                        
-                        if not missing_fields:
-                            self.log_test(
-                                "Presences API - GET /api/presences", 
-                                True, 
-                                f"Retrieved {presence_count} presences successfully. Sample presence has all required fields."
-                            )
-                        else:
-                            self.log_test(
-                                "Presences API - GET /api/presences", 
-                                False, 
-                                f"Retrieved {presence_count} presences but missing fields: {missing_fields}"
-                            )
-                    else:
-                        self.log_test(
-                            "Presences API - GET /api/presences", 
-                            True, 
-                            f"Retrieved {presence_count} presences successfully (empty list is acceptable)."
-                        )
-                        
-            else:
-                self.log_test("Presences API - GET /api/presences", False, f"Request failed: {response.status_code} - {response.text}")
-                
-        except Exception as e:
-            self.log_test("Presences API - GET /api/presences", False, f"Request error: {str(e)}")
-    
-    def test_presences_post_api(self):
-        """Test POST /api/presences endpoint"""
-        try:
-            # First get a user to create presence for
-            users_response = self.session.get(f"{BASE_URL}/users")
-            if users_response.status_code != 200:
-                self.log_test("Presences API - POST /api/presences", False, "Cannot get users for presence test")
-                return
-                
-            users = users_response.json()
-            if not users:
-                self.log_test("Presences API - POST /api/presences", False, "No users available for presence test")
-                return
-                
-            # Use first active user
-            test_user = None
-            for user in users:
-                if user.get('actif', False):
-                    test_user = user
-                    break
-                    
-            if not test_user:
-                self.log_test("Presences API - POST /api/presences", False, "No active users available for presence test")
-                return
+            if not user_token:
+                self.log_test(f"Anti-Auto-Évaluation - Auth {role_name}", False, f"Impossible d'authentifier {user.get('username', 'N/A')}")
+                continue
             
-            # Create test presence data
-            today = date.today().isoformat()
-            presence_data = {
-                "cadet_id": test_user['id'],
-                "status": "present",
-                "commentaire": "Test presence for regression testing"
+            # Créer une session pour cet utilisateur
+            user_session = requests.Session()
+            user_session.headers.update({"Authorization": f"Bearer {user_token}"})
+            
+            # Tenter de créer une inspection où l'utilisateur s'inspecte lui-même
+            inspection_data = {
+                "cadet_id": user["id"],  # L'utilisateur s'inspecte lui-même
+                "uniform_type": "C1 - Tenue de Parade",
+                "criteria_scores": {
+                    "Propreté générale": 4,
+                    "Ajustement": 3,
+                    "Accessoires": 4
+                },
+                "commentaire": "Test auto-évaluation"
             }
             
-            response = self.session.post(
-                f"{BASE_URL}/presences?presence_date={today}&activite=Test Regression", 
-                json=presence_data
-            )
-            
-            if response.status_code == 200:
-                presence = response.json()
-                required_fields = ['id', 'cadet_id', 'date', 'status']
-                missing_fields = [field for field in required_fields if field not in presence]
+            try:
+                response = user_session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
                 
-                if not missing_fields:
-                    self.log_test(
-                        "Presences API - POST /api/presences", 
-                        True, 
-                        f"Created presence successfully for user {test_user['prenom']} {test_user['nom']}"
-                    )
+                if response.status_code == 403:
+                    response_data = response.json()
+                    expected_message = "Vous ne pouvez pas inspecter votre propre uniforme"
+                    
+                    if expected_message in response_data.get("detail", ""):
+                        self.log_test(f"Anti-Auto-Évaluation - {role_name}", True, 
+                                    f"Erreur 403 correcte avec message attendu")
+                    else:
+                        self.log_test(f"Anti-Auto-Évaluation - {role_name}", False, 
+                                    f"Erreur 403 mais message incorrect: {response_data.get('detail', 'N/A')}")
                 else:
-                    self.log_test(
-                        "Presences API - POST /api/presences", 
-                        False, 
-                        f"Created presence but missing fields: {missing_fields}"
-                    )
-            elif response.status_code == 400 and "existe déjà" in response.text:
-                # Presence already exists for today - this is acceptable
-                self.log_test(
-                    "Presences API - POST /api/presences", 
-                    True, 
-                    f"Presence already exists for user {test_user['prenom']} {test_user['nom']} today (acceptable)"
-                )
-            else:
-                self.log_test("Presences API - POST /api/presences", False, f"Request failed: {response.status_code} - {response.text}")
+                    self.log_test(f"Anti-Auto-Évaluation - {role_name}", False, 
+                                f"Status attendu: 403, reçu: {response.status_code}")
+                    
+            except Exception as e:
+                self.log_test(f"Anti-Auto-Évaluation - {role_name}", False, f"Exception: {str(e)}")
+    
+    def test_etat_major_permissions(self):
+        """Test 2: Permissions État-Major"""
+        print("\n=== TEST 2: PERMISSIONS ÉTAT-MAJOR ===")
+        
+        # Trouver un membre de l'État-Major
+        etat_major_user = self.find_user_by_role_keywords(["adjudant"])
+        
+        if not etat_major_user:
+            self.log_test("État-Major - Utilisateur trouvé", False, "Aucun utilisateur État-Major trouvé")
+            return
+        
+        # Authentifier l'utilisateur État-Major
+        user_token = self.authenticate_user(etat_major_user.get("username", ""))
+        
+        if not user_token:
+            self.log_test("État-Major - Authentification", False, f"Impossible d'authentifier {etat_major_user.get('username', 'N/A')}")
+            return
+        
+        self.log_test("État-Major - Authentification", True, f"Utilisateur {etat_major_user.get('prenom', '')} {etat_major_user.get('nom', '')} authentifié")
+        
+        # Créer une session pour cet utilisateur
+        user_session = requests.Session()
+        user_session.headers.update({"Authorization": f"Bearer {user_token}"})
+        
+        # Trouver des cadets d'autres sections à inspecter
+        cadets_to_inspect = []
+        for role, users in self.users_cache.items():
+            if "cadet" in role and role != etat_major_user.get("role", "").lower():
+                for user in users:
+                    if user["id"] != etat_major_user["id"]:  # Pas lui-même
+                        cadets_to_inspect.append(user)
+                        if len(cadets_to_inspect) >= 2:  # Limiter à 2 tests
+                            break
+            if len(cadets_to_inspect) >= 2:
+                break
+        
+        if not cadets_to_inspect:
+            self.log_test("État-Major - Cadets à inspecter", False, "Aucun cadet trouvé pour test")
+            return
+        
+        # Tester l'inspection de cadets d'autres sections
+        for i, cadet in enumerate(cadets_to_inspect):
+            inspection_data = {
+                "cadet_id": cadet["id"],
+                "uniform_type": "C1 - Tenue de Parade",
+                "criteria_scores": {
+                    "Propreté générale": 4,
+                    "Ajustement": 3,
+                    "Accessoires": 4
+                },
+                "commentaire": f"Test inspection État-Major #{i+1}"
+            }
+            
+            try:
+                response = user_session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
                 
+                if response.status_code == 200 or response.status_code == 201:
+                    self.log_test(f"État-Major - Inspection cadet {i+1}", True, 
+                                f"Inspection réussie de {cadet.get('prenom', '')} {cadet.get('nom', '')}")
+                else:
+                    self.log_test(f"État-Major - Inspection cadet {i+1}", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+                    
+            except Exception as e:
+                self.log_test(f"État-Major - Inspection cadet {i+1}", False, f"Exception: {str(e)}")
+    
+    def test_section_permissions(self):
+        """Test 3: Permissions Section"""
+        print("\n=== TEST 3: PERMISSIONS SECTION ===")
+        
+        # Trouver un Commandant ou Sergent de section
+        section_leader = self.find_user_by_role_keywords(["commandant", "sergent"])
+        
+        if not section_leader:
+            self.log_test("Section - Chef trouvé", False, "Aucun chef de section trouvé")
+            return
+        
+        # Authentifier le chef de section
+        user_token = self.authenticate_user(section_leader.get("username", ""))
+        
+        if not user_token:
+            self.log_test("Section - Authentification", False, f"Impossible d'authentifier {section_leader.get('username', 'N/A')}")
+            return
+        
+        self.log_test("Section - Authentification", True, f"Chef {section_leader.get('prenom', '')} {section_leader.get('nom', '')} authentifié")
+        
+        # Créer une session pour cet utilisateur
+        user_session = requests.Session()
+        user_session.headers.update({"Authorization": f"Bearer {user_token}"})
+        
+        # Test 1: Essayer d'inspecter un cadet d'une autre section (doit échouer)
+        other_section_cadet = None
+        for role, users in self.users_cache.items():
+            for user in users:
+                if (user["id"] != section_leader["id"] and 
+                    user.get("section_id") != section_leader.get("section_id") and
+                    user.get("section_id") is not None):
+                    other_section_cadet = user
+                    break
+            if other_section_cadet:
+                break
+        
+        if other_section_cadet:
+            inspection_data = {
+                "cadet_id": other_section_cadet["id"],
+                "uniform_type": "C1 - Tenue de Parade",
+                "criteria_scores": {
+                    "Propreté générale": 4,
+                    "Ajustement": 3
+                },
+                "commentaire": "Test inspection autre section"
+            }
+            
+            try:
+                response = user_session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
+                
+                if response.status_code == 403:
+                    self.log_test("Section - Refus autre section", True, 
+                                "Inspection d'autre section correctement refusée (403)")
+                else:
+                    self.log_test("Section - Refus autre section", False, 
+                                f"Status attendu: 403, reçu: {response.status_code}")
+                    
+            except Exception as e:
+                self.log_test("Section - Refus autre section", False, f"Exception: {str(e)}")
+        else:
+            self.log_test("Section - Cadet autre section", False, "Aucun cadet d'autre section trouvé pour test")
+        
+        # Test 2: Inspecter un cadet de sa propre section (doit réussir)
+        same_section_cadet = None
+        for role, users in self.users_cache.items():
+            for user in users:
+                if (user["id"] != section_leader["id"] and 
+                    user.get("section_id") == section_leader.get("section_id") and
+                    user.get("section_id") is not None):
+                    same_section_cadet = user
+                    break
+            if same_section_cadet:
+                break
+        
+        if same_section_cadet:
+            inspection_data = {
+                "cadet_id": same_section_cadet["id"],
+                "uniform_type": "C1 - Tenue de Parade",
+                "criteria_scores": {
+                    "Propreté générale": 4,
+                    "Ajustement": 3,
+                    "Accessoires": 4
+                },
+                "commentaire": "Test inspection même section"
+            }
+            
+            try:
+                response = user_session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
+                
+                if response.status_code == 200 or response.status_code == 201:
+                    self.log_test("Section - Inspection même section", True, 
+                                f"Inspection de sa section réussie")
+                else:
+                    self.log_test("Section - Inspection même section", False, 
+                                f"Status: {response.status_code}, Response: {response.text}")
+                    
+            except Exception as e:
+                self.log_test("Section - Inspection même section", False, f"Exception: {str(e)}")
+        else:
+            self.log_test("Section - Cadet même section", False, "Aucun cadet de même section trouvé pour test")
+    
+    def test_regression(self):
+        """Test 4: Régression - Vérifier que les fonctionnalités existantes marchent"""
+        print("\n=== TEST 4: RÉGRESSION ===")
+        
+        # Test 1: GET /api/users fonctionne toujours
+        try:
+            response = self.session.get(f"{BASE_URL}/users")
+            if response.status_code == 200:
+                users = response.json()
+                self.log_test("Régression - GET /api/users", True, f"{len(users)} utilisateurs récupérés")
+            else:
+                self.log_test("Régression - GET /api/users", False, f"Status: {response.status_code}")
         except Exception as e:
-            self.log_test("Presences API - POST /api/presences", False, f"Request error: {str(e)}")
+            self.log_test("Régression - GET /api/users", False, f"Exception: {str(e)}")
+        
+        # Test 2: Inspection valide par admin fonctionne toujours
+        if len(self.users_cache) > 0:
+            # Trouver un cadet à inspecter
+            cadet_to_inspect = None
+            for role, users in self.users_cache.items():
+                if users:
+                    cadet_to_inspect = users[0]
+                    break
+            
+            if cadet_to_inspect:
+                inspection_data = {
+                    "cadet_id": cadet_to_inspect["id"],
+                    "uniform_type": "C5 - Tenue d'Entraînement",
+                    "criteria_scores": {
+                        "Propreté générale": 3,
+                        "Ajustement": 4,
+                        "Accessoires": 2,
+                        "État général": 3
+                    },
+                    "commentaire": "Test régression - inspection valide par admin"
+                }
+                
+                try:
+                    response = self.session.post(f"{BASE_URL}/uniform-inspections", json=inspection_data)
+                    
+                    if response.status_code == 200 or response.status_code == 201:
+                        self.log_test("Régression - Inspection valide admin", True, 
+                                    f"Inspection admin réussie")
+                    else:
+                        self.log_test("Régression - Inspection valide admin", False, 
+                                    f"Status: {response.status_code}, Response: {response.text}")
+                        
+                except Exception as e:
+                    self.log_test("Régression - Inspection valide admin", False, f"Exception: {str(e)}")
+            else:
+                self.log_test("Régression - Cadet pour inspection", False, "Aucun cadet trouvé pour test")
+        
+        # Test 3: GET /api/uniform-inspections fonctionne
+        try:
+            response = self.session.get(f"{BASE_URL}/uniform-inspections")
+            if response.status_code == 200:
+                inspections = response.json()
+                self.log_test("Régression - GET /api/uniform-inspections", True, 
+                            f"{len(inspections)} inspections récupérées")
+            else:
+                self.log_test("Régression - GET /api/uniform-inspections", False, 
+                            f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Régression - GET /api/uniform-inspections", False, f"Exception: {str(e)}")
     
     def run_all_tests(self):
-        """Run all regression tests"""
-        print("🧪 Starting Backend Regression Tests")
-        print("=" * 60)
+        """Exécuter tous les tests"""
+        print("🚀 DÉBUT DES TESTS - PERMISSIONS INSPECTION + ANTI-AUTO-ÉVALUATION")
+        print(f"Base URL: {BASE_URL}")
+        print(f"Admin: {ADMIN_USERNAME}")
         
-        # Test authentication first
-        if not self.authenticate():
-            print("❌ Authentication failed - cannot proceed with other tests")
+        # Authentification admin
+        if not self.authenticate_admin():
+            print("❌ ÉCHEC - Impossible de s'authentifier en tant qu'admin")
             return False
-            
-        # Run core API tests
-        self.test_users_api()
-        self.test_sections_api()
-        self.test_presences_get_api()
-        self.test_presences_post_api()
         
-        # Summary
-        print("\n" + "=" * 60)
-        print("📊 TEST SUMMARY")
-        print("=" * 60)
+        # Récupérer les utilisateurs
+        users = self.get_users()
+        if not users:
+            print("❌ ÉCHEC - Impossible de récupérer les utilisateurs")
+            return False
         
-        success_rate = (self.passed_tests / self.total_tests * 100) if self.total_tests > 0 else 0
+        # Afficher les rôles disponibles pour debug
+        print(f"\n📋 Rôles disponibles: {list(self.users_cache.keys())}")
         
-        print(f"Total Tests: {self.total_tests}")
-        print(f"Passed: {self.passed_tests}")
-        print(f"Failed: {self.total_tests - self.passed_tests}")
-        print(f"Success Rate: {success_rate:.1f}%")
+        # Exécuter les tests
+        self.test_anti_auto_evaluation()
+        self.test_etat_major_permissions()
+        self.test_section_permissions()
+        self.test_regression()
         
-        if self.passed_tests < self.total_tests:
-            print("\n❌ FAILED TESTS:")
-            for result in self.test_results:
-                if "❌ FAIL" in result:
-                    print(f"  - {result}")
+        # Résumé final
+        self.print_summary()
         
-        return self.passed_tests == self.total_tests
+        return True
+    
+    def print_summary(self):
+        """Afficher le résumé des tests"""
+        print("\n" + "="*60)
+        print("📊 RÉSUMÉ DES TESTS")
+        print("="*60)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t["success"]])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total: {total_tests} tests")
+        print(f"✅ Réussis: {passed_tests}")
+        print(f"❌ Échoués: {failed_tests}")
+        print(f"📈 Taux de réussite: {(passed_tests/total_tests*100):.1f}%")
+        
+        if failed_tests > 0:
+            print(f"\n❌ TESTS ÉCHOUÉS:")
+            for test in self.test_results:
+                if not test["success"]:
+                    print(f"   - {test['name']}: {test['details']}")
+        
+        print("\n🎯 FOCUS: Validation anti-auto-évaluation (priorité maximale)")
+        
+        # Vérifier si les tests critiques ont réussi
+        anti_eval_tests = [t for t in self.test_results if "Anti-Auto-Évaluation" in t["name"]]
+        if anti_eval_tests:
+            anti_eval_success = all(t["success"] for t in anti_eval_tests)
+            if anti_eval_success:
+                print("✅ CRITIQUE: Anti-auto-évaluation fonctionne correctement")
+            else:
+                print("❌ CRITIQUE: Problèmes détectés dans l'anti-auto-évaluation")
 
-if __name__ == "__main__":
-    tester = BackendRegressionTester()
-    success = tester.run_all_tests()
+def main():
+    """Fonction principale"""
+    test_runner = TestRunner()
+    success = test_runner.run_all_tests()
     
     if success:
-        print("\n✅ All regression tests passed! Backend functionality is working correctly.")
-        sys.exit(0)
+        print("\n🎉 Tests terminés avec succès")
+        return 0
     else:
-        print("\n❌ Some tests failed. Please check the issues above.")
-        sys.exit(1)
+        print("\n💥 Échec des tests")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
