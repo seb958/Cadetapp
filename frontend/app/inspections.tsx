@@ -529,7 +529,7 @@ export default function Inspections() {
             cadet_prenom: selectedCadet.prenom,
             cadet_grade: selectedCadet.grade,
             date: today,
-            uniform_type: todaySchedule.uniform_type,
+            uniform_type: inspectionUniformType,
             criteria_scores: criteriaScores,
             max_score: Object.keys(criteriaScores).length * 4,
             total_score: calculateScore(),
