@@ -309,7 +309,7 @@ export default function Presences() {
     setRefreshing(true);
     if (user) {
       await loadPresences(user);
-      if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role)) {
+      if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role) || user.has_admin_privileges) {
         await loadSections();
         await loadCadets(user);
         await loadActivities(user);
