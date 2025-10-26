@@ -225,6 +225,10 @@ export default function Index() {
     router.push('/rapports');
   };
 
+  const navigateToImport = () => {
+    router.push('/import-cadets');
+  };
+
   const navigateToCommunication = () => {
     // TODO: Implémenter plus tard
     Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
