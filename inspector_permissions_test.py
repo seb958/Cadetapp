@@ -75,7 +75,7 @@ class InspectorPermissionsTest:
         print("\n=== TEST 1: ACCÈS SETTINGS POUR INSPECTEURS ===")
         
         # Essayer d'abord avec adjudantchef_descadron
-        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "c8iLdxgx")
+        inspector_token, inspector_user = self.authenticate_user("adjudantchef_descadron", "uoQgAwEQ")
         
         if not inspector_token:
             # Si échec, utiliser admin comme fallback
