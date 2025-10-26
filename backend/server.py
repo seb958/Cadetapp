@@ -2721,8 +2721,8 @@ async def require_uniform_schedule_permissions(current_user: User = Depends(get_
 
 # Routes pour les paramètres
 @api_router.get("/settings", response_model=Settings)
-async def get_settings(current_user: User = Depends(require_admin_or_encadrement)):
-    """Récupérer les paramètres de l'application"""
+async def get_settings(current_user: User = Depends(require_inspection_permissions)):
+    """Récupérer les paramètres de l'application - accessible aux inspecteurs"""
     settings_doc = await db.settings.find_one({"type": "app_settings"})
     
     if not settings_doc:
