@@ -482,12 +482,22 @@ async def require_admin_or_encadrement(current_user: User = Depends(get_current_
     return current_user
 
 async def require_presence_permissions(current_user: User = Depends(get_current_user)):
-    """Vérifie les permissions pour la gestion des présences"""
-    if current_user.role not in [UserRole.CADET_RESPONSIBLE, UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Accès refusé. Permissions pour gestion des présences requises."
-        )
+    """
+    Vérifie les permissions pour la gestion des présences
+    Autorisé: CADET_RESPONSIBLE, CADET_ADMIN, ENCADREMENT, ou cadets avec has_admin_privileges=True
+    """
+    # Vérifier les rôles système
+    if current_user.role in [UserRole.CADET_RESPONSIBLE, UserRole.CADET_ADMIN, UserRole.ENCADREMENT]:
+        return current_user
+    
+    # Vérifier si l'utilisateur a le privilège admin optionnel
+    if current_user.has_admin_privileges:
+        return current_user
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Accès refusé. Permissions pour gestion des présences requises."
+    )
     return current_user
 
 async def require_inspection_permissions(current_user: User = Depends(get_current_user)):
