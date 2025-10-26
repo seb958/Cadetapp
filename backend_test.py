@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Regression Test Suite
-Testing core functionality after État-Major virtual section implementation
-Focus: Authentication, Users API, Sections API, Presences API
+Tests Backend - Permissions Inspection + Anti-Auto-Évaluation
+Test des nouvelles permissions d'inspection et validation anti-auto-évaluation
 """
 
 import requests
@@ -15,7 +14,7 @@ BASE_URL = "https://squadcommand.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class BackendRegressionTester:
+class TestRunner:
     def __init__(self):
         self.session = requests.Session()
         self.auth_token = None
