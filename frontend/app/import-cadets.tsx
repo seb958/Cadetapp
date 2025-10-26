@@ -159,6 +159,8 @@ export default function ImportCadets() {
       return;
     }
 
+    console.log('Confirmation import - Preview data:', previewData);
+
     Alert.alert(
       'Confirmer l\'import',
       `Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`,
@@ -167,6 +169,7 @@ export default function ImportCadets() {
         {
           text: 'Confirmer',
           onPress: async () => {
+            console.log('Bouton Confirmer pressé');
             setConfirming(true);
             try {
               const token = await AsyncStorage.getItem('access_token');
@@ -188,6 +191,8 @@ export default function ImportCadets() {
                   new_section: c.new_section
                 }))
               ];
+
+              console.log('Envoi de', changes.length, 'changements au backend');
 
               const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/import/cadets/confirm`, {
                 method: 'POST',
