@@ -666,7 +666,10 @@ export default function Presences() {
     }
   };
 
-  const canTakeAttendance = user && ['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role);
+  const canTakeAttendance = user && (
+    ['cadet_responsible', 'cadet_admin', 'encadrement'].includes(user.role) || 
+    user.has_admin_privileges === true
+  );
 
   const toggleGroupExpansion = (groupKey: string) => {
     const newExpanded = new Set(expandedGroups);
