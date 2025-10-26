@@ -17,55 +17,41 @@ ADMIN_PASSWORD = "admin123"
 class TestRunner:
     def __init__(self):
         self.session = requests.Session()
-        self.auth_token = None
+        self.admin_token = None
         self.test_results = []
-        self.total_tests = 0
-        self.passed_tests = 0
+        self.users_cache = {}
         
     def log_test(self, test_name, success, details=""):
-        """Log test result"""
-        self.total_tests += 1
-        if success:
-            self.passed_tests += 1
-            status = "✅ PASS"
-        else:
-            status = "❌ FAIL"
-        
-        result = f"{status} - {test_name}"
-        if details:
-            result += f" | {details}"
-        
-        self.test_results.append(result)
-        print(result)
-        
-    def authenticate(self):
-        """Test authentication with admin credentials"""
+        """Enregistrer le résultat d'un test"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        self.test_results.append({
+            "name": test_name,
+            "success": success,
+            "details": details
+        })
+        print(f"{status} - {test_name}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def authenticate_admin(self):
+        """Authentification admin"""
         try:
-            login_data = {
+            response = self.session.post(f"{BASE_URL}/auth/login", json={
                 "username": ADMIN_USERNAME,
                 "password": ADMIN_PASSWORD
-            }
-            
-            response = self.session.post(f"{BASE_URL}/auth/login", json=login_data)
+            })
             
             if response.status_code == 200:
                 data = response.json()
-                self.auth_token = data.get("access_token")
-                self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
-                
-                user_info = data.get("user", {})
-                self.log_test(
-                    "Authentication", 
-                    True, 
-                    f"Login successful for user: {user_info.get('prenom', '')} {user_info.get('nom', '')} (Role: {user_info.get('role', '')})"
-                )
+                self.admin_token = data["access_token"]
+                self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
+                self.log_test("Authentification Admin", True, f"Token obtenu pour {ADMIN_USERNAME}")
                 return True
             else:
-                self.log_test("Authentication", False, f"Login failed: {response.status_code} - {response.text}")
+                self.log_test("Authentification Admin", False, f"Status: {response.status_code}, Response: {response.text}")
                 return False
-                
         except Exception as e:
-            self.log_test("Authentication", False, f"Login error: {str(e)}")
+            self.log_test("Authentification Admin", False, f"Exception: {str(e)}")
             return False
     
     def test_users_api(self):
