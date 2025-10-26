@@ -165,7 +165,7 @@ export default function Presences() {
         await loadPresences(parsedUser);
         
         // Charger les cadets si l'utilisateur peut prendre les présences
-        if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(parsedUser.role)) {
+        if (['cadet_responsible', 'cadet_admin', 'encadrement'].includes(parsedUser.role) || parsedUser.has_admin_privileges) {
           await loadSections();
           await loadCadets(parsedUser);
           await loadActivities(parsedUser);
