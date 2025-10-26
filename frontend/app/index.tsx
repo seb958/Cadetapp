@@ -222,8 +222,7 @@ export default function Index() {
   };
 
   const navigateToReports = () => {
-    // TODO: Implémenter plus tard
-    Alert.alert('Bientôt disponible', 'Fonctionnalité en cours de développement');
+    router.push('/rapports');
   };
 
   const navigateToCommunication = () => {
