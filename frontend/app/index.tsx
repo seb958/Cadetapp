@@ -649,6 +649,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: '#38a169',
   },
+  importCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#f59e0b',
+  },
   featureTitle: {
     fontSize: 16,
     fontWeight: 'bold',
