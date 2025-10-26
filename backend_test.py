@@ -366,11 +366,14 @@ class TestRunner:
         
         # Test 2: Inspection valide par admin fonctionne toujours
         if len(self.users_cache) > 0:
-            # Trouver un cadet à inspecter
+            # Trouver un cadet à inspecter (pas l'admin lui-même)
             cadet_to_inspect = None
             for role, users in self.users_cache.items():
-                if users:
-                    cadet_to_inspect = users[0]
+                for user in users:
+                    if user["id"] != "0c9b2a6e-2d0e-4590-9e83-3071b411e591":  # Pas l'admin
+                        cadet_to_inspect = user
+                        break
+                if cadet_to_inspect:
                     break
             
             if cadet_to_inspect:
