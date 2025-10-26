@@ -84,8 +84,19 @@ class TestRunner:
                     return users[0]  # Retourner le premier utilisateur trouvé
         return None
     
-    def authenticate_user(self, username, password="admin123"):
+    def authenticate_user(self, username, password=None):
         """Authentifier un utilisateur spécifique"""
+        # Mots de passe générés pour les utilisateurs de test
+        user_passwords = {
+            "adjudantchef_descadron": "c8iLdxgx",
+            "jmoreau": "JWsrp3Od", 
+            "sergent_de_section": "Tilr5pxu",
+            "aadministrateur": "admin123"
+        }
+        
+        if password is None:
+            password = user_passwords.get(username, "admin123")
+        
         try:
             response = requests.post(f"{BASE_URL}/auth/login", json={
                 "username": username,
