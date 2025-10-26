@@ -1117,7 +1117,20 @@ export default function Inspections() {
                 <Text style={styles.modalSubtitle}>
                   {getGradeDisplayName(selectedCadet.grade)} {selectedCadet.nom} {selectedCadet.prenom}
                 </Text>
-                <Text style={styles.modalUniform}>{todaySchedule?.uniform_type}</Text>
+                {/* Sélecteur de type d'uniforme */}
+                <Text style={styles.label}>Type de tenue</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={inspectionUniformType}
+                    onValueChange={handleUniformTypeChange}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Sélectionner une tenue..." value="" />
+                    {uniformTypes.map(type => (
+                      <Picker.Item key={type} label={type} value={type} />
+                    ))}
+                  </Picker>
+                </View>
                 
                 <View style={styles.criteriaSection}>
                   <Text style={styles.criteriaTitle}>Critères d'inspection (Barème: 0-4 points)</Text>
