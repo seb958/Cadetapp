@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Tests Backend - Permissions Inspection + Anti-Auto-Évaluation
-Test des nouvelles permissions d'inspection et validation anti-auto-évaluation
+Tests pour vérifier les permissions présences avec has_admin_privileges
+Demande spécifique: Tester que les cadets avec has_admin_privileges=True peuvent prendre les présences
 """
 
 import requests
 import json
-from datetime import date, datetime
+from datetime import datetime, date
 import sys
 
 # Configuration
