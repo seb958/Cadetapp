@@ -73,28 +73,39 @@ def generate_password_for_user(admin_token, user_id):
     except Exception as e:
         print(f"Erreur génération mot de passe: {e}")
         return None
+def test_permissions_presences_admin_privileges():
+    """Test principal des permissions présences avec has_admin_privileges"""
+    results = TestResults()
     
-    def get_users(self):
-        """Récupérer la liste des utilisateurs"""
-        try:
-            response = self.session.get(f"{BASE_URL}/users")
-            if response.status_code == 200:
-                users = response.json()
-                # Créer un cache des utilisateurs par rôle
-                for user in users:
-                    role = user.get("role", "").lower()
-                    if role not in self.users_cache:
-                        self.users_cache[role] = []
-                    self.users_cache[role].append(user)
-                
-                self.log_test("Récupération utilisateurs", True, f"{len(users)} utilisateurs trouvés")
-                return users
-            else:
-                self.log_test("Récupération utilisateurs", False, f"Status: {response.status_code}")
-                return []
-        except Exception as e:
-            self.log_test("Récupération utilisateurs", False, f"Exception: {str(e)}")
-            return []
+    print("🔐 TESTS PERMISSIONS PRÉSENCES - has_admin_privileges")
+    print("="*80)
+    
+    # 1. Connexion admin
+    print("\n1️⃣ CONNEXION ADMINISTRATEUR")
+    admin_token, admin_user = login_user(ADMIN_USERNAME, ADMIN_PASSWORD)
+    
+    if not admin_token:
+        results.add_test("Connexion admin", False, "Impossible de se connecter en tant qu'admin")
+        results.print_summary()
+        return results
+    
+    results.add_test("Connexion admin", True, f"Connecté: {admin_user['prenom']} {admin_user['nom']}")
+    
+    # 2. Récupérer la liste des utilisateurs
+    print("\n2️⃣ RÉCUPÉRATION LISTE UTILISATEURS")
+    try:
+        response = requests.get(f"{BASE_URL}/users", headers=get_auth_headers(admin_token))
+        if response.status_code == 200:
+            users = response.json()
+            results.add_test("GET /api/users", True, f"{len(users)} utilisateurs trouvés")
+        else:
+            results.add_test("GET /api/users", False, f"Status: {response.status_code}")
+            results.print_summary()
+            return results
+    except Exception as e:
+        results.add_test("GET /api/users", False, f"Erreur: {e}")
+        results.print_summary()
+        return results
     
     def find_user_by_role_keywords(self, keywords):
         """Trouver un utilisateur par mots-clés dans le rôle"""
