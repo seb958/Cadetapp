@@ -2878,6 +2878,13 @@ async def create_uniform_inspection(
             detail="Cadet non trouvé"
         )
     
+    # Empêcher l'auto-évaluation
+    if inspection.cadet_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous ne pouvez pas inspecter votre propre uniforme"
+        )
+    
     # Vérifier les permissions selon le rôle
     if current_user.role == UserRole.CADET_RESPONSIBLE:
         # Un chef de section ne peut inspecter que sa section
