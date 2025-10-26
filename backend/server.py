@@ -3337,7 +3337,7 @@ async def generate_cadets_list_pdf(cadets: List[dict], sections: List[dict], fil
     # Grouper par section
     cadets_by_section = {}
     for cadet in cadets:
-        section_id = cadet.get('section_id', 'no_section')
+        section_id = cadet.get('section_id') or 'no_section'
         if section_id not in cadets_by_section:
             cadets_by_section[section_id] = []
         cadets_by_section[section_id].append(cadet)
