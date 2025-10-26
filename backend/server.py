@@ -2886,13 +2886,22 @@ async def create_uniform_inspection(
         )
     
     # Vérifier les permissions selon le rôle
-    if current_user.role == UserRole.CADET_RESPONSIBLE:
-        # Un chef de section ne peut inspecter que sa section
-        if cadet.get("section_id") != current_user.section_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Vous ne pouvez inspecter que les cadets de votre section"
-            )
+    user_role_lower = current_user.role.lower() if isinstance(current_user.role, str) else current_user.role.value.lower()
+    
+    # Commandants et Sergents de section ne peuvent inspecter que leur section
+    if 'commandant' in user_role_lower or 'sergent' in user_role_lower:
+        # Vérifier si l'utilisateur est un chef de section (pas État-Major, pas Commandant de la Garde/Musique)
+        is_section_leader = ('commandant' in user_role_lower or 'sergent' in user_role_lower) and \
+                          'commandant de' not in user_role_lower and \
+                          current_user.section_id is not None
+        
+        if is_section_leader:
+            # Un chef de section ne peut inspecter que sa section
+            if cadet.get("section_id") != current_user.section_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Vous ne pouvez inspecter que les cadets de votre section"
+                )
     
     # Calculer le score total basé sur le barème (0-4 points par critère)
     total_criteria = len(inspection.criteria_scores)
