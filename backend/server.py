@@ -3788,6 +3788,114 @@ async def generate_inspection_stats_pdf(inspections: List[dict], stats: dict,
         
         elements.append(top_table)
     
+    # NOUVEAU: Analyse des critères problématiques
+    if inspections and len(inspections) > 0 and stats.get('cadets_needing_attention'):
+        criteria_style = ParagraphStyle(
+            'Criteria',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#f59e0b'),
+            spaceAfter=12
+        )
+        
+        elements.append(Spacer(1, 0.2*inch))
+        elements.append(Paragraph("🔍 Critères à Travailler (Cadets avec scores < 60%)", criteria_style))
+        
+        # Analyser les critères problématiques pour chaque cadet en difficulté
+        for cadet in stats['cadets_needing_attention'][:10]:  # Limiter aux 10 premiers
+            cadet_inspections = [insp for insp in inspections 
+                                if insp['cadet_nom'] == cadet['nom'] and insp['cadet_prenom'] == cadet['prenom']]
+            
+            if cadet_inspections:
+                # Calculer le score moyen par critère
+                criteria_scores = {}
+                criteria_counts = {}
+                
+                for insp in cadet_inspections:
+                    for criterion, score in insp.get('criteria_scores', {}).items():
+                        if criterion not in criteria_scores:
+                            criteria_scores[criterion] = 0
+                            criteria_counts[criterion] = 0
+                        criteria_scores[criterion] += score
+                        criteria_counts[criterion] += 1
+                
+                # Calculer les moyennes et identifier les critères faibles (<50%)
+                weak_criteria = []
+                for criterion, total_score in criteria_scores.items():
+                    avg_score = (total_score / criteria_counts[criterion]) / 4 * 100  # Score sur 4 converti en %
+                    if avg_score < 50:
+                        weak_criteria.append(f"{criterion} ({avg_score:.0f}%)")
+                
+                if weak_criteria:
+                    cadet_info = f"<b>{cadet['nom']} {cadet['prenom']}</b> ({cadet['section_name']}): "
+                    weak_criteria_text = ", ".join(weak_criteria)
+                    
+                    criteria_para_style = ParagraphStyle(
+                        'CriteriaPara',
+                        parent=styles['Normal'],
+                        fontSize=9,
+                        leftIndent=20,
+                        spaceAfter=6
+                    )
+                    elements.append(Paragraph(cadet_info + weak_criteria_text, criteria_para_style))
+    
+    # NOUVEAU: Commentaires notables
+    if inspections and len(inspections) > 0:
+        # Filtrer les inspections avec commentaires
+        inspections_with_comments = [insp for insp in inspections if insp.get('commentaire') and insp['commentaire'].strip()]
+        
+        if inspections_with_comments:
+            comments_style = ParagraphStyle(
+                'Comments',
+                parent=styles['Heading2'],
+                fontSize=14,
+                textColor=colors.HexColor('#8b5cf6'),
+                spaceAfter=12
+            )
+            
+            elements.append(Spacer(1, 0.3*inch))
+            elements.append(Paragraph("💬 Commentaires des Inspecteurs", comments_style))
+            
+            # Limiter aux 15 commentaires les plus récents
+            recent_comments = sorted(inspections_with_comments, 
+                                   key=lambda x: x.get('date', ''), 
+                                   reverse=True)[:15]
+            
+            comments_data = [['Date', 'Cadet', 'Inspecteur', 'Commentaire']]
+            
+            for insp in recent_comments:
+                # Limiter la longueur du commentaire pour le PDF
+                comment = insp['commentaire'][:100] + '...' if len(insp['commentaire']) > 100 else insp['commentaire']
+                
+                comments_data.append([
+                    insp['date'][5:],  # Format MM-DD
+                    f"{insp['cadet_nom']} {insp['cadet_prenom']}"[:20],
+                    insp['inspector_name'][:15],
+                    comment
+                ])
+            
+            comments_table = Table(comments_data, colWidths=[0.8*inch, 1.5*inch, 1.2*inch, 3.5*inch])
+            comments_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8b5cf6')),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+                ('ALIGN', (0, 1), (2, -1), 'LEFT'),
+                ('ALIGN', (3, 1), (3, -1), 'LEFT'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 1), (-1, -1), 7),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('TOPPADDING', (0, 1), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f3f4f6')])
+            ]))
+            
+            elements.append(comments_table)
+    
     # Build PDF
     doc.build(elements, onFirstPage=lambda c, d: add_header_footer(c, d, "RAPPORT D'INSPECTIONS"),
               onLaterPages=lambda c, d: add_header_footer(c, d, "RAPPORT D'INSPECTIONS"))
