@@ -3519,7 +3519,7 @@ async def generate_inspection_sheet_pdf(cadets: List[dict], uniform_type: str,
         data = [header]
         
         # Lignes pour chaque cadet
-        for cadet in sorted(section_cadets, key=lambda x: (x.get('nom', ''), x.get('prenom', ''))):
+        for cadet in sorted(section_cadets, key=lambda x: (x.get('nom') or '', x.get('prenom') or '')):
             cadet_name = f"{cadet.get('nom', '')} {cadet.get('prenom', '')}"
             row = [cadet_name] + [''] * len(criteria) + ['', '']
             data.append(row)
