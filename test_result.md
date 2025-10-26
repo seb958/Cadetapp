@@ -126,7 +126,7 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -146,6 +146,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTS ENDPOINT SYNCHRONISATION OFFLINE INSPECTIONS UNIFORMES RÉUSSIS - 9/9 tests passés (100% réussite). Endpoint POST /api/sync/batch parfaitement fonctionnel pour inspections uniformes: 1) ENDPOINT ACCESSIBLE: /api/sync/batch répond correctement aux requêtes, 2) SYNCHRONISATION INSPECTIONS: Inspections uniformes synchronisées avec succès (format: cadet_id, date, uniform_type, criteria_scores, commentaire, timestamp, temp_id), 3) SAUVEGARDE COLLECTION: Inspections correctement enregistrées dans uniform_inspections avec tous les champs requis (id, cadet_id, uniform_type, criteria_scores, total_score, max_score, auto_marked_present), 4) CRÉATION AUTOMATIQUE PRÉSENCE: Présence automatiquement créée/mise à jour lors d'inspection (statut 'present', commentaire 'inspection'), 5) FLAG AUTO_MARKED_PRESENT: Flag correctement défini lors de création automatique présence, 6) CALCUL SCORES: Barème 0-4 points parfaitement calculé (Score parfait 100%, Score moyen 50%, Score faible 25%), 7) RÉGRESSION: Autres endpoints (/settings, /uniform-schedule, /uniform-inspections) fonctionnent toujours, 8) GESTION ERREURS: Erreurs correctement gérées (cadet inexistant). Correctif OfflineInspection model appliqué (ajout uniform_type, criteria_scores). Authentification: aadministrateur/admin123. Base URL: https://squadcommand.preview.emergentagent.com/api. Système de synchronisation offline des inspections uniformes opérationnel."
+        - working: "NA"
+          agent: "main"
+          comment: "✅ PERMISSIONS INSPECTION ÉTAT-MAJOR + ANTI-AUTO-ÉVALUATION - Backend (server.py ligne 2881-2893): Ajout validation empêchant auto-évaluation (403 si cadet_id == current_user.id). Frontend (inspections.tsx ligne 210-285): Logique État-Major virtuel appliquée + filtrage selon rôle (État-Major peut inspecter tous sauf soi-même, Commandants/Sergents seulement leur section sauf soi-même). Cadets avec rôles d'adjudants d'escadron sans section obtiennent section_id='etat-major-virtual'. Liste des cadets inspectables exclut systématiquement l'inspecteur. Prêt pour tests backend."
 
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
