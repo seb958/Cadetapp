@@ -10,7 +10,7 @@ from datetime import date, datetime
 import sys
 
 # Configuration
-BASE_URL = "https://squadcommand.preview.emergentagent.com/api"
+BASE_URL = "https://commandhub-cadet.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
