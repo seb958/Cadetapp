@@ -361,7 +361,6 @@ metadata:
 test_plan:
   current_focus:
     - "Système d'inspection des uniformes avec barème de notation"
-    - "Système de synchronisation hors ligne"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
