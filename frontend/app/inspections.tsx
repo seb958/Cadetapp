@@ -490,7 +490,10 @@ export default function Inspections() {
   };
 
   const saveInspection = async () => {
-    if (!selectedCadet || !todaySchedule?.uniform_type) return;
+    if (!selectedCadet || !inspectionUniformType) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un type de tenue');
+      return;
+    }
 
     console.log('💾 Début sauvegarde inspection pour cadet:', selectedCadet.nom, selectedCadet.prenom);
     console.log(`📶 Statut connexion: ${isOnline ? 'EN LIGNE' : 'HORS LIGNE'}`);
