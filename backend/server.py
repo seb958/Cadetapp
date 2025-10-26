@@ -2582,7 +2582,10 @@ async def get_cache_data(current_user: User = Depends(get_current_user)):
     users = await users_cursor.to_list(length=None)
     
     # Filtrer selon les permissions
-    if current_user.role == UserRole.CADET_RESPONSIBLE:
+    # Cadets avec privilèges admin peuvent voir tout le monde (comme les chefs de section)
+    if current_user.has_admin_privileges:
+        pass  # Pas de filtre, voir tout le monde
+    elif current_user.role == UserRole.CADET_RESPONSIBLE:
         users = [u for u in users if u.get("section_id") == current_user.section_id]
     elif current_user.role == UserRole.CADET:
         users = [u for u in users if u.get("id") == current_user.id]
