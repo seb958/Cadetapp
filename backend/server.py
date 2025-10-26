@@ -3305,10 +3305,17 @@ async def parse_excel_file(file_content: bytes) -> List[Dict]:
 @api_router.post("/import/cadets/preview")
 async def preview_import_cadets(
     file: UploadFile = File(...),
-    current_user: User = Depends(lambda u: require_role([UserRole.CADET_ADMIN, UserRole.ENCADREMENT])(u))
+    current_user: User = Depends(get_current_user)
 ):
+    """Prévisualise l'import d'un fichier Excel de cadets"""
+    # Vérifier les permissions
+    if not any(role in current_user.role.lower() for role in ['cadet_admin', 'encadrement']):
+        raise HTTPException(status_code=403, detail="Permissions insuffisantes")
+    
     try:
+        logger.info(f"Import preview - Fichier reçu: {file.filename}, type: {file.content_type}")
         content = await file.read()
+        logger.info(f"Import preview - Taille du fichier: {len(content)} bytes")
         cadets_data = await parse_excel_file(content)
         
         existing_users = await db.users.find().to_list(1000)
