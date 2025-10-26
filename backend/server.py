@@ -3237,14 +3237,14 @@ async def root():
 
 # Mapping des acronymes vers les grades du système
 GRADE_MAPPING = {
-    "Cdt": "cadet",
-    "Cdt1": "cadet_air_1re_classe",
-    "Cpl": "caporal",
-    "Cpls": "caporal_section",
-    "Sgt": "sergent",
-    "Sgts": "sergent_section",
-    "Ajd2": "adjudant_2e_classe",
-    "Adj1": "adjudant_1re_classe",
+    "cdt": "cadet",
+    "cdt 1": "cadet_air_1re_classe",
+    "cpl": "caporal",
+    "cpls": "caporal_section",
+    "sgt": "sergent",
+    "sgts": "sergent_section",
+    "adj 2": "adjudant_2e_classe",
+    "adj 1": "adjudant_1re_classe",
 }
 
 # Modèles pour l'import
