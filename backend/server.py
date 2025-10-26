@@ -682,8 +682,12 @@ async def get_users(
     grade: Optional[str] = None,
     role: Optional[str] = None,
     section_id: Optional[str] = None,
-    current_user: User = Depends(require_admin_or_encadrement)
+    current_user: User = Depends(require_inspection_permissions)
 ):
+    """
+    Récupérer la liste des utilisateurs - accessible aux inspecteurs
+    Filtres optionnels : grade, role, section_id
+    """
     # Construire le filtre de base
     filter_dict = {}
     
