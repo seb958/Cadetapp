@@ -149,6 +149,9 @@ backend:
         - working: "NA"
           agent: "main"
           comment: "✅ PERMISSIONS INSPECTION ÉTAT-MAJOR + ANTI-AUTO-ÉVALUATION - Backend (server.py ligne 2881-2893): Ajout validation empêchant auto-évaluation (403 si cadet_id == current_user.id). Frontend (inspections.tsx ligne 210-285): Logique État-Major virtuel appliquée + filtrage selon rôle (État-Major peut inspecter tous sauf soi-même, Commandants/Sergents seulement leur section sauf soi-même). Cadets avec rôles d'adjudants d'escadron sans section obtiennent section_id='etat-major-virtual'. Liste des cadets inspectables exclut systématiquement l'inspecteur. Prêt pour tests backend."
+        - working: false
+          agent: "testing"
+          comment: "✅ TESTS PERMISSIONS INSPECTION + ANTI-AUTO-ÉVALUATION - 13/14 tests passés (92.9% réussite). CRITIQUE VALIDÉ: Anti-auto-évaluation fonctionne parfaitement (403 + message correct) pour tous les rôles testés (État-Major, Commandant de section, Sergent de section). État-Major peut inspecter tous cadets sauf lui-même. PROBLÈME IDENTIFIÉ: Permissions section défaillantes - Commandants/Sergents de section peuvent inspecter cadets d'autres sections (devrait être 403). Cause: backend vérifie UserRole.CADET_RESPONSIBLE ('cadet_responsible') mais utilisateurs ont rôles personnalisés ('Commandant de section', 'Sergent de section'). Régression OK: GET /api/users, inspections admin, GET /api/uniform-inspections fonctionnels. Authentification: aadministrateur/admin123, mots de passe générés pour adjudantchef_descadron/jmoreau/sergent_de_section. Base URL: https://squadcommand.preview.emergentagent.com/api."
 
   - task: "Système d'authentification JWT avec 4 rôles utilisateur"
     implemented: true
