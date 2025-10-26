@@ -3241,6 +3241,303 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============================================================================
+# SYSTÈME DE RAPPORTS - Endpoints pour générer des rapports
+# ============================================================================
+
+# Import des fonctions de génération de rapports depuis reports_endpoints.py
+from reports_endpoints import (
+    CadetsListRequest,
+    InspectionSheetRequest,
+    InspectionStatsRequest,
+    generate_cadets_list_pdf,
+    generate_inspection_sheet_pdf,
+    generate_inspection_stats_pdf,
+    generate_inspection_stats_excel
+)
+
+@api_router.post("/reports/cadets-list")
+async def generate_cadets_list_report(
+    request: CadetsListRequest,
+    format: str = "pdf",  # pdf ou web
+    current_user: User = Depends(require_inspection_permissions)
+):
+    """
+    Génère une liste des cadets selon les filtres
+    Accessible aux inspecteurs et supérieurs
+    """
+    try:
+        # Construire le filtre
+        filter_dict = {}
+        
+        if request.filter_type == "section" and request.section_id:
+            filter_dict["section_id"] = request.section_id
+        elif request.filter_type == "role" and request.role:
+            filter_dict["role"] = request.role
+        
+        # Récupérer les cadets
+        cadets = await db.users.find(filter_dict).to_list(1000)
+        
+        # Filtrer les cadets (exclure encadrement/officiers)
+        filtered_cadets = [c for c in cadets if not any(
+            keyword in c.get('role', '').lower() 
+            for keyword in ['encadrement', 'admin', 'lieutenant', 'capitaine', 'major', 'colonel']
+        )]
+        
+        # Récupérer les sections
+        sections = await db.sections.find().to_list(100)
+        
+        # Créer l'info de filtre
+        if request.filter_type == "section" and request.section_id:
+            section = next((s for s in sections if s['id'] == request.section_id), None)
+            filter_info = f"Section: {section['nom'] if section else 'Inconnue'}"
+        elif request.filter_type == "role" and request.role:
+            filter_info = f"Rôle: {request.role}"
+        else:
+            filter_info = "Tous les cadets"
+        
+        if format == "pdf":
+            # Générer le PDF
+            pdf_buffer = await generate_cadets_list_pdf(filtered_cadets, sections, filter_info)
+            
+            return StreamingResponse(
+                pdf_buffer,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename=liste_cadets_{datetime.now().strftime('%Y%m%d')}.pdf"}
+            )
+        else:
+            # Retourner les données pour affichage web
+            return {
+                "cadets": filtered_cadets,
+                "sections": sections,
+                "filter_info": filter_info,
+                "total": len(filtered_cadets)
+            }
+    
+    except Exception as e:
+        logger.error(f"Erreur génération liste cadets: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération du rapport: {str(e)}")
+
+@api_router.post("/reports/inspection-sheet")
+async def generate_inspection_sheet(
+    request: InspectionSheetRequest,
+    current_user: User = Depends(require_inspection_permissions)
+):
+    """
+    Génère une feuille d'inspection vierge pour impression
+    Accessible aux inspecteurs et supérieurs
+    """
+    try:
+        # Récupérer les critères pour ce type d'uniforme
+        settings_doc = await db.settings.find_one({"type": "app_settings"})
+        if not settings_doc or 'inspectionCriteria' not in settings_doc:
+            raise HTTPException(status_code=404, detail="Critères d'inspection non configurés")
+        
+        inspection_criteria = settings_doc['inspectionCriteria']
+        
+        if request.uniform_type not in inspection_criteria:
+            raise HTTPException(status_code=404, detail=f"Critères non trouvés pour {request.uniform_type}")
+        
+        criteria = inspection_criteria[request.uniform_type]
+        
+        # Construire le filtre pour les cadets
+        filter_dict = {}
+        if request.section_id:
+            filter_dict["section_id"] = request.section_id
+        
+        # Récupérer les cadets (exclure encadrement/officiers)
+        all_cadets = await db.users.find(filter_dict).to_list(1000)
+        filtered_cadets = [c for c in all_cadets if not any(
+            keyword in c.get('role', '').lower() 
+            for keyword in ['encadrement', 'admin', 'lieutenant', 'capitaine', 'major', 'colonel']
+        )]
+        
+        # Assigner section virtuelle État-Major si nécessaire
+        for cadet in filtered_cadets:
+            role_lower = cadet.get('role', '').lower()
+            if not cadet.get('section_id') and any(keyword in role_lower for keyword in ['adjudant d\'escadron', 'adjudant-chef d\'escadron']):
+                cadet['section_id'] = 'etat-major-virtual'
+        
+        # Récupérer les sections
+        sections = await db.sections.find().to_list(100)
+        
+        # Générer le PDF
+        pdf_buffer = await generate_inspection_sheet_pdf(filtered_cadets, request.uniform_type, criteria, sections)
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=feuille_inspection_{request.uniform_type.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"}
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur génération feuille inspection: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération: {str(e)}")
+
+@api_router.post("/reports/inspection-stats")
+async def generate_inspection_stats_report(
+    request: InspectionStatsRequest,
+    current_user: User = Depends(require_inspection_permissions)
+):
+    """
+    Génère un rapport détaillé des inspections avec statistiques
+    Accessible aux inspecteurs et supérieurs
+    """
+    try:
+        # Construire le filtre de dates
+        filter_dict = {}
+        
+        start_date = request.start_date or (date.today() - timedelta(days=30))
+        end_date = request.end_date or date.today()
+        
+        filter_dict["date"] = {
+            "$gte": start_date.isoformat(),
+            "$lte": end_date.isoformat()
+        }
+        
+        if request.section_id:
+            filter_dict["section_id"] = request.section_id
+        
+        # Récupérer les inspections
+        inspections = await db.uniform_inspections.find(filter_dict).to_list(10000)
+        
+        if not inspections:
+            raise HTTPException(status_code=404, detail="Aucune inspection trouvée pour cette période")
+        
+        # Enrichir les données
+        users = await db.users.find().to_list(1000)
+        sections = await db.sections.find().to_list(100)
+        
+        user_map = {u['id']: u for u in users}
+        section_map = {s['id']: s['nom'] for s in sections}
+        section_map['etat-major-virtual'] = '⭐ État-Major'
+        
+        enriched_inspections = []
+        for insp in inspections:
+            cadet = user_map.get(insp['cadet_id'])
+            inspector = user_map.get(insp['inspected_by'])
+            
+            if cadet and inspector:
+                enriched_inspections.append({
+                    'date': insp['date'],
+                    'cadet_nom': cadet['nom'],
+                    'cadet_prenom': cadet['prenom'],
+                    'section_id': insp.get('section_id'),
+                    'section_nom': section_map.get(insp.get('section_id'), '-'),
+                    'uniform_type': insp['uniform_type'],
+                    'total_score': insp['total_score'],
+                    'inspector_name': f"{inspector['prenom']} {inspector['nom']}",
+                    'commentaire': insp.get('commentaire')
+                })
+        
+        # Calculer les statistiques
+        stats = {
+            'total_inspections': len(enriched_inspections),
+            'squadron_average': sum(i['total_score'] for i in enriched_inspections) / len(enriched_inspections) if enriched_inspections else 0,
+            'best_score': max((i['total_score'] for i in enriched_inspections), default=0),
+            'worst_score': min((i['total_score'] for i in enriched_inspections), default=0),
+            'cadets_inspected': len(set(i['cadet_nom'] + i['cadet_prenom'] for i in enriched_inspections))
+        }
+        
+        # Statistiques par section
+        if request.include_comparisons:
+            section_stats = {}
+            for insp in enriched_inspections:
+                section_id = insp['section_id']
+                section_name = insp['section_nom']
+                
+                if section_id not in section_stats:
+                    section_stats[section_id] = {
+                        'section_name': section_name,
+                        'total_inspections': 0,
+                        'scores': [],
+                        'cadets': set()
+                    }
+                
+                section_stats[section_id]['total_inspections'] += 1
+                section_stats[section_id]['scores'].append(insp['total_score'])
+                section_stats[section_id]['cadets'].add(insp['cadet_nom'] + insp['cadet_prenom'])
+            
+            stats['by_section'] = [
+                {
+                    'section_name': data['section_name'],
+                    'total_inspections': data['total_inspections'],
+                    'average_score': sum(data['scores']) / len(data['scores']) if data['scores'] else 0,
+                    'cadets_count': len(data['cadets'])
+                }
+                for data in section_stats.values()
+            ]
+            
+            # Cadets nécessitant un suivi (moyenne < 60%)
+            cadet_stats = {}
+            for insp in enriched_inspections:
+                cadet_key = (insp['cadet_nom'], insp['cadet_prenom'], insp['section_nom'])
+                
+                if cadet_key not in cadet_stats:
+                    cadet_stats[cadet_key] = {
+                        'nom': insp['cadet_nom'],
+                        'prenom': insp['cadet_prenom'],
+                        'section_name': insp['section_nom'],
+                        'scores': [],
+                        'inspection_count': 0
+                    }
+                
+                cadet_stats[cadet_key]['scores'].append(insp['total_score'])
+                cadet_stats[cadet_key]['inspection_count'] += 1
+            
+            # Calculer les moyennes et identifier ceux en difficulté
+            cadets_needing_attention = []
+            top_cadets = []
+            
+            for cadet_data in cadet_stats.values():
+                avg_score = sum(cadet_data['scores']) / len(cadet_data['scores']) if cadet_data['scores'] else 0
+                cadet_data['average_score'] = avg_score
+                
+                if avg_score < 60:
+                    cadets_needing_attention.append(cadet_data)
+                
+                top_cadets.append(cadet_data)
+            
+            # Trier top cadets par moyenne descendante
+            top_cadets.sort(key=lambda x: x['average_score'], reverse=True)
+            
+            stats['cadets_needing_attention'] = sorted(cadets_needing_attention, key=lambda x: x['average_score'])
+            stats['top_cadets'] = top_cadets[:10]
+        
+        # Informations de période
+        period_info = f"Période: {start_date.strftime('%d/%m/%Y')} - {end_date.strftime('%d/%m/%Y')}"
+        
+        # Générer le format demandé
+        if request.export_format == "excel":
+            excel_buffer = await generate_inspection_stats_excel(enriched_inspections, stats, period_info)
+            
+            return StreamingResponse(
+                excel_buffer,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={"Content-Disposition": f"attachment; filename=rapport_inspections_{datetime.now().strftime('%Y%m%d')}.xlsx"}
+            )
+        else:
+            # PDF par défaut
+            pdf_buffer = await generate_inspection_stats_pdf(enriched_inspections, stats, period_info, sections)
+            
+            return StreamingResponse(
+                pdf_buffer,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment; filename=rapport_inspections_{datetime.now().strftime('%Y%m%d')}.pdf"}
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur génération rapport inspections: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération: {str(e)}")
+
+# ============================================================================
+# FIN SYSTÈME DE RAPPORTS
+# ============================================================================
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
