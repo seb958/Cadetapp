@@ -3359,7 +3359,7 @@ async def generate_cadets_list_pdf(cadets: List[dict], sections: List[dict], fil
         # Tableau des cadets - Largeurs ajustées pour A4 avec marges de 1 inch
         data = [['Nom', 'Prénom', 'Grade', 'Rôle']]
         
-        for cadet in sorted(section_cadets, key=lambda x: (x.get('nom', ''), x.get('prenom', ''))):
+        for cadet in sorted(section_cadets, key=lambda x: (x.get('nom') or '', x.get('prenom') or '')):
             data.append([
                 cadet.get('nom', '-'),
                 cadet.get('prenom', '-'),
