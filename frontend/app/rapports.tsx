@@ -111,6 +111,15 @@ export default function Rapports() {
         setSections(sectionsData);
       }
       
+      // Charger tous les utilisateurs pour le rapport individuel
+      const usersResponse = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/users`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (usersResponse.ok) {
+        const usersData = await usersResponse.json();
+        setAllUsers(usersData);
+      }
+      
       // Charger les types d'uniforme depuis les settings
       const settingsResponse = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/settings`, {
         headers: { 'Authorization': `Bearer ${token}` },
