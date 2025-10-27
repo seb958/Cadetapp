@@ -3489,7 +3489,7 @@ async def confirm_import_cadets(
                 new_user = {
                     "id": user_id,
                     "username": username,
-                    "email": f"{username}@cadets.local",
+                    "email": f"{username}@cadets.com",
                     "nom": nom,
                     "prenom": prenom,
                     "grade": grade,
