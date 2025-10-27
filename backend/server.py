@@ -4305,6 +4305,174 @@ async def generate_inspection_stats_excel(inspections: List[dict], stats: dict, 
     buffer.seek(0)
     return buffer
 
+async def generate_cadet_individual_pdf(cadet: dict, section_name: str, inspections: List[dict], 
+                                        presence_stats: dict, inspection_stats: dict) -> BytesIO:
+    """Génère un PDF complet pour un cadet individuel"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Style titre
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#1a365d'),
+        spaceAfter=30,
+        alignment=TA_CENTER
+    )
+    
+    # Header avec logo
+    try:
+        logo_path = Path(__file__).parent / "logo.png"
+        if logo_path.exists():
+            logo = ReportLabImage(str(logo_path), width=1*inch, height=1*inch)
+            elements.append(logo)
+            elements.append(Spacer(1, 0.2*inch))
+    except:
+        pass
+    
+    # Titre
+    elements.append(Paragraph(f"Rapport Individuel - {cadet['prenom']} {cadet['nom']}", title_style))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Informations générales
+    info_data = [
+        ['Nom complet:', f"{cadet['prenom']} {cadet['nom']}"],
+        ['Grade:', cadet.get('grade', '-')],
+        ['Section:', section_name],
+        ['Rôle:', cadet.get('role', '-')],
+        ['Date du rapport:', datetime.now().strftime('%d/%m/%Y')]
+    ]
+    
+    info_table = Table(info_data, colWidths=[2*inch, 4*inch])
+    info_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#e2e8f0')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+    ]))
+    
+    elements.append(info_table)
+    elements.append(Spacer(1, 0.4*inch))
+    
+    # SECTION PRÉSENCES
+    elements.append(Paragraph("📊 Statistiques de Présence", styles['Heading2']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    presence_data = [
+        ['Métrique', 'Valeur'],
+        ['Total présences enregistrées', str(presence_stats['total'])],
+        ['Présent', str(presence_stats['present'])],
+        ['Absent', str(presence_stats['absent'])],
+        ['Absence justifiée', str(presence_stats['justified'])],
+        ['Malade', str(presence_stats['sick'])],
+        ['Taux de présence', f"{presence_stats['rate']:.1f}%"]
+    ]
+    
+    presence_table = Table(presence_data, colWidths=[3*inch, 2*inch])
+    presence_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3182ce')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f7fafc')])
+    ]))
+    
+    elements.append(presence_table)
+    elements.append(Spacer(1, 0.4*inch))
+    
+    # SECTION INSPECTIONS
+    elements.append(Paragraph("🎖️ Statistiques d'Inspection d'Uniforme", styles['Heading2']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    inspection_summary = [
+        ['Métrique', 'Valeur'],
+        ['Total inspections', str(inspection_stats['total'])],
+        ['Moyenne générale', f"{inspection_stats['average']:.1f}%"],
+        ['Meilleur score', f"{inspection_stats['best']:.1f}%"],
+        ['Score le plus faible', f"{inspection_stats['worst']:.1f}%"]
+    ]
+    
+    inspection_summary_table = Table(inspection_summary, colWidths=[3*inch, 2*inch])
+    inspection_summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f7fafc')])
+    ]))
+    
+    elements.append(inspection_summary_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Détail des inspections
+    if inspections:
+        elements.append(Paragraph("Détail des Inspections", styles['Heading3']))
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Limiter à 15 inspections les plus récentes
+        recent_inspections = inspections[:15]
+        
+        inspection_data = [['Date', 'Tenue', 'Score', 'Inspecteur']]
+        
+        for insp in recent_inspections:
+            inspection_data.append([
+                insp['date'],
+                insp['uniform_type'],
+                f"{insp['total_score']:.1f}%",
+                insp['inspector_name']
+            ])
+        
+        inspection_table = Table(inspection_data, colWidths=[1.2*inch, 2*inch, 1*inch, 2*inch])
+        inspection_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6366f1')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f7fafc')])
+        ]))
+        
+        elements.append(inspection_table)
+        
+        if len(inspections) > 15:
+            elements.append(Spacer(1, 0.1*inch))
+            elements.append(Paragraph(f"<i>Note: Seules les 15 inspections les plus récentes sont affichées (total: {len(inspections)})</i>", 
+                                    styles['Normal']))
+    else:
+        elements.append(Paragraph("<i>Aucune inspection enregistrée pour ce cadet.</i>", styles['Normal']))
+    
+    # Footer
+    elements.append(Spacer(1, 0.5*inch))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.grey,
+        alignment=TA_CENTER
+    )
+    elements.append(Paragraph(
+        f"CommandHub - Rapport généré le {datetime.now().strftime('%d/%m/%Y à %H:%M')}",
+        footer_style
+    ))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
 @api_router.post("/reports/cadets-list")
 async def generate_cadets_list_report(
     request: CadetsListRequest,
