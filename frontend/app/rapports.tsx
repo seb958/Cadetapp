@@ -33,10 +33,11 @@ interface Section {
 export default function Rapports() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'cadets' | 'sheets' | 'stats'>('cadets');
+  const [activeTab, setActiveTab] = useState<'cadets' | 'sheets' | 'stats' | 'individual'>('cadets');
   
   // États pour les sections
   const [sections, setSections] = useState<Section[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   
   // États pour Liste des Cadets
   const [cadetsFilterType, setCadetsFilterType] = useState<'all' | 'section' | 'role'>('all');
@@ -55,6 +56,10 @@ export default function Rapports() {
   const [statsSection, setStatsSection] = useState('all');
   const [statsFormat, setStatsFormat] = useState<'pdf' | 'excel'>('pdf');
   const [generatingStats, setGeneratingStats] = useState(false);
+  
+  // États pour Rapport Individuel
+  const [selectedCadetId, setSelectedCadetId] = useState('');
+  const [generatingIndividual, setGeneratingIndividual] = useState(false);
 
   useEffect(() => {
     checkAuth();
