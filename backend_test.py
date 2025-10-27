@@ -206,246 +206,113 @@ class BackendTester:
         else:
             results.add_failure("Test 6: Validation Pydantic", "Aucun utilisateur récupéré")
     
-    def test_related_endpoints(self):
-        """Test 4: Endpoints liés (régression)"""
-        if not self.admin_token:
-            self.log_test("Tests régression", False, "Token admin requis")
-            return
-            
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
+    def print_user_details(self, users: List[Dict[str, Any]]):
+        """Affiche les détails des utilisateurs Jakob et Mariane pour debug"""
+        print(f"\n{'='*60}")
+        print("DÉTAILS DES UTILISATEURS RECHERCHÉS:")
+        print(f"{'='*60}")
         
-        # Test GET /api/sections
-        try:
-            response = requests.get(f"{self.base_url}/sections", headers=headers, timeout=10)
-            if response.status_code == 200:
-                sections = response.json()
-                self.log_test(
-                    "GET /api/sections",
-                    True,
-                    f"Endpoint fonctionnel - {len(sections)} sections trouvées"
-                )
-            else:
-                self.log_test("GET /api/sections", False, f"Status {response.status_code}")
-        except Exception as e:
-            self.log_test("GET /api/sections", False, f"Erreur: {str(e)}")
+        jakob = next((u for u in users if u.get("username") == "jakob.moreau"), None)
+        mariane = next((u for u in users if u.get("username") == "mariane.marsan"), None)
         
-        # Test GET /api/presences
-        try:
-            response = requests.get(f"{self.base_url}/presences", headers=headers, timeout=10)
-            if response.status_code == 200:
-                presences = response.json()
-                self.log_test(
-                    "GET /api/presences",
-                    True,
-                    f"Endpoint fonctionnel - {len(presences)} présences trouvées"
-                )
-            else:
-                self.log_test("GET /api/presences", False, f"Status {response.status_code}")
-        except Exception as e:
-            self.log_test("GET /api/presences", False, f"Erreur: {str(e)}")
+        if jakob:
+            print(f"Jakob Moreau trouvé:")
+            print(f"  - ID: {jakob.get('id')}")
+            print(f"  - Username: {jakob.get('username')}")
+            print(f"  - Nom: {jakob.get('nom')}")
+            print(f"  - Prénom: {jakob.get('prenom')}")
+            print(f"  - Email: {jakob.get('email')}")
+            print(f"  - Rôle: {jakob.get('role')}")
+            print(f"  - Grade: {jakob.get('grade')}")
+            print(f"  - Actif: {jakob.get('actif')}")
+        else:
+            print("Jakob Moreau: NON TROUVÉ")
         
-        # Test POST /api/uniform-inspections (création inspection)
-        try:
-            # D'abord récupérer un utilisateur pour l'inspection
-            users_response = requests.get(f"{self.base_url}/users", headers=headers, timeout=10)
-            if users_response.status_code == 200:
-                users = users_response.json()
-                if users:
-                    test_user_id = users[0]["id"]
-                    
-                    inspection_data = {
-                        "cadet_id": test_user_id,
-                        "uniform_type": "C1 - Tenue de Parade",
-                        "criteria_scores": {
-                            "Propreté générale": 4,
-                            "Coiffure": 3,
-                            "Chaussures": 4,
-                            "Insignes": 3
-                        },
-                        "commentaire": "Test inspection - validation correctif"
-                    }
-                    
-                    response = requests.post(
-                        f"{self.base_url}/uniform-inspections",
-                        json=inspection_data,
-                        headers=headers,
-                        timeout=10
-                    )
-                    
-                    if response.status_code == 200:
-                        self.log_test(
-                            "POST /api/uniform-inspections",
-                            True,
-                            "Création d'inspection fonctionnelle"
-                        )
-                    else:
-                        self.log_test(
-                            "POST /api/uniform-inspections", 
-                            False, 
-                            f"Status {response.status_code}",
-                            response.text[:200]
-                        )
-                else:
-                    self.log_test("POST /api/uniform-inspections", False, "Aucun utilisateur pour test")
-            else:
-                self.log_test("POST /api/uniform-inspections", False, "Impossible de récupérer utilisateurs")
-        except Exception as e:
-            self.log_test("POST /api/uniform-inspections", False, f"Erreur: {str(e)}")
-    
-    def test_excel_import_simulation(self):
-        """Test 5: Simulation import Excel (si possible)"""
-        # Note: Ce test simule la vérification que les nouveaux utilisateurs 
-        # créés auraient le bon schéma
-        
-        if not self.admin_token:
-            self.log_test("Simulation import Excel", False, "Token admin requis")
-            return
-            
-        try:
-            headers = {"Authorization": f"Bearer {self.admin_token}"}
-            
-            # Créer un utilisateur test pour simuler l'import Excel
-            test_user_data = {
-                "nom": "TestImport",
-                "prenom": "Cadet",
-                "grade": "cadet",
-                "role": "cadet",
-                "section_id": None,
-                "subgroup_id": None,
-                "has_admin_privileges": False,
-                "actif": True
-            }
-            
-            response = requests.post(
-                f"{self.base_url}/users",
-                json=test_user_data,
-                headers=headers,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                user_id = result.get("user_id")
-                
-                # Vérifier que l'utilisateur créé a le bon schéma
-                users_response = requests.get(f"{self.base_url}/users", headers=headers, timeout=10)
-                if users_response.status_code == 200:
-                    users = users_response.json()
-                    created_user = next((u for u in users if u["id"] == user_id), None)
-                    
-                    if created_user:
-                        # Vérifier les champs critiques du correctif
-                        has_correct_fields = all([
-                            "must_change_password" in created_user,
-                            "actif" in created_user,
-                            "has_admin_privileges" in created_user,
-                            "require_password_change" not in created_user  # Ancien champ ne doit pas être présent
-                        ])
-                        
-                        if has_correct_fields:
-                            self.log_test(
-                                "Simulation import Excel",
-                                True,
-                                "Nouvel utilisateur créé avec schéma correct"
-                            )
-                        else:
-                            self.log_test(
-                                "Simulation import Excel",
-                                False,
-                                "Nouvel utilisateur avec schéma incorrect"
-                            )
-                        
-                        # Nettoyer - supprimer l'utilisateur test
-                        requests.delete(f"{self.base_url}/users/{user_id}", headers=headers)
-                    else:
-                        self.log_test("Simulation import Excel", False, "Utilisateur créé non trouvé")
-                else:
-                    self.log_test("Simulation import Excel", False, "Impossible de vérifier utilisateur créé")
-            else:
-                self.log_test(
-                    "Simulation import Excel", 
-                    False, 
-                    f"Création utilisateur échouée - Status {response.status_code}"
-                )
-                
-        except Exception as e:
-            self.log_test("Simulation import Excel", False, f"Erreur: {str(e)}")
-    
-    def run_all_tests(self):
-        """Exécute tous les tests"""
-        print("=" * 80)
-        print("🧪 TESTS BACKEND - CORRECTIF CRITIQUE ERREUR 500 GET /api/users")
-        print("=" * 80)
-        print(f"Base URL: {self.base_url}")
-        print(f"Admin: {ADMIN_USERNAME}")
         print()
+        
+        if mariane:
+            print(f"Mariane Marsan trouvée:")
+            print(f"  - ID: {mariane.get('id')}")
+            print(f"  - Username: {mariane.get('username')}")
+            print(f"  - Nom: {mariane.get('nom')}")
+            print(f"  - Prénom: {mariane.get('prenom')}")
+            print(f"  - Email: {mariane.get('email')}")
+            print(f"  - Rôle: {mariane.get('role')}")
+            print(f"  - Grade: {mariane.get('grade')}")
+            print(f"  - Actif: {mariane.get('actif')}")
+        else:
+            print("Mariane Marsan: NON TROUVÉE")
+
+    def run_all_tests(self):
+        """Fonction principale des tests"""
+        print("🧪 TESTS DE VALIDATION - Jakob Moreau et Mariane Marsan")
+        print(f"Base URL: {self.base_url}")
+        print(f"Authentification: {ADMIN_USERNAME}")
+        print("="*60)
+        
+        results = TestResults()
         
         # Test 1: Authentification
-        if not self.authenticate_admin():
-            print("❌ ÉCHEC CRITIQUE: Impossible de s'authentifier")
-            return self.generate_summary()
+        token = self.authenticate_admin(results)
+        if not token:
+            print("\n❌ ARRÊT DES TESTS - Authentification échouée")
+            results.print_summary()
+            return results
         
-        # Test 2: GET /api/users (test principal)
-        users = self.test_get_users_endpoint()
+        # Test 2: Récupération des utilisateurs
+        users = self.get_users(results)
+        if not users:
+            print("\n❌ ARRÊT DES TESTS - Impossible de récupérer les utilisateurs")
+            results.print_summary()
+            return results
         
-        # Test 3: Vérification schéma
-        if users:
-            self.verify_user_schema(users)
+        # Tests 3-6: Validation des exigences
+        self.test_jakob_moreau_presence(results, users)
+        self.test_mariane_marsan_presence(results, users)
+        self.test_total_users_count(results, users)
+        self.test_no_pydantic_errors(results, users)
         
-        # Test 4: Tests de régression
-        self.test_related_endpoints()
+        # Affichage des détails pour debug
+        self.print_user_details(users)
         
-        # Test 5: Simulation import Excel
-        self.test_excel_import_simulation()
+        # Résumé final
+        results.print_summary()
         
-        return self.generate_summary()
-    
-    def generate_summary(self):
-        """Génère un résumé des tests"""
-        total_tests = len(self.test_results)
-        passed_tests = len([t for t in self.test_results if t["success"]])
-        failed_tests = total_tests - passed_tests
+        # Critères de réussite
+        print(f"\n{'='*60}")
+        print("CRITÈRES DE RÉUSSITE:")
+        print(f"{'='*60}")
+        success_criteria = [
+            ("✅ GET /api/users retourne 200 avec 22 utilisateurs", len(users) == 22),
+            ("✅ Jakob Moreau visible dans la liste", any(u.get("username") == "jakob.moreau" for u in users)),
+            ("✅ Mariane Marsan visible dans la liste", any(u.get("username") == "mariane.marsan" for u in users)),
+            ("✅ Pas d'erreurs de validation Pydantic", results.tests_failed == 0)
+        ]
         
-        print("=" * 80)
-        print("📊 RÉSUMÉ DES TESTS")
-        print("=" * 80)
-        print(f"Total: {total_tests} tests")
-        print(f"✅ Réussis: {passed_tests}")
-        print(f"❌ Échoués: {failed_tests}")
-        print(f"📈 Taux de réussite: {(passed_tests/total_tests*100):.1f}%")
-        print()
+        all_success = True
+        for criterion, met in success_criteria:
+            status = "✅" if met else "❌"
+            print(f"{status} {criterion[2:]}")
+            if not met:
+                all_success = False
         
-        if failed_tests > 0:
-            print("❌ TESTS ÉCHOUÉS:")
-            for test in self.test_results:
-                if not test["success"]:
-                    print(f"  - {test['test']}: {test['message']}")
-            print()
-        
-        # Vérification critique
-        critical_test = next((t for t in self.test_results if "GET /api/users - Status 200" in t["test"]), None)
-        if critical_test and critical_test["success"]:
-            print("🎉 CORRECTIF VALIDÉ: GET /api/users retourne 200 OK (plus d'erreur 500)")
+        if all_success:
+            print(f"\n🎉 TOUS LES CRITÈRES DE RÉUSSITE SONT REMPLIS!")
         else:
-            print("🚨 CORRECTIF NON VALIDÉ: GET /api/users ne fonctionne toujours pas correctement")
+            print(f"\n⚠️  CERTAINS CRITÈRES NE SONT PAS REMPLIS")
         
-        print("=" * 80)
-        
-        return {
-            "total_tests": total_tests,
-            "passed": passed_tests,
-            "failed": failed_tests,
-            "success_rate": passed_tests/total_tests*100,
-            "critical_fix_validated": critical_test and critical_test["success"] if critical_test else False,
-            "details": self.test_results
-        }
+        return results
 
-if __name__ == "__main__":
+def main():
+    """Fonction principale"""
     tester = BackendTester()
     results = tester.run_all_tests()
     
     # Code de sortie basé sur les résultats
-    if results["failed"] == 0:
+    if results.tests_failed == 0:
         sys.exit(0)  # Succès
     else:
         sys.exit(1)  # Échec
+
+if __name__ == "__main__":
+    main()
