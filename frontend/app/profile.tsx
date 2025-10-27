@@ -135,6 +135,52 @@ export default function Profile() {
     }
   };
 
+  const handleGenerateMyReport = async () => {
+    if (!user) return;
+    
+    setGeneratingReport(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const url = `${EXPO_PUBLIC_BACKEND_URL}/api/reports/cadet/${user.id}`;
+      
+      if (Platform.OS === 'web') {
+        // Sur web, ouvrir dans un nouvel onglet
+        window.open(url + `?token=${token}`, '_blank');
+        Alert.alert('Succès', 'Le rapport PDF va se télécharger dans un nouvel onglet');
+      } else {
+        // Sur mobile, télécharger et partager
+        const filename = `rapport_${user.prenom}_${user.nom}_${new Date().toISOString().split('T')[0]}.pdf`;
+        const fileUri = FileSystem.documentDirectory + filename;
+        
+        const downloadResult = await FileSystem.downloadAsync(
+          url,
+          fileUri,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (downloadResult.status === 200) {
+          // Partager le fichier
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(downloadResult.uri);
+          } else {
+            Alert.alert('Succès', `Rapport téléchargé: ${filename}`);
+          }
+        } else {
+          Alert.alert('Erreur', 'Impossible de télécharger le rapport');
+        }
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+      Alert.alert('Erreur', 'Impossible de générer le rapport');
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   const getGradeDisplayName = (grade: string) => {
     const grades: { [key: string]: string } = {
       'cadet': 'Cadet',
