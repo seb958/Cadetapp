@@ -488,6 +488,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  reportButton: {
+    backgroundColor: '#10b981',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  reportButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    opacity: 0.7,
+  },
+  reportButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   passwordForm: {
     gap: 16,
   },
