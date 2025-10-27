@@ -166,7 +166,11 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
       </View>
 
       {/* Liste des sections */}
-      <View style={styles.sectionsContainer}>
+      <ScrollView 
+        style={styles.sectionsContainer}
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+      >
         {filteredSections.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
@@ -201,7 +205,7 @@ export const SwipeableAttendance: React.FC<SwipeableAttendanceProps> = ({
             );
           })
         )}
-      </View>
+      </ScrollView>
 
       {/* Boutons d'action */}
       <View style={styles.actionButtons}>
