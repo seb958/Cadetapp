@@ -161,40 +161,51 @@ export default function ImportCadets() {
 
     console.log('Confirmation import - Preview data:', previewData);
 
-    Alert.alert(
-      'Confirmer l\'import',
-      `Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Confirmer',
-          onPress: async () => {
-            console.log('Bouton Confirmer pressé');
-            setConfirming(true);
-            try {
-              const token = await AsyncStorage.getItem('access_token');
-              
-              // Préparer les changements
-              const changes = [
-                ...previewData.new_cadets.map(c => ({
-                  type: 'new',
-                  nom: c.nom,
-                  prenom: c.prenom,
-                  grade: c.grade,
-                  section: c.section,
-                  username: c.username
-                })),
-                ...previewData.updated_cadets.map(c => ({
-                  type: 'update',
-                  username: c.username,
-                  new_grade: c.new_grade,
-                  new_section: c.new_section
-                }))
-              ];
+    // Sur web, utiliser window.confirm
+    const confirmed = Platform.OS === 'web' 
+      ? window.confirm(`Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert(
+            'Confirmer l\'import',
+            `Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`,
+            [
+              { text: 'Annuler', style: 'cancel', onPress: () => resolve(false) },
+              { text: 'Confirmer', onPress: () => resolve(true) }
+            ]
+          );
+        });
 
-              console.log('Envoi de', changes.length, 'changements au backend');
+    if (!confirmed) {
+      console.log('Import annulé par l\'utilisateur');
+      return;
+    }
 
-              const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/import/cadets/confirm`, {
+    console.log('Bouton Confirmer pressé');
+    setConfirming(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      
+      // Préparer les changements
+      const changes = [
+        ...previewData.new_cadets.map(c => ({
+          type: 'new',
+          nom: c.nom,
+          prenom: c.prenom,
+          grade: c.grade,
+          section: c.section,
+          username: c.username
+        })),
+        ...previewData.updated_cadets.map(c => ({
+          type: 'update',
+          username: c.username,
+          new_grade: c.new_grade,
+          new_section: c.new_section
+        }))
+      ];
+
+      console.log('Envoi de', changes.length, 'changements au backend');
+
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/import/cadets/confirm`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
