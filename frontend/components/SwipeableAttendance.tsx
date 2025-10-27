@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   Animated,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 
