@@ -4585,6 +4585,125 @@ async def generate_inspection_stats_report(
         logger.error(f"Erreur génération rapport inspections: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors de la génération: {str(e)}")
 
+# Endpoint pour génération PDF individuel par cadet
+@api_router.get("/reports/cadet/{cadet_id}")
+async def generate_cadet_individual_report(
+    cadet_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Génère un rapport PDF complet pour un cadet individuel
+    Accessible:
+    - Aux responsables de rapports (inspecteurs et supérieurs)
+    - Au cadet lui-même (pour son propre rapport)
+    """
+    try:
+        # Vérifier les permissions
+        is_report_responsible = False
+        try:
+            # Vérifier si l'utilisateur a les droits d'inspection (inspecteurs)
+            await require_inspection_permissions(current_user)
+            is_report_responsible = True
+        except HTTPException:
+            pass
+        
+        # Si pas responsable de rapport, vérifier si c'est le cadet qui demande son propre rapport
+        if not is_report_responsible and current_user.id != cadet_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Vous ne pouvez consulter que votre propre rapport"
+            )
+        
+        # Récupérer les informations du cadet
+        cadet = await db.users.find_one({"id": cadet_id})
+        if not cadet:
+            raise HTTPException(status_code=404, detail="Cadet non trouvé")
+        
+        # Récupérer la section
+        section_name = "-"
+        if cadet.get('section_id'):
+            if cadet['section_id'] == 'etat-major-virtual':
+                section_name = "⭐ État-Major"
+            else:
+                section = await db.sections.find_one({"id": cadet['section_id']})
+                if section:
+                    section_name = section['nom']
+        
+        # Récupérer toutes les inspections du cadet
+        inspections = await db.uniform_inspections.find({"cadet_id": cadet_id}).to_list(10000)
+        
+        # Récupérer toutes les présences du cadet
+        presences = await db.presences.find({"cadet_id": cadet_id}).to_list(10000)
+        
+        # Enrichir les données d'inspection avec les noms des inspecteurs
+        users = await db.users.find().to_list(1000)
+        user_map = {u['id']: u for u in users}
+        
+        enriched_inspections = []
+        for insp in inspections:
+            inspector = user_map.get(insp['inspected_by'])
+            enriched_inspections.append({
+                'date': insp['date'],
+                'uniform_type': insp['uniform_type'],
+                'total_score': insp['total_score'],
+                'max_score': insp.get('max_score', 100),
+                'criteria_scores': insp.get('criteria_scores', {}),
+                'inspector_name': f"{inspector['prenom']} {inspector['nom']}" if inspector else "Inconnu",
+                'commentaire': insp.get('commentaire', '')
+            })
+        
+        # Trier par date décroissante
+        enriched_inspections.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Calculer les statistiques de présence
+        total_presences = len(presences)
+        presences_present = len([p for p in presences if p.get('status') == 'present'])
+        presences_absent = len([p for p in presences if p.get('status') == 'absent'])
+        presences_justified = len([p for p in presences if p.get('status') == 'justified_absent'])
+        presences_sick = len([p for p in presences if p.get('status') == 'sick'])
+        
+        presence_rate = (presences_present / total_presences * 100) if total_presences > 0 else 0
+        
+        # Calculer les statistiques d'inspection
+        inspection_avg = sum(i['total_score'] for i in enriched_inspections) / len(enriched_inspections) if enriched_inspections else 0
+        best_score = max((i['total_score'] for i in enriched_inspections), default=0)
+        worst_score = min((i['total_score'] for i in enriched_inspections), default=0)
+        
+        # Générer le PDF
+        pdf_buffer = await generate_cadet_individual_pdf(
+            cadet,
+            section_name,
+            enriched_inspections,
+            {
+                'total': total_presences,
+                'present': presences_present,
+                'absent': presences_absent,
+                'justified': presences_justified,
+                'sick': presences_sick,
+                'rate': presence_rate
+            },
+            {
+                'total': len(enriched_inspections),
+                'average': inspection_avg,
+                'best': best_score,
+                'worst': worst_score
+            }
+        )
+        
+        filename = f"rapport_{cadet['prenom']}_{cadet['nom']}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur génération rapport cadet: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la génération: {str(e)}")
+
 # ============================================================================
 # FIN SYSTÈME DE RAPPORTS
 
