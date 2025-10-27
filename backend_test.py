@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
-Tests backend pour validation du correctif critique erreur 500 GET /api/users
-après import Excel de cadets.
+Tests pour valider que Jakob Moreau et Mariane Marsan apparaissent dans GET /api/users
+après correction des emails invalides (.local) mis à None.
 
-Objectif: Valider que l'endpoint GET /api/users retourne 200 OK avec structure correcte
-après correction du schéma MongoDB des utilisateurs créés via import Excel.
+Objectif: Valider que les utilisateurs Jakob Moreau et Mariane Marsan apparaissent maintenant 
+dans la liste GET /api/users après avoir mis leurs emails à None pour résoudre les erreurs 
+de validation Pydantic.
 """
 
 import requests
 import json
 from datetime import datetime, date
 import sys
+from typing import Dict, Any, List
 
 # Configuration
 BASE_URL = "https://commandhub-cadet.preview.emergentagent.com/api"
