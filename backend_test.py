@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Tests pour vérifier les permissions présences avec has_admin_privileges
-Demande spécifique: Tester que les cadets avec has_admin_privileges=True peuvent prendre les présences
+Tests backend pour validation du correctif critique erreur 500 GET /api/users
+après import Excel de cadets.
+
+Objectif: Valider que l'endpoint GET /api/users retourne 200 OK avec structure correcte
+après correction du schéma MongoDB des utilisateurs créés via import Excel.
 """
 
 import requests
@@ -10,7 +13,7 @@ from datetime import datetime, date
 import sys
 
 # Configuration
-BASE_URL = "https://command-central-9.preview.emergentagent.com/api"
+BASE_URL = "https://commandhub-cadet.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
