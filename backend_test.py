@@ -19,30 +19,37 @@ BASE_URL = "https://commandhub-cadet.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
+class TestResults:
+    def __init__(self):
+        self.tests_passed = 0
+        self.tests_failed = 0
+        self.errors = []
+        
+    def add_success(self, test_name: str):
+        self.tests_passed += 1
+        print(f"✅ {test_name}")
+        
+    def add_failure(self, test_name: str, error: str):
+        self.tests_failed += 1
+        self.errors.append(f"{test_name}: {error}")
+        print(f"❌ {test_name}: {error}")
+        
+    def print_summary(self):
+        total = self.tests_passed + self.tests_failed
+        success_rate = (self.tests_passed / total * 100) if total > 0 else 0
+        print(f"\n{'='*60}")
+        print(f"RÉSUMÉ DES TESTS: {self.tests_passed}/{total} réussis ({success_rate:.1f}%)")
+        print(f"{'='*60}")
+        
+        if self.errors:
+            print("\nERREURS DÉTECTÉES:")
+            for error in self.errors:
+                print(f"  - {error}")
+
 class BackendTester:
     def __init__(self):
         self.base_url = BASE_URL
         self.admin_token = None
-        self.test_results = []
-        
-    def log_test(self, test_name, success, message="", details=None):
-        """Enregistre le résultat d'un test"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "message": message,
-            "details": details,
-            "timestamp": datetime.now().isoformat()
-        }
-        self.test_results.append(result)
-        
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} - {test_name}")
-        if message:
-            print(f"    {message}")
-        if details and not success:
-            print(f"    Détails: {details}")
-        print()
     
     def authenticate_admin(self):
         """Test 1: Authentification Admin"""
