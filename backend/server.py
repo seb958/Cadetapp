@@ -4902,7 +4902,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.responses import FileResponse
 
-@app.get("/download/commandhub-project.zip")
+@api_router.get("/download-project")
 async def download_project():
     """
     Endpoint pour télécharger le projet complet packagé
