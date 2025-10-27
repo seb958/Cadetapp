@@ -280,6 +280,17 @@ export default function Profile() {
             </View>
           )}
 
+          {/* Bouton pour générer le rapport individuel */}
+          <TouchableOpacity
+            style={[styles.reportButton, generatingReport && styles.reportButtonDisabled]}
+            onPress={handleGenerateMyReport}
+            disabled={generatingReport}
+          >
+            <Text style={styles.reportButtonText}>
+              {generatingReport ? '⏳ Génération en cours...' : '📄 Télécharger mon rapport PDF'}
+            </Text>
+          </TouchableOpacity>
+
           {!changingPassword ? (
             <TouchableOpacity
               style={styles.changePasswordButton}
