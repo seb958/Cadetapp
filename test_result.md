@@ -137,6 +137,9 @@ backend:
         - working: true
           agent: "main"
           comment: "✅ CORRECTIF CRITIQUE APPLIQUÉ: Bug identifié dans schéma création utilisateurs import Excel (ligne 3470-3488). Problème: champ 'require_password_change' au lieu de 'must_change_password' + champs manquants (actif, has_admin_privileges, subgroup_id, photo_base64, invitation_token, invitation_expires, created_by). Solution: schéma MongoDB corrigé pour conformité modèle UserInDB. Testing agent a corrigé 15 utilisateurs existants + 5 emails .local→.com. Validation: 22/22 utilisateurs validés Pydantic, GET /api/users fonctionne (200 OK). Backend et frontend redémarrés. Import Excel complètement fonctionnel."
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTS VALIDATION JAKOB MOREAU ET MARIANE MARSAN RÉUSSIS - 12/12 tests passés (100% réussite). OBJECTIF PRINCIPAL ATTEINT: Jakob Moreau (username: jakob.moreau) et Mariane Marsan (username: mariane.marsan) apparaissent maintenant dans GET /api/users après correction emails .local→None. VALIDATION COMPLÈTE: 1) Authentification admin fonctionnelle (aadministrateur/admin123), 2) GET /api/users retourne 200 OK avec 22 utilisateurs (plus d'erreur 500), 3) Jakob Moreau présent avec email=None, nom/prénom corrects, actif=True, 4) Mariane Marsan présente avec email=None, nom/prénom corrects, actif=True, 5) Aucune erreur de validation Pydantic détectée, 6) Tous les 22 utilisateurs ont structure valide. CORRECTIF EMAILS .LOCAL COMPLÈTEMENT VALIDÉ. Base URL: https://command-central-9.preview.emergentagent.com/api. Authentification: aadministrateur/admin123."
 
   - task: "Système d'inspection des uniformes avec barème de notation"
     implemented: true
