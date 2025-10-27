@@ -739,7 +739,19 @@ async def get_users(
     
     # Récupérer tous les utilisateurs (actifs et en attente) avec les filtres appliqués
     users = await db.users.find(filter_dict).to_list(1000)
-    return [User(**user) for user in users]
+    
+    # Convert to User models and then to dict for JSON serialization
+    user_models = []
+    for user in users:
+        try:
+            user_model = User(**user)
+            user_models.append(user_model.dict())
+        except Exception as e:
+            # Log the error but continue
+            print(f"Error converting user {user.get('prenom', 'N/A')} {user.get('nom', 'N/A')}: {e}")
+            continue
+    
+    return user_models
 
 @api_router.post("/users", response_model=dict)
 async def create_user(
