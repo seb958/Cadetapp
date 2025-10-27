@@ -160,20 +160,26 @@ export default function ImportCadets() {
     }
 
     console.log('Confirmation import - Preview data:', previewData);
+    console.log('Platform.OS:', Platform.OS);
 
     // Sur web, utiliser window.confirm
-    const confirmed = Platform.OS === 'web' 
-      ? window.confirm(`Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`)
-      : await new Promise<boolean>((resolve) => {
-          Alert.alert(
-            'Confirmer l\'import',
-            `Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`,
-            [
-              { text: 'Annuler', style: 'cancel', onPress: () => resolve(false) },
-              { text: 'Confirmer', onPress: () => resolve(true) }
-            ]
-          );
-        });
+    let confirmed = false;
+    if (Platform.OS === 'web') {
+      console.log('Appel de window.confirm...');
+      confirmed = window.confirm(`Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`);
+      console.log('window.confirm résultat:', confirmed);
+    } else {
+      confirmed = await new Promise<boolean>((resolve) => {
+        Alert.alert(
+          'Confirmer l\'import',
+          `Voulez-vous importer ${previewData.new_cadets.length} nouveaux cadets et mettre à jour ${previewData.updated_cadets.length} cadets existants ?`,
+          [
+            { text: 'Annuler', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Confirmer', onPress: () => resolve(true) }
+          ]
+        );
+      });
+    }
 
     if (!confirmed) {
       console.log('Import annulé par l\'utilisateur');
