@@ -262,7 +262,16 @@ export default function Index() {
         >
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={styles.loginContainer}>
-              <Text style={styles.title}>Gestion Escadron Cadets</Text>
+              {/* Logo de l'escadron */}
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={require('../public/logo-original.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              
+              <Text style={styles.title}>CommandHub</Text>
               <Text style={styles.subtitle}>Connexion</Text>
 
               <View style={styles.inputContainer}>
