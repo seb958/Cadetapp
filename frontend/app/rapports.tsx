@@ -620,6 +620,61 @@ export default function Rapports() {
             </View>
           </View>
         )}
+
+        {/* Tab 4: Rapport Individuel */}
+        {activeTab === 'individual' && (
+          <View style={styles.tabContent}>
+            <Text style={styles.sectionTitle}>Générer un Rapport Individuel</Text>
+            <Text style={styles.sectionDescription}>
+              Créez un rapport PDF complet pour un cadet avec ses présences et inspections
+            </Text>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.label}>Sélectionner un cadet</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedCadetId}
+                  onValueChange={setSelectedCadetId}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Sélectionner un cadet..." value="" />
+                  {allUsers
+                    .sort((a, b) => `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`))
+                    .map(cadet => (
+                      <Picker.Item 
+                        key={cadet.id} 
+                        label={`${cadet.prenom} ${cadet.nom}`} 
+                        value={cadet.id} 
+                      />
+                    ))}
+                </Picker>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.generateButton}
+              onPress={generateIndividualReport}
+              disabled={generatingIndividual}
+            >
+              {generatingIndividual ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.generateButtonText}>
+                  📄 Générer Rapport PDF
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.featuresList}>
+              <Text style={styles.featuresTitle}>Ce rapport inclut:</Text>
+              <Text style={styles.featureItem}>✓ Informations personnelles du cadet</Text>
+              <Text style={styles.featureItem}>✓ Statistiques de présence complètes</Text>
+              <Text style={styles.featureItem}>✓ Statistiques d'inspections (moyenne, meilleur/pire score)</Text>
+              <Text style={styles.featureItem}>✓ Historique des 15 dernières inspections</Text>
+              <Text style={styles.featureItem}>✓ Logo de l'escadron</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
