@@ -726,32 +726,38 @@ async def get_users(
     Récupérer la liste des utilisateurs - accessible aux inspecteurs
     Filtres optionnels : grade, role, section_id
     """
-    # Construire le filtre de base
-    filter_dict = {}
-    
-    # Ajouter les filtres optionnels
-    if grade:
-        filter_dict["grade"] = grade
-    if role:
-        filter_dict["role"] = role
-    if section_id:
-        filter_dict["section_id"] = section_id
-    
-    # Récupérer tous les utilisateurs (actifs et en attente) avec les filtres appliqués
-    users = await db.users.find(filter_dict).to_list(1000)
-    
-    # Convert to User models and then to dict for JSON serialization
-    user_models = []
-    for user in users:
-        try:
-            user_model = User(**user)
-            user_models.append(user_model.dict())
-        except Exception as e:
-            # Log the error but continue
-            print(f"Error converting user {user.get('prenom', 'N/A')} {user.get('nom', 'N/A')}: {e}")
-            continue
-    
-    return user_models
+    try:
+        # Construire le filtre de base
+        filter_dict = {}
+        
+        # Ajouter les filtres optionnels
+        if grade:
+            filter_dict["grade"] = grade
+        if role:
+            filter_dict["role"] = role
+        if section_id:
+            filter_dict["section_id"] = section_id
+        
+        # Récupérer tous les utilisateurs (actifs et en attente) avec les filtres appliqués
+        users = await db.users.find(filter_dict).to_list(1000)
+        
+        # Convert to User models and then to dict for JSON serialization
+        user_models = []
+        for user in users:
+            try:
+                user_model = User(**user)
+                user_models.append(user_model.dict())
+            except Exception as e:
+                # Log the error but continue
+                print(f"Error converting user {user.get('prenom', 'N/A')} {user.get('nom', 'N/A')}: {e}")
+                continue
+        
+        return user_models
+    except Exception as e:
+        print(f"Error in get_users endpoint: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @api_router.post("/users", response_model=dict)
 async def create_user(
