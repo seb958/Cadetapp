@@ -319,6 +319,43 @@ export default function Rapports() {
     }
   };
 
+  const generateIndividualReport = async () => {
+    if (!selectedCadetId) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un cadet');
+      return;
+    }
+
+    setGeneratingIndividual(true);
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/reports/cadet/${selectedCadetId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const selectedCadet = allUsers.find(u => u.id === selectedCadetId);
+        const filename = selectedCadet 
+          ? `rapport_${selectedCadet.prenom}_${selectedCadet.nom}_${new Date().toISOString().split('T')[0]}.pdf`
+          : `rapport_cadet_${new Date().toISOString().split('T')[0]}.pdf`;
+        
+        await downloadFile(url, filename, 'application/pdf');
+        Alert.alert('Succès', 'Rapport individuel généré');
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Erreur', errorData.detail || 'Erreur lors de la génération');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      Alert.alert('Erreur', 'Impossible de générer le rapport');
+    } finally {
+      setGeneratingIndividual(false);
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
