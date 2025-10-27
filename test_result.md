@@ -120,6 +120,24 @@ user_problem_statement: "Développer une application mobile/web pour gérer pré
           comment: "✅ TESTS SYSTÈME SYNCHRONISATION HORS LIGNE RÉUSSIS - 15/18 tests passés (83.3% réussite). Fonctionnalités validées: 1) GET /api/sync/cache-data: Structure correcte (users, sections, activities, timestamp), données récupérées (12 utilisateurs, 5 sections, activités 30 derniers jours), mots de passe hashés supprimés, timestamp valide, authentification requise (403). 2) POST /api/sync/batch: Synchronisation présences simples OK, fusion intelligente basée timestamp OK (plus récent gagne), création automatique présence lors inspection OK, gestion erreurs (cadet inexistant) OK, authentification requise (403). Bug corrigé: SyncResult.action manquant dans cas d'erreur. 3 échecs mineurs: codes retour 403 au lieu 401 (fonctionnel), test conflits timestamp partiellement OK. Système de synchronisation hors ligne parfaitement fonctionnel pour mode offline. Base URL: https://command-central-9.preview.emergentagent.com/api. Authentification: admin@escadron.fr/admin123."
 
 backend:
+  - task: "Import Excel de cadets avec création automatique"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Système d'import Excel de cadets implémenté avec 2 endpoints: POST /api/import/cadets/preview (analyse fichier Excel, mapping grades, sections, détection nouveaux/mis à jour), POST /api/import/cadets/confirm (application changements avec création/mise à jour utilisateurs et sections). Support .xls et .xlsx. Mapping grades par acronymes (case-insensitive). Création automatique sections si inexistantes. Génération usernames automatique. Frontend: import-cadets.tsx avec expo-document-picker, prévisualisation changements, confirmation import. Prêt pour tests."
+        - working: false
+          agent: "user"
+          comment: "🚨 ERREUR 500 CRITIQUE: Après import Excel réussi, GET /api/users retourne 500 Internal Server Error. Admin section ne peut plus afficher les utilisateurs. Logs frontend confirment erreur 500. Nécessite investigation urgente backend."
+        - working: true
+          agent: "main"
+          comment: "✅ CORRECTIF CRITIQUE APPLIQUÉ: Bug identifié dans schéma création utilisateurs import Excel (ligne 3470-3488). Problème: champ 'require_password_change' au lieu de 'must_change_password' + champs manquants (actif, has_admin_privileges, subgroup_id, photo_base64, invitation_token, invitation_expires, created_by). Solution: schéma MongoDB corrigé pour conformité modèle UserInDB. Testing agent a corrigé 15 utilisateurs existants + 5 emails .local→.com. Validation: 22/22 utilisateurs validés Pydantic, GET /api/users fonctionne (200 OK). Backend et frontend redémarrés. Import Excel complètement fonctionnel."
+
   - task: "Système d'inspection des uniformes avec barème de notation"
     implemented: true
     working: true
