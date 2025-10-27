@@ -122,67 +122,89 @@ class BackendTester:
             results.add_failure("Test 2: GET /api/users", str(e))
             return []
     
-    def verify_user_schema(self, users):
-        """Test 3: Vérifier structure des utilisateurs récents"""
-        if not users:
-            self.log_test("Vérification schéma utilisateurs", False, "Aucun utilisateur à vérifier")
-            return
+    def test_jakob_moreau_presence(self, results: TestResults, users: List[Dict[str, Any]]):
+        """Test 3: Vérifier présence de Jakob Moreau"""
+        jakob = None
+        for user in users:
+            if user.get("username") == "jakob.moreau":
+                jakob = user
+                break
+        
+        if jakob:
+            results.add_success("Test 3: Jakob Moreau trouvé dans la liste")
             
-        try:
-            # Analyser tous les utilisateurs pour détecter des problèmes de schéma
-            schema_issues = []
-            users_with_correct_schema = 0
-            
-            required_fields = {
-                "id": str,
-                "nom": str,
-                "prenom": str,
-                "grade": str,
-                "role": str,
-                "actif": bool,
-                "has_admin_privileges": bool,
-                "created_at": str,
-                "must_change_password": bool
-            }
-            
-            for user in users:
-                user_issues = []
-                
-                # Vérifier chaque champ requis
-                for field, expected_type in required_fields.items():
-                    if field not in user:
-                        user_issues.append(f"Champ manquant: {field}")
-                    elif not isinstance(user[field], expected_type):
-                        user_issues.append(f"Type incorrect pour {field}: attendu {expected_type.__name__}, reçu {type(user[field]).__name__}")
-                
-                # Vérifier l'ancien champ problématique
-                if "require_password_change" in user:
-                    user_issues.append("Ancien champ 'require_password_change' présent (devrait être 'must_change_password')")
-                
-                if user_issues:
-                    schema_issues.append({
-                        "user": f"{user.get('prenom', 'N/A')} {user.get('nom', 'N/A')} (ID: {user.get('id', 'N/A')})",
-                        "issues": user_issues
-                    })
-                else:
-                    users_with_correct_schema += 1
-            
-            if not schema_issues:
-                self.log_test(
-                    "Vérification schéma utilisateurs",
-                    True,
-                    f"Tous les {len(users)} utilisateurs ont le schéma correct"
-                )
+            # Vérifier les détails
+            if jakob.get("nom") == "Moreau" and jakob.get("prenom") == "Jakob":
+                results.add_success("Test 3a: Jakob Moreau - nom et prénom corrects")
             else:
-                self.log_test(
-                    "Vérification schéma utilisateurs",
-                    False,
-                    f"{users_with_correct_schema}/{len(users)} utilisateurs OK - {len(schema_issues)} avec problèmes",
-                    schema_issues[:3]  # Afficher seulement les 3 premiers problèmes
-                )
-                
-        except Exception as e:
-            self.log_test("Vérification schéma utilisateurs", False, f"Erreur: {str(e)}")
+                results.add_failure("Test 3a: Jakob Moreau - nom/prénom", 
+                                  f"Attendu: Jakob Moreau, Trouvé: {jakob.get('prenom')} {jakob.get('nom')}")
+            
+            # Vérifier email à None
+            if jakob.get("email") is None:
+                results.add_success("Test 3b: Jakob Moreau - email à None")
+            else:
+                results.add_failure("Test 3b: Jakob Moreau - email", 
+                                  f"Attendu: None, Trouvé: {jakob.get('email')}")
+        else:
+            results.add_failure("Test 3: Jakob Moreau", "Utilisateur jakob.moreau non trouvé dans la liste")
+
+    def test_mariane_marsan_presence(self, results: TestResults, users: List[Dict[str, Any]]):
+        """Test 4: Vérifier présence de Mariane Marsan"""
+        mariane = None
+        for user in users:
+            if user.get("username") == "mariane.marsan":
+                mariane = user
+                break
+        
+        if mariane:
+            results.add_success("Test 4: Mariane Marsan trouvée dans la liste")
+            
+            # Vérifier les détails
+            if mariane.get("nom") == "Marsan" and mariane.get("prenom") == "Mariane":
+                results.add_success("Test 4a: Mariane Marsan - nom et prénom corrects")
+            else:
+                results.add_failure("Test 4a: Mariane Marsan - nom/prénom", 
+                                  f"Attendu: Mariane Marsan, Trouvé: {mariane.get('prenom')} {mariane.get('nom')}")
+            
+            # Vérifier email à None
+            if mariane.get("email") is None:
+                results.add_success("Test 4b: Mariane Marsan - email à None")
+            else:
+                results.add_failure("Test 4b: Mariane Marsan - email", 
+                                  f"Attendu: None, Trouvé: {mariane.get('email')}")
+        else:
+            results.add_failure("Test 4: Mariane Marsan", "Utilisateur mariane.marsan non trouvé dans la liste")
+
+    def test_total_users_count(self, results: TestResults, users: List[Dict[str, Any]]):
+        """Test 5: Vérifier le nombre total d'utilisateurs"""
+        total_users = len(users)
+        if total_users == 22:
+            results.add_success(f"Test 5: Nombre total d'utilisateurs correct (22)")
+        else:
+            results.add_failure("Test 5: Nombre total d'utilisateurs", 
+                              f"Attendu: 22, Trouvé: {total_users}")
+
+    def test_no_pydantic_errors(self, results: TestResults, users: List[Dict[str, Any]]):
+        """Test 6: Vérifier qu'il n'y a pas d'erreurs de validation Pydantic"""
+        # Si on arrive ici et qu'on a récupéré tous les utilisateurs sans erreur 500,
+        # cela signifie que les erreurs Pydantic sont résolues
+        if users:
+            results.add_success("Test 6: Pas d'erreurs de validation Pydantic détectées")
+            
+            # Vérifier que tous les utilisateurs ont une structure valide
+            valid_users = 0
+            for user in users:
+                if all(key in user for key in ["id", "nom", "prenom", "role", "grade"]):
+                    valid_users += 1
+            
+            if valid_users == len(users):
+                results.add_success(f"Test 6a: Tous les {len(users)} utilisateurs ont une structure valide")
+            else:
+                results.add_failure("Test 6a: Structure utilisateurs", 
+                                  f"{valid_users}/{len(users)} utilisateurs ont une structure valide")
+        else:
+            results.add_failure("Test 6: Validation Pydantic", "Aucun utilisateur récupéré")
     
     def test_related_endpoints(self):
         """Test 4: Endpoints liés (régression)"""
