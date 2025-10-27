@@ -332,7 +332,7 @@ Si vous voulez une interface graphique complète dans l'admin :
 
 ### Test 1 : Vérification Endpoint
 ```bash
-curl https://commandhub-cadet.preview.emergentagent.com/api/version-info
+curl https://command-central-9.preview.emergentagent.com/api/version-info
 ```
 **Résultat attendu** :
 ```json

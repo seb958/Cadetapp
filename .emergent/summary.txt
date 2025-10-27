@@ -1,88 +1,69 @@
 <analysis>
-The AI engineer systematically addressed several complex feature and bug requests for the CommandHub application. Initially, the focus was on accurately representing a virtual État-Major section in attendance by modifying  to ensure this logic was correctly passed to . Subsequent work centered on enhancing uniform inspections, allowing specific roles (État-Major, section leaders) to inspect others while preventing self-inspection, which involved updates to both frontend () and backend () permissions. A critical bug related to uniform type selection for inspectors was resolved by enabling direct selection within the UI and fixing overly restrictive backend API permissions. Finally, the engineer worked on allowing cadets with  to take attendance, requiring updates to backend presence permissions and frontend data loading logic in  to ensure cadets were visible. This trajectory demonstrates robust debugging and a methodical approach to full-stack development.
+The previous AI engineer successfully brought the CommandHub application from inception, handling complex features and bug fixes. The work transitioned from ensuring  users could take attendance, to building a comprehensive Rapports section with various PDF/Excel exports, including cadet lists, blank inspection sheets, and detailed inspection statistics with graphs. A significant challenge involved debugging backend route registration, complex sorting logic with  values in data, and platform-specific UI interactions (Alert.alert vs. window.confirm). Most recently, the engineer implemented an Excel import for cadets, handling data parsing, grade acronyms, and automatic section creation. However, this last feature seems to have introduced a critical regression, causing the  endpoint to return a 500 error, leaving the admin user list empty. The engineer was about to investigate this new backend error.
 </analysis>
 
 <product_requirements>
-The CommandHub application manages cadet squadron activities, including JWT authentication, attendance, and an admin panel for CRUD operations. It features role synchronization, subgroups, and an organigramme. Offline mode for attendance was already present.
-
-Recent feature enhancements and bug fixes include:
-1.  **Uniform Inspection**: Admins define criteria; superiors score. Cadets can view their own scores. New functionality allows État-Major members and section leaders to inspect other cadets (excluding self-inspection) and select uniform types directly, especially for offline scenarios.
-2.  **Platform Transition**: Migration to native Android APKs with direct downloads and OTA updates due to PWA limitations.
-3.  **Data Consistency**: Ensured correct cadet section assignments and consistent branding.
-4.  **Version Management**: User notifications for new versions and update mechanisms.
-5.  **User Password Management**: Admin tools for temporary passwords, forced password changes, and username generation.
-6.  **User Profile Page**: Allows users to view details and change passwords.
-7.  **Organigramme Access**: All authenticated users can view; superiors can modify. A section selector was added for filtering.
-8.  **Guest Attendance**: Capability to record presence for unregistered guests in both quick and detailed modes. Section leaders are explicitly included in attendance lists, and a virtual État-Major section groups specific cadet staff. Additionally, cadets with  can now take attendance.
+The CommandHub application facilitates cadet squadron management, covering JWT authentication, attendance, and an admin panel for CRUD operations, with role synchronization, subgroups, and an organigramme. Offline attendance is also supported. Recent efforts focused on:
+1.  **Uniform Inspection:** Enhancing role-based inspections for État-Major and section leaders, preventing self-inspection, and allowing direct uniform type selection.
+2.  **Attendance:** Enabling  users to take attendance for all cadets, incorporating guest attendance, and a virtual État-Major section.
+3.  **Reports Section (New):** Generate PDF/Excel reports including cadet lists (filtered by section/role, auto-updating), blank uniform inspection sheets (landscape, legible criteria, auto-adjusting to uniform changes), detailed inspection statistics (with score evolution graphs, problematic criteria, comments, squadron-wide stats), and general presence/activity reports. Reports require squadron logo and a simple header. Access granted to Admins and Section Leaders.
+4.  **Excel Import/Export (New):**
+    *   **Import Cadets:** Import Excel files (, ) with cadet names, grades (using provided acronyms, case-insensitive), and sections ( maps to ). Automatically generate usernames, set default role 'cadet'. Update existing cadets' grade/section upon import, ignore duplicates. Automatically create new sections if they don't exist (case-insensitive matching). Report changes, with an option to undo.
+    *   **Individual Cadet Report (Export PDF):** Generate a PDF with a cadet's complete data (inspections, presences).
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-Stack Development**: Expo (React Native) frontend, FastAPI (Python) backend, MongoDB database.
--   **Mobile Development**: Expo Router, EAS Build, .
--   **Authentication/Authorization**: JWT, role-based and privilege-based access control.
--   **Offline First**: Service Worker (disabled), client-side caching.
--   **Data Handling**: Serialization for MongoDB  and .
--   **Frontend UI/UX**: Modals, Toast notifications, conditional rendering, state management.
+-   **Mobile Development**: Expo Router, , , .
+-   **Data Processing**:  for Excel,  for PDF generation, , .
+-   **Auth/Authz**: JWT, role/privilege-based access.
+-   **UI/UX**: Modals, Toast, conditional rendering,  (RN) vs.  (Web).
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a full-stack architecture with an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
+The application features an Expo (React Native) frontend, a FastAPI backend, and a MongoDB database.
 
 
 
 -   :
-    -   **Summary**: Main FastAPI application for all API routes and data interactions.
-    -   **Changes**: Added/modified uniform inspection endpoints (, ), presence handling for guests (), and organigramme public access (). Implemented server-side validation to prevent self-inspection, adjusted role handling for section leaders, and refined permissions for , , and  to accommodate various inspector roles and . Modified  to include  users.
+    -   **Summary**: The core FastAPI application.
+    -   **Changes**: Received extensive modifications. Report-related imports (, , ) and all API endpoints for reports () and cadet import () were moved to appear *before*  to ensure proper route registration. Implemented report generation functions (, , , ) with fixes for sorting  values and PDF layout. Enhanced  with score graphs, problematic criteria, and comments. Added  and section normalization logic (e.g., État major to État-Major) for Excel import. New endpoints for previewing and confirming cadet imports were added, handling user/section creation/updates.
 -   :
-    -   **Summary**: Service worker for PWA functionality.
-    -   **Changes**: Caching and request interception were explicitly disabled to resolve development issues.
--   , :
-    -   **Summary**: Entry points and administrative screen.
-    -   **Changes**: Updated authentication status checks to use a more appropriate backend endpoint ().
+    -   **Summary**: Lists Python dependencies.
+    -   **Changes**: Added  (for PDF generation) and  (for  Excel file support).  was confirmed already present.
 -   :
-    -   **Summary**: Screen for managing and viewing uniform inspections.
-    -   **Changes**: Implemented role-based conditional rendering (cadet vs. inspector views), fetching personal stats.  was updated to filter based on inspector roles and apply État-Major grouping. Critical changes included adding  state and modifying  and  to allow inspectors to choose the uniform type directly, removing prior blocking conditions.
+    -   **Summary**: Squadron logo for PDF reports.
+    -   **Changes**: Copied from .
 -   :
-    -   **Summary**: Displays the organizational chart.
-    -   **Changes**: Enabled read-only access for all authenticated users, updated to use the new  endpoint, and integrated a section selector for data filtering.
+    -   **Summary**: Main navigation screen.
+    -   **Changes**: Added  and  functions. Integrated new  buttons with appropriate styling to navigate to the new reports and import screens.
 -   :
-    -   **Summary**: Screen for attendance tracking.
-    -   **Changes**: Implemented guest attendance functionality with modals and toast notifications. Modified  to include section leaders, exclude Officier roles, and introduced a virtual État-Major section grouping specific cadet staff, ensuring this virtual section data is correctly passed to . Updated  logic to include users with , and ensured  and  call  for these users.
+    -   **Summary**: New screen for generating various reports.
+    -   **Changes**: Initial implementation provides UI for selecting report types and filters.
 -   :
-    -   **Summary**: Component for quick attendance marking.
-    -   **Changes**: Adapted  for web compatibility, enabled the Valider button to mark absences, and integrated an Invité button for guest attendance, receiving processed section data including the virtual État-Major.
--    and :
-    -   **Summary**: Handle offline data management and synchronization.
-    -   **Changes**: Involved in debugging an issue where  was not correctly resolved for the  endpoint; the primary fix involved adjusting backend data access permissions for this endpoint.
+    -   **Summary**: New screen for importing cadet data via Excel.
+    -   **Changes**: Implemented UI for file selection, previewing changes, and confirming import. Uses  to handle file input. Crucially, the confirmation dialog was updated to use  for web compatibility, as  did not function as expected on web. Includes logic to display import results (new cadets, updated cadets, new sections, errors).
+-   :
+    -   **Summary**: Lists frontend (Expo) dependencies.
+    -   **Changes**: Added ,  (for report downloads), and  (for Excel import).
+
 </code_architecture>
 
 <pending_tasks>
--   Develop remaining core functionalities: reports, communication, import/export Excel.
--   Fully implement the organigramme feature, including re-implementing zoom/pan functionality.
--   Permanently resolve any underlying  mismatch issues that might resurface.
+-   Develop remaining core functionalities: communication, other types of reports (attendance, activities from earlier suggestions).
+-   Fully implement the organigramme feature, including zoom/pan functionality and hiding modification buttons for cadets.
+-   Resolve any underlying  mismatch issues.
 -   Configure and build the iOS native application.
--   Hide modification buttons for cadets in the organigramme view.
+-   Implement the individual cadet PDF export (only import and general reports are done so far).
+-   Fix the 500 Internal Server Error occurring when accessing the  endpoint.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was addressing a bug reported by the user: a cadet with  (e.g., ) could access the detailed and swipe attendance menus but observed no cadets listed for presence recording.
+Immediately prior to this summary, the AI engineer successfully implemented and refined the Excel import functionality for cadets. This involved setting up backend endpoints (, ), handling  dependency for  files, implementing grade acronym mapping and automatic section creation/normalization (e.g., État major to État-Major), and developing the frontend UI in . A key frontend bug for web users was resolved by changing the import confirmation dialog from  (which has limitations on web) to . The user confirmed that the import preview and confirmation steps were now functional.
 
-The previous work involved multiple fixes related to :
-1.  Backend  in  was updated to allow these users to access presence-related endpoints.
-2.  Backend  in  was modified to provide comprehensive data, not just personal data, to users with .
-3.  Frontend  logic in  was updated to display the attendance buttons for these users.
-
-Despite these changes, the user still reported an empty cadet list. The engineer diagnosed that the  function, responsible for populating the cadet list, was not being triggered for users with  in the frontend. This was due to the conditional checks within  and  functions in  still relying solely on traditional roles ().
-
-The last actions taken were:
-1.  Modifying  in  (around line 168) to include  in the condition for calling .
-2.  Applying the same fix to the  function in  (around line 312).
-3.  Restarting the frontend.
-
-The system is currently in a state where these frontend logic updates have been applied, and the next step is to verify their effectiveness.
+However, after performing an Excel import, the user reported a new critical issue: when navigating to the Admin section, no users were displayed. The frontend console logs confirmed a . This indicates a regression in the backend's user retrieval endpoint, likely caused by the recent import operation. The engineer's last action was to acknowledge this 500 error and indicate the next step would be to investigate the backend logs for the  endpoint.
 </current_work>
 
 <optional_next_step>
-Verify that cadets with  can now see and record presences for all cadets in both attendance modes.
+Investigate the backend logs for the  endpoint to diagnose the 500 Internal Server Error.
 </optional_next_step>
-
