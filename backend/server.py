@@ -4873,6 +4873,25 @@ async def generate_cadet_individual_report(
         raise HTTPException(status_code=500, detail=f"Erreur lors de la génération: {str(e)}")
 
 # ============================================================================
+# TÉLÉCHARGEMENT DU PROJET
+# ============================================================================
+
+@api_router.get("/download-project")
+async def download_project():
+    """
+    Endpoint pour télécharger le projet complet packagé
+    """
+    file_path = ROOT_DIR / "commandhub-project.zip"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"Fichier non trouvé: {file_path}")
+    
+    return FileResponse(
+        path=str(file_path),
+        media_type='application/zip',
+        filename='commandhub-project.zip'
+    )
+
+# ============================================================================
 # FIN SYSTÈME DE RAPPORTS
 
 # Include router
