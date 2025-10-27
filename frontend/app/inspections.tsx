@@ -1676,16 +1676,36 @@ const styles = StyleSheet.create({
   scoreButton0: {
     borderColor: '#ef4444',
   },
+  scoreButton0Selected: {
+    backgroundColor: '#ef4444',
+    borderColor: '#ef4444',
+  },
   scoreButton1: {
+    borderColor: '#f97316',
+  },
+  scoreButton1Selected: {
+    backgroundColor: '#f97316',
     borderColor: '#f97316',
   },
   scoreButton2: {
     borderColor: '#eab308',
   },
+  scoreButton2Selected: {
+    backgroundColor: '#eab308',
+    borderColor: '#eab308',
+  },
   scoreButton3: {
     borderColor: '#84cc16',
   },
+  scoreButton3Selected: {
+    backgroundColor: '#84cc16',
+    borderColor: '#84cc16',
+  },
   scoreButton4: {
+    borderColor: '#10b981',
+  },
+  scoreButton4Selected: {
+    backgroundColor: '#10b981',
     borderColor: '#10b981',
   },
   scoreButtonText: {
@@ -1694,7 +1714,8 @@ const styles = StyleSheet.create({
     color: '#4b5563',
   },
   scoreButtonTextSelected: {
-    color: '#1f2937',
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   criterionCard: {
     flexDirection: 'row',
