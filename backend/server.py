@@ -4896,6 +4896,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# TÉLÉCHARGEMENT DU PROJET
+# ============================================================================
+
+from fastapi.responses import FileResponse
+
+@app.get("/download/commandhub-project.zip")
+async def download_project():
+    """
+    Endpoint pour télécharger le projet complet packagé
+    """
+    file_path = ROOT_DIR / "commandhub-project.zip"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Fichier non trouvé")
+    
+    return FileResponse(
+        path=str(file_path),
+        media_type='application/zip',
+        filename='commandhub-project.zip'
+    )
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
