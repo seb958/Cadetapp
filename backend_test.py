@@ -17,383 +17,436 @@ BASE_URL = "https://commandhub-cadet.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
-class TestResults:
+class BackendTester:
     def __init__(self):
-        self.total_tests = 0
-        self.passed_tests = 0
-        self.failed_tests = 0
-        self.test_details = []
-    
-    def add_test(self, name, passed, details=""):
-        self.total_tests += 1
-        if passed:
-            self.passed_tests += 1
-            status = "✅ PASS"
-        else:
-            self.failed_tests += 1
-            status = "❌ FAIL"
+        self.base_url = BASE_URL
+        self.admin_token = None
+        self.test_results = []
         
-        self.test_details.append(f"{status} - {name}: {details}")
-        print(f"{status} - {name}: {details}")
-    
-    def print_summary(self):
-        print(f"\n{'='*80}")
-        print(f"RÉSUMÉ DES TESTS - PERMISSIONS PRÉSENCES has_admin_privileges")
-        print(f"{'='*80}")
-        print(f"Total: {self.total_tests} | Réussis: {self.passed_tests} | Échoués: {self.failed_tests}")
-        print(f"Taux de réussite: {(self.passed_tests/self.total_tests*100):.1f}%")
-        print(f"{'='*80}")
-
-def get_auth_headers(token):
-    return {"Authorization": f"Bearer {token}"}
-
-def login_user(username, password):
-    """Connexion utilisateur et récupération du token"""
-    try:
-        response = requests.post(f"{BASE_URL}/auth/login", json={
-            "username": username,
-            "password": password
-        })
-        if response.status_code == 200:
-            data = response.json()
-            return data["access_token"], data["user"]
-        else:
-            return None, None
-    except Exception as e:
-        print(f"Erreur lors de la connexion: {e}")
-        return None, None
-
-def generate_password_for_user(admin_token, user_id):
-    """Génère un mot de passe temporaire pour un utilisateur"""
-    try:
-        response = requests.post(
-            f"{BASE_URL}/users/{user_id}/generate-password",
-            headers=get_auth_headers(admin_token)
-        )
-        if response.status_code == 200:
-            return response.json()
-        return None
-    except Exception as e:
-        print(f"Erreur génération mot de passe: {e}")
-        return None
-
-def test_permissions_presences_admin_privileges():
-    """Test principal des permissions présences avec has_admin_privileges"""
-    results = TestResults()
-    
-    print("🔐 TESTS PERMISSIONS PRÉSENCES - has_admin_privileges")
-    print("="*80)
-    
-    # 1. Connexion admin
-    print("\n1️⃣ CONNEXION ADMINISTRATEUR")
-    admin_token, admin_user = login_user(ADMIN_USERNAME, ADMIN_PASSWORD)
-    
-    if not admin_token:
-        results.add_test("Connexion admin", False, "Impossible de se connecter en tant qu'admin")
-        results.print_summary()
-        return results
-    
-    results.add_test("Connexion admin", True, f"Connecté: {admin_user['prenom']} {admin_user['nom']}")
-    
-    # 2. Récupérer la liste des utilisateurs
-    print("\n2️⃣ RÉCUPÉRATION LISTE UTILISATEURS")
-    try:
-        response = requests.get(f"{BASE_URL}/users", headers=get_auth_headers(admin_token))
-        if response.status_code == 200:
-            users = response.json()
-            results.add_test("GET /api/users", True, f"{len(users)} utilisateurs trouvés")
-        else:
-            results.add_test("GET /api/users", False, f"Status: {response.status_code}")
-            results.print_summary()
-            return results
-    except Exception as e:
-        results.add_test("GET /api/users", False, f"Erreur: {e}")
-        results.print_summary()
-        return results
-    
-    # 3. Chercher utilisateur maryesoleil.bourassa
-    print("\n3️⃣ RECHERCHE UTILISATEUR maryesoleil.bourassa")
-    target_user = None
-    for user in users:
-        username = user.get('username', '').lower()
-        nom = user.get('nom', '').lower()
-        prenom = user.get('prenom', '').lower()
-        
-        if ('maryesoleil' in username or 'maryesoleil' in prenom or 
-            'bourassa' in username or 'bourassa' in nom):
-            target_user = user
-            break
-    
-    if target_user:
-        results.add_test("Recherche maryesoleil.bourassa", True, 
-                        f"Trouvé: {target_user['prenom']} {target_user['nom']} (ID: {target_user['id']}, username: {target_user.get('username', 'N/A')})")
-        
-        # Vérifier has_admin_privileges
-        has_admin_privileges = target_user.get('has_admin_privileges', False)
-        results.add_test("Vérification has_admin_privileges", has_admin_privileges, 
-                        f"has_admin_privileges = {has_admin_privileges}")
-        
-        if not has_admin_privileges:
-            print("⚠️  L'utilisateur n'a pas has_admin_privileges=True. Test des permissions non applicable.")
-            results.print_summary()
-            return results
-            
-    else:
-        results.add_test("Recherche maryesoleil.bourassa", False, "Utilisateur non trouvé")
-        print("⚠️  Utilisateur maryesoleil.bourassa non trouvé. Création d'un utilisateur de test...")
-        
-        # Créer un utilisateur de test avec has_admin_privileges=True
-        test_user_data = {
-            "nom": "Bourassa",
-            "prenom": "Maryesoleil",
-            "grade": "cadet",
-            "role": "cadet",
-            "has_admin_privileges": True
+    def log_test(self, test_name, success, message="", details=None):
+        """Enregistre le résultat d'un test"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
         }
+        self.test_results.append(result)
         
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} - {test_name}")
+        if message:
+            print(f"    {message}")
+        if details and not success:
+            print(f"    Détails: {details}")
+        print()
+    
+    def authenticate_admin(self):
+        """Test 1: Authentification Admin"""
         try:
-            response = requests.post(f"{BASE_URL}/users", 
-                                   json=test_user_data,
-                                   headers=get_auth_headers(admin_token))
-            if response.status_code == 200:
-                created_data = response.json()
-                # Récupérer l'utilisateur créé
-                response = requests.get(f"{BASE_URL}/users", headers=get_auth_headers(admin_token))
-                users = response.json()
-                for user in users:
-                    if user['nom'] == 'Bourassa' and user['prenom'] == 'Maryesoleil':
-                        target_user = user
-                        break
-                
-                results.add_test("Création utilisateur test", True, 
-                               f"Créé: {target_user['prenom']} {target_user['nom']} avec has_admin_privileges=True")
-            else:
-                results.add_test("Création utilisateur test", False, f"Status: {response.status_code}")
-                results.print_summary()
-                return results
-        except Exception as e:
-            results.add_test("Création utilisateur test", False, f"Erreur: {e}")
-            results.print_summary()
-            return results
-    
-    # 4. Vérifier/Générer mot de passe
-    print("\n4️⃣ GESTION MOT DE PASSE UTILISATEUR")
-    user_username = target_user.get('username')
-    user_password = None
-    
-    if not user_username:
-        results.add_test("Vérification username", False, "Pas de username défini")
-        results.print_summary()
-        return results
-    
-    # Essayer de se connecter pour voir si un mot de passe existe
-    test_token, test_user_data = login_user(user_username, "test123")
-    
-    if not test_token:
-        # Générer un mot de passe temporaire
-        print(f"Génération mot de passe pour {user_username}...")
-        password_data = generate_password_for_user(admin_token, target_user['id'])
-        
-        if password_data:
-            user_password = password_data['temporary_password']
-            results.add_test("Génération mot de passe", True, 
-                           f"Mot de passe généré: {user_password}")
-        else:
-            results.add_test("Génération mot de passe", False, "Échec génération")
-            results.print_summary()
-            return results
-    else:
-        user_password = "test123"
-        results.add_test("Vérification mot de passe existant", True, "Mot de passe existant fonctionnel")
-    
-    # 5. Connexion avec l'utilisateur has_admin_privileges
-    print("\n5️⃣ CONNEXION UTILISATEUR has_admin_privileges")
-    user_token, user_data = login_user(user_username, user_password)
-    
-    if user_token:
-        results.add_test("Connexion utilisateur has_admin_privileges", True, 
-                        f"Connecté: {user_data['prenom']} {user_data['nom']}")
-    else:
-        results.add_test("Connexion utilisateur has_admin_privileges", False, 
-                        f"Échec connexion avec {user_username}/{user_password}")
-        results.print_summary()
-        return results
-    
-    # 6. Test GET /api/presences (doit être 200 OK maintenant)
-    print("\n6️⃣ TEST GET /api/presences avec has_admin_privileges")
-    try:
-        response = requests.get(f"{BASE_URL}/presences", headers=get_auth_headers(user_token))
-        
-        if response.status_code == 200:
-            presences = response.json()
-            results.add_test("GET /api/presences avec has_admin_privileges", True, 
-                           f"Status 200 OK - {len(presences)} présences récupérées")
-        elif response.status_code == 403:
-            results.add_test("GET /api/presences avec has_admin_privileges", False, 
-                           "Status 403 - Accès toujours refusé malgré has_admin_privileges=True")
-        else:
-            results.add_test("GET /api/presences avec has_admin_privileges", False, 
-                           f"Status inattendu: {response.status_code}")
-    except Exception as e:
-        results.add_test("GET /api/presences avec has_admin_privileges", False, f"Erreur: {e}")
-    
-    # 7. Test POST /api/presences (créer une présence de test)
-    print("\n7️⃣ TEST POST /api/presences avec has_admin_privileges")
-    
-    # Trouver un cadet pour créer une présence
-    test_cadet = None
-    for user in users:
-        if user['role'] == 'cadet' and user['id'] != target_user['id']:
-            test_cadet = user
-            break
-    
-    if test_cadet:
-        presence_data = {
-            "cadet_id": test_cadet['id'],
-            "status": "present",
-            "commentaire": "Test présence has_admin_privileges"
-        }
-        
-        try:
-            response = requests.post(f"{BASE_URL}/presences", 
-                                   json=presence_data,
-                                   headers=get_auth_headers(user_token))
+            response = requests.post(
+                f"{self.base_url}/auth/login",
+                json={
+                    "username": ADMIN_USERNAME,
+                    "password": ADMIN_PASSWORD
+                },
+                timeout=10
+            )
             
             if response.status_code == 200:
-                results.add_test("POST /api/presences avec has_admin_privileges", True, 
-                               f"Status 200 OK - Présence créée pour {test_cadet['prenom']} {test_cadet['nom']}")
-            elif response.status_code == 403:
-                results.add_test("POST /api/presences avec has_admin_privileges", False, 
-                               "Status 403 - Création refusée malgré has_admin_privileges=True")
-            elif response.status_code == 400:
-                # Vérifier si c'est une présence qui existe déjà
-                error_detail = response.json().get('detail', '')
-                if 'existe déjà' in error_detail:
-                    results.add_test("POST /api/presences avec has_admin_privileges", True, 
-                                   f"Status 400 - Présence existe déjà (fonctionnalité normale): {error_detail}")
+                data = response.json()
+                if "access_token" in data and "user" in data:
+                    self.admin_token = data["access_token"]
+                    user_info = data["user"]
+                    self.log_test(
+                        "Authentification Admin",
+                        True,
+                        f"Connexion réussie - Utilisateur: {user_info.get('prenom', '')} {user_info.get('nom', '')} (Rôle: {user_info.get('role', '')})"
+                    )
+                    return True
                 else:
-                    results.add_test("POST /api/presences avec has_admin_privileges", False, 
-                                   f"Status 400 - Erreur: {error_detail}")
+                    self.log_test("Authentification Admin", False, "Token JWT manquant dans la réponse")
+                    return False
             else:
-                results.add_test("POST /api/presences avec has_admin_privileges", False, 
-                               f"Status inattendu: {response.status_code} - {response.text}")
+                self.log_test(
+                    "Authentification Admin", 
+                    False, 
+                    f"Échec authentification - Status: {response.status_code}",
+                    response.text
+                )
+                return False
+                
         except Exception as e:
-            results.add_test("POST /api/presences avec has_admin_privileges", False, f"Erreur: {e}")
-    else:
-        results.add_test("POST /api/presences avec has_admin_privileges", False, 
-                        "Aucun cadet trouvé pour test")
+            self.log_test("Authentification Admin", False, f"Erreur: {str(e)}")
+            return False
     
-    # 8. Test régression - Utilisateur SANS has_admin_privileges
-    print("\n8️⃣ TEST RÉGRESSION - Utilisateur SANS has_admin_privileges")
-    
-    # Trouver un cadet normal (sans has_admin_privileges, pas chef de section)
-    normal_cadet = None
-    for user in users:
-        if (user['role'] == 'cadet' and 
-            not user.get('has_admin_privileges', False) and
-            'chef' not in user['role'].lower() and
-            'sergent' not in user['role'].lower() and
-            'commandant' not in user['role'].lower() and
-            'adjudant' not in user['role'].lower()):
-            normal_cadet = user
-            break
-    
-    if normal_cadet:
-        # Générer mot de passe si nécessaire
-        normal_username = normal_cadet.get('username')
-        if normal_username:
-            # Essayer connexion
-            normal_token, _ = login_user(normal_username, "test123")
+    def test_get_users_endpoint(self):
+        """Test 2: GET /api/users (Principal) - Doit retourner 200 OK, pas 500"""
+        if not self.admin_token:
+            self.log_test("GET /api/users", False, "Token admin requis")
+            return False
             
-            if not normal_token:
-                # Générer mot de passe
-                password_data = generate_password_for_user(admin_token, normal_cadet['id'])
-                if password_data:
-                    normal_password = password_data['temporary_password']
-                    normal_token, _ = login_user(normal_username, normal_password)
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            response = requests.get(f"{self.base_url}/users", headers=headers, timeout=10)
             
-            if normal_token:
-                # Test GET /api/presences (doit être 403)
-                try:
-                    response = requests.get(f"{BASE_URL}/presences", headers=get_auth_headers(normal_token))
+            if response.status_code == 200:
+                users = response.json()
+                if isinstance(users, list):
+                    # Vérifier la structure des utilisateurs
+                    required_fields = [
+                        "id", "nom", "prenom", "username", "grade", "role", 
+                        "actif", "has_admin_privileges", "created_at", "must_change_password"
+                    ]
                     
-                    if response.status_code == 403:
-                        results.add_test("Régression - Cadet normal GET /api/presences", True, 
-                                       f"Status 403 - Accès correctement refusé pour {normal_cadet['prenom']} {normal_cadet['nom']}")
-                    elif response.status_code == 200:
-                        # Vérifier si le cadet ne voit que ses propres présences
-                        presences = response.json()
-                        own_presences = [p for p in presences if p['cadet_id'] == normal_cadet['id']]
-                        if len(presences) == len(own_presences):
-                            results.add_test("Régression - Cadet normal GET /api/presences", True, 
-                                           f"Status 200 - Cadet voit seulement ses propres présences ({len(own_presences)})")
-                        else:
-                            results.add_test("Régression - Cadet normal GET /api/presences", False, 
-                                           f"Status 200 - Cadet voit {len(presences)} présences au lieu de seulement les siennes")
+                    structure_valid = True
+                    missing_fields = []
+                    
+                    if len(users) > 0:
+                        first_user = users[0]
+                        for field in required_fields:
+                            if field not in first_user:
+                                structure_valid = False
+                                missing_fields.append(field)
+                    
+                    if structure_valid:
+                        self.log_test(
+                            "GET /api/users - Structure",
+                            True,
+                            f"Structure correcte - {len(users)} utilisateurs trouvés avec tous les champs requis"
+                        )
                     else:
-                        results.add_test("Régression - Cadet normal GET /api/presences", False, 
-                                       f"Status inattendu: {response.status_code}")
-                except Exception as e:
-                    results.add_test("Régression - Cadet normal GET /api/presences", False, f"Erreur: {e}")
+                        self.log_test(
+                            "GET /api/users - Structure",
+                            False,
+                            f"Champs manquants: {missing_fields}"
+                        )
+                    
+                    self.log_test(
+                        "GET /api/users - Status 200",
+                        True,
+                        f"Endpoint accessible - {len(users)} utilisateurs retournés"
+                    )
+                    return users
+                else:
+                    self.log_test("GET /api/users", False, "Réponse n'est pas une liste")
+                    return False
             else:
-                results.add_test("Régression - Connexion cadet normal", False, 
-                               f"Impossible de se connecter avec {normal_cadet['prenom']} {normal_cadet['nom']}")
+                self.log_test(
+                    "GET /api/users", 
+                    False, 
+                    f"Status {response.status_code} - ERREUR CRITIQUE si 500!",
+                    response.text
+                )
+                return False
+                
+        except Exception as e:
+            self.log_test("GET /api/users", False, f"Erreur: {str(e)}")
+            return False
+    
+    def verify_user_schema(self, users):
+        """Test 3: Vérifier structure des utilisateurs récents"""
+        if not users:
+            self.log_test("Vérification schéma utilisateurs", False, "Aucun utilisateur à vérifier")
+            return
+            
+        try:
+            # Analyser tous les utilisateurs pour détecter des problèmes de schéma
+            schema_issues = []
+            users_with_correct_schema = 0
+            
+            required_fields = {
+                "id": str,
+                "nom": str,
+                "prenom": str,
+                "grade": str,
+                "role": str,
+                "actif": bool,
+                "has_admin_privileges": bool,
+                "created_at": str,
+                "must_change_password": bool
+            }
+            
+            for user in users:
+                user_issues = []
+                
+                # Vérifier chaque champ requis
+                for field, expected_type in required_fields.items():
+                    if field not in user:
+                        user_issues.append(f"Champ manquant: {field}")
+                    elif not isinstance(user[field], expected_type):
+                        user_issues.append(f"Type incorrect pour {field}: attendu {expected_type.__name__}, reçu {type(user[field]).__name__}")
+                
+                # Vérifier l'ancien champ problématique
+                if "require_password_change" in user:
+                    user_issues.append("Ancien champ 'require_password_change' présent (devrait être 'must_change_password')")
+                
+                if user_issues:
+                    schema_issues.append({
+                        "user": f"{user.get('prenom', 'N/A')} {user.get('nom', 'N/A')} (ID: {user.get('id', 'N/A')})",
+                        "issues": user_issues
+                    })
+                else:
+                    users_with_correct_schema += 1
+            
+            if not schema_issues:
+                self.log_test(
+                    "Vérification schéma utilisateurs",
+                    True,
+                    f"Tous les {len(users)} utilisateurs ont le schéma correct"
+                )
+            else:
+                self.log_test(
+                    "Vérification schéma utilisateurs",
+                    False,
+                    f"{users_with_correct_schema}/{len(users)} utilisateurs OK - {len(schema_issues)} avec problèmes",
+                    schema_issues[:3]  # Afficher seulement les 3 premiers problèmes
+                )
+                
+        except Exception as e:
+            self.log_test("Vérification schéma utilisateurs", False, f"Erreur: {str(e)}")
+    
+    def test_related_endpoints(self):
+        """Test 4: Endpoints liés (régression)"""
+        if not self.admin_token:
+            self.log_test("Tests régression", False, "Token admin requis")
+            return
+            
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        
+        # Test GET /api/sections
+        try:
+            response = requests.get(f"{self.base_url}/sections", headers=headers, timeout=10)
+            if response.status_code == 200:
+                sections = response.json()
+                self.log_test(
+                    "GET /api/sections",
+                    True,
+                    f"Endpoint fonctionnel - {len(sections)} sections trouvées"
+                )
+            else:
+                self.log_test("GET /api/sections", False, f"Status {response.status_code}")
+        except Exception as e:
+            self.log_test("GET /api/sections", False, f"Erreur: {str(e)}")
+        
+        # Test GET /api/presences
+        try:
+            response = requests.get(f"{self.base_url}/presences", headers=headers, timeout=10)
+            if response.status_code == 200:
+                presences = response.json()
+                self.log_test(
+                    "GET /api/presences",
+                    True,
+                    f"Endpoint fonctionnel - {len(presences)} présences trouvées"
+                )
+            else:
+                self.log_test("GET /api/presences", False, f"Status {response.status_code}")
+        except Exception as e:
+            self.log_test("GET /api/presences", False, f"Erreur: {str(e)}")
+        
+        # Test POST /api/uniform-inspections (création inspection)
+        try:
+            # D'abord récupérer un utilisateur pour l'inspection
+            users_response = requests.get(f"{self.base_url}/users", headers=headers, timeout=10)
+            if users_response.status_code == 200:
+                users = users_response.json()
+                if users:
+                    test_user_id = users[0]["id"]
+                    
+                    inspection_data = {
+                        "cadet_id": test_user_id,
+                        "uniform_type": "C1 - Tenue de Parade",
+                        "criteria_scores": {
+                            "Propreté générale": 4,
+                            "Coiffure": 3,
+                            "Chaussures": 4,
+                            "Insignes": 3
+                        },
+                        "commentaire": "Test inspection - validation correctif"
+                    }
+                    
+                    response = requests.post(
+                        f"{self.base_url}/uniform-inspections",
+                        json=inspection_data,
+                        headers=headers,
+                        timeout=10
+                    )
+                    
+                    if response.status_code == 200:
+                        self.log_test(
+                            "POST /api/uniform-inspections",
+                            True,
+                            "Création d'inspection fonctionnelle"
+                        )
+                    else:
+                        self.log_test(
+                            "POST /api/uniform-inspections", 
+                            False, 
+                            f"Status {response.status_code}",
+                            response.text[:200]
+                        )
+                else:
+                    self.log_test("POST /api/uniform-inspections", False, "Aucun utilisateur pour test")
+            else:
+                self.log_test("POST /api/uniform-inspections", False, "Impossible de récupérer utilisateurs")
+        except Exception as e:
+            self.log_test("POST /api/uniform-inspections", False, f"Erreur: {str(e)}")
+    
+    def test_excel_import_simulation(self):
+        """Test 5: Simulation import Excel (si possible)"""
+        # Note: Ce test simule la vérification que les nouveaux utilisateurs 
+        # créés auraient le bon schéma
+        
+        if not self.admin_token:
+            self.log_test("Simulation import Excel", False, "Token admin requis")
+            return
+            
+        try:
+            headers = {"Authorization": f"Bearer {self.admin_token}"}
+            
+            # Créer un utilisateur test pour simuler l'import Excel
+            test_user_data = {
+                "nom": "TestImport",
+                "prenom": "Cadet",
+                "grade": "cadet",
+                "role": "cadet",
+                "section_id": None,
+                "subgroup_id": None,
+                "has_admin_privileges": False,
+                "actif": True
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/users",
+                json=test_user_data,
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                user_id = result.get("user_id")
+                
+                # Vérifier que l'utilisateur créé a le bon schéma
+                users_response = requests.get(f"{self.base_url}/users", headers=headers, timeout=10)
+                if users_response.status_code == 200:
+                    users = users_response.json()
+                    created_user = next((u for u in users if u["id"] == user_id), None)
+                    
+                    if created_user:
+                        # Vérifier les champs critiques du correctif
+                        has_correct_fields = all([
+                            "must_change_password" in created_user,
+                            "actif" in created_user,
+                            "has_admin_privileges" in created_user,
+                            "require_password_change" not in created_user  # Ancien champ ne doit pas être présent
+                        ])
+                        
+                        if has_correct_fields:
+                            self.log_test(
+                                "Simulation import Excel",
+                                True,
+                                "Nouvel utilisateur créé avec schéma correct"
+                            )
+                        else:
+                            self.log_test(
+                                "Simulation import Excel",
+                                False,
+                                "Nouvel utilisateur avec schéma incorrect"
+                            )
+                        
+                        # Nettoyer - supprimer l'utilisateur test
+                        requests.delete(f"{self.base_url}/users/{user_id}", headers=headers)
+                    else:
+                        self.log_test("Simulation import Excel", False, "Utilisateur créé non trouvé")
+                else:
+                    self.log_test("Simulation import Excel", False, "Impossible de vérifier utilisateur créé")
+            else:
+                self.log_test(
+                    "Simulation import Excel", 
+                    False, 
+                    f"Création utilisateur échouée - Status {response.status_code}"
+                )
+                
+        except Exception as e:
+            self.log_test("Simulation import Excel", False, f"Erreur: {str(e)}")
+    
+    def run_all_tests(self):
+        """Exécute tous les tests"""
+        print("=" * 80)
+        print("🧪 TESTS BACKEND - CORRECTIF CRITIQUE ERREUR 500 GET /api/users")
+        print("=" * 80)
+        print(f"Base URL: {self.base_url}")
+        print(f"Admin: {ADMIN_USERNAME}")
+        print()
+        
+        # Test 1: Authentification
+        if not self.authenticate_admin():
+            print("❌ ÉCHEC CRITIQUE: Impossible de s'authentifier")
+            return self.generate_summary()
+        
+        # Test 2: GET /api/users (test principal)
+        users = self.test_get_users_endpoint()
+        
+        # Test 3: Vérification schéma
+        if users:
+            self.verify_user_schema(users)
+        
+        # Test 4: Tests de régression
+        self.test_related_endpoints()
+        
+        # Test 5: Simulation import Excel
+        self.test_excel_import_simulation()
+        
+        return self.generate_summary()
+    
+    def generate_summary(self):
+        """Génère un résumé des tests"""
+        total_tests = len(self.test_results)
+        passed_tests = len([t for t in self.test_results if t["success"]])
+        failed_tests = total_tests - passed_tests
+        
+        print("=" * 80)
+        print("📊 RÉSUMÉ DES TESTS")
+        print("=" * 80)
+        print(f"Total: {total_tests} tests")
+        print(f"✅ Réussis: {passed_tests}")
+        print(f"❌ Échoués: {failed_tests}")
+        print(f"📈 Taux de réussite: {(passed_tests/total_tests*100):.1f}%")
+        print()
+        
+        if failed_tests > 0:
+            print("❌ TESTS ÉCHOUÉS:")
+            for test in self.test_results:
+                if not test["success"]:
+                    print(f"  - {test['test']}: {test['message']}")
+            print()
+        
+        # Vérification critique
+        critical_test = next((t for t in self.test_results if "GET /api/users - Status 200" in t["test"]), None)
+        if critical_test and critical_test["success"]:
+            print("🎉 CORRECTIF VALIDÉ: GET /api/users retourne 200 OK (plus d'erreur 500)")
         else:
-            results.add_test("Régression - Username cadet normal", False, 
-                           f"Pas de username pour {normal_cadet['prenom']} {normal_cadet['nom']}")
-    else:
-        results.add_test("Régression - Recherche cadet normal", False, 
-                        "Aucun cadet normal trouvé pour test régression")
-    
-    # 9. Lister tous les utilisateurs avec has_admin_privileges=True
-    print("\n9️⃣ VÉRIFICATION UTILISATEURS avec has_admin_privileges=True")
-    
-    admin_privilege_users = [user for user in users if user.get('has_admin_privileges', False)]
-    
-    if admin_privilege_users:
-        results.add_test("Utilisateurs avec has_admin_privileges", True, 
-                        f"{len(admin_privilege_users)} utilisateurs trouvés")
+            print("🚨 CORRECTIF NON VALIDÉ: GET /api/users ne fonctionne toujours pas correctement")
         
-        # Vérifier qu'ils sont bien des cadets
-        cadets_with_privileges = []
-        non_cadets_with_privileges = []
+        print("=" * 80)
         
-        for user in admin_privilege_users:
-            role = user['role'].lower()
-            if 'cadet' in role or role in ['cadet', 'cadet_responsible']:
-                cadets_with_privileges.append(user)
-            else:
-                non_cadets_with_privileges.append(user)
-        
-        results.add_test("Cadets avec has_admin_privileges", True, 
-                        f"{len(cadets_with_privileges)} cadets avec privilèges admin")
-        
-        if non_cadets_with_privileges:
-            results.add_test("Non-cadets avec has_admin_privileges", True, 
-                           f"{len(non_cadets_with_privileges)} non-cadets avec privilèges (normal pour encadrement)")
-        
-        # Afficher détails
-        print("\nDétail des utilisateurs avec has_admin_privileges=True:")
-        for user in admin_privilege_users:
-            print(f"  - {user['prenom']} {user['nom']} (Rôle: {user['role']}, Grade: {user['grade']})")
-    else:
-        results.add_test("Utilisateurs avec has_admin_privileges", False, 
-                        "Aucun utilisateur avec has_admin_privileges=True trouvé")
-    
-    results.print_summary()
-    return results
+        return {
+            "total_tests": total_tests,
+            "passed": passed_tests,
+            "failed": failed_tests,
+            "success_rate": passed_tests/total_tests*100,
+            "critical_fix_validated": critical_test and critical_test["success"] if critical_test else False,
+            "details": self.test_results
+        }
 
 if __name__ == "__main__":
-    print("🚀 DÉMARRAGE TESTS PERMISSIONS PRÉSENCES has_admin_privileges")
-    print(f"Base URL: {BASE_URL}")
-    print(f"Admin: {ADMIN_USERNAME}")
-    
-    results = test_permissions_presences_admin_privileges()
+    tester = BackendTester()
+    results = tester.run_all_tests()
     
     # Code de sortie basé sur les résultats
-    if results.failed_tests == 0:
-        print("\n🎉 TOUS LES TESTS SONT PASSÉS!")
-        sys.exit(0)
+    if results["failed"] == 0:
+        sys.exit(0)  # Succès
     else:
-        print(f"\n⚠️  {results.failed_tests} TEST(S) ÉCHOUÉ(S)")
-        sys.exit(1)
+        sys.exit(1)  # Échec
