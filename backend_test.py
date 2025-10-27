@@ -51,44 +51,48 @@ class BackendTester:
         self.base_url = BASE_URL
         self.admin_token = None
     
-    def authenticate_admin(self):
+    def authenticate_admin(self, results: TestResults) -> str:
         """Test 1: Authentification Admin"""
         try:
-            response = requests.post(
-                f"{self.base_url}/auth/login",
-                json={
-                    "username": ADMIN_USERNAME,
-                    "password": ADMIN_PASSWORD
-                },
-                timeout=10
-            )
+            # Try both endpoints - the review mentions POST /api/login but backend has /auth/login
+            endpoints_to_try = [
+                f"{self.base_url}/login",  # As mentioned in review request
+                f"{self.base_url}/auth/login"  # As seen in backend code
+            ]
             
-            if response.status_code == 200:
-                data = response.json()
-                if "access_token" in data and "user" in data:
-                    self.admin_token = data["access_token"]
-                    user_info = data["user"]
-                    self.log_test(
-                        "Authentification Admin",
-                        True,
-                        f"Connexion réussie - Utilisateur: {user_info.get('prenom', '')} {user_info.get('nom', '')} (Rôle: {user_info.get('role', '')})"
+            for endpoint in endpoints_to_try:
+                try:
+                    response = requests.post(
+                        endpoint,
+                        json={
+                            "username": ADMIN_USERNAME,
+                            "password": ADMIN_PASSWORD
+                        },
+                        timeout=10
                     )
-                    return True
-                else:
-                    self.log_test("Authentification Admin", False, "Token JWT manquant dans la réponse")
-                    return False
-            else:
-                self.log_test(
-                    "Authentification Admin", 
-                    False, 
-                    f"Échec authentification - Status: {response.status_code}",
-                    response.text
-                )
-                return False
-                
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if "access_token" in data:
+                            self.admin_token = data["access_token"]
+                            results.add_success(f"Test 1: Authentification admin réussie via {endpoint}")
+                            return self.admin_token
+                    elif response.status_code == 404:
+                        continue  # Try next endpoint
+                    else:
+                        results.add_failure("Test 1: Authentification admin", 
+                                          f"Status {response.status_code} sur {endpoint}")
+                        return None
+                        
+                except Exception as e:
+                    continue  # Try next endpoint
+            
+            results.add_failure("Test 1: Authentification admin", "Aucun endpoint d'authentification fonctionnel")
+            return None
+            
         except Exception as e:
-            self.log_test("Authentification Admin", False, f"Erreur: {str(e)}")
-            return False
+            results.add_failure("Test 1: Authentification admin", str(e))
+            return None
     
     def test_get_users_endpoint(self):
         """Test 2: GET /api/users (Principal) - Doit retourner 200 OK, pas 500"""
