@@ -94,11 +94,11 @@ class BackendTester:
             results.add_failure("Test 1: Authentification admin", str(e))
             return None
     
-    def test_get_users_endpoint(self):
-        """Test 2: GET /api/users (Principal) - Doit retourner 200 OK, pas 500"""
+    def get_users(self, results: TestResults) -> List[Dict[str, Any]]:
+        """Test 2: GET /api/users - Vérifier Jakob et Mariane"""
         if not self.admin_token:
-            self.log_test("GET /api/users", False, "Token admin requis")
-            return False
+            results.add_failure("Test 2: GET /api/users", "Token admin requis")
+            return []
             
         try:
             headers = {"Authorization": f"Bearer {self.admin_token}"}
@@ -107,56 +107,20 @@ class BackendTester:
             if response.status_code == 200:
                 users = response.json()
                 if isinstance(users, list):
-                    # Vérifier la structure des utilisateurs
-                    required_fields = [
-                        "id", "nom", "prenom", "username", "grade", "role", 
-                        "actif", "has_admin_privileges", "created_at", "must_change_password"
-                    ]
-                    
-                    structure_valid = True
-                    missing_fields = []
-                    
-                    if len(users) > 0:
-                        first_user = users[0]
-                        for field in required_fields:
-                            if field not in first_user:
-                                structure_valid = False
-                                missing_fields.append(field)
-                    
-                    if structure_valid:
-                        self.log_test(
-                            "GET /api/users - Structure",
-                            True,
-                            f"Structure correcte - {len(users)} utilisateurs trouvés avec tous les champs requis"
-                        )
-                    else:
-                        self.log_test(
-                            "GET /api/users - Structure",
-                            False,
-                            f"Champs manquants: {missing_fields}"
-                        )
-                    
-                    self.log_test(
-                        "GET /api/users - Status 200",
-                        True,
-                        f"Endpoint accessible - {len(users)} utilisateurs retournés"
-                    )
+                    results.add_success(f"Test 2: GET /api/users accessible - Status 200 OK")
+                    results.add_success(f"Test 2a: {len(users)} utilisateurs récupérés")
                     return users
                 else:
-                    self.log_test("GET /api/users", False, "Réponse n'est pas une liste")
-                    return False
+                    results.add_failure("Test 2: GET /api/users", "Réponse n'est pas une liste")
+                    return []
             else:
-                self.log_test(
-                    "GET /api/users", 
-                    False, 
-                    f"Status {response.status_code} - ERREUR CRITIQUE si 500!",
-                    response.text
-                )
-                return False
+                results.add_failure("Test 2: GET /api/users", 
+                                  f"Status {response.status_code} - {response.text[:200]}")
+                return []
                 
         except Exception as e:
-            self.log_test("GET /api/users", False, f"Erreur: {str(e)}")
-            return False
+            results.add_failure("Test 2: GET /api/users", str(e))
+            return []
     
     def verify_user_schema(self, users):
         """Test 3: Vérifier structure des utilisateurs récents"""
