@@ -62,7 +62,7 @@ eas update --branch production --message "UI: Changement couleur boutons"
 ```
 1. Agent développe dans Emergent
    ↓
-2. Vous testez sur: https://command-central-9.preview.emergentagent.com
+2. Vous testez sur: https://commandhub-3.preview.emergentagent.com
    ↓
 3. Quand validé, vous publiez:
    cd C:\Users\Admin\Desktop\Projet\frontend
