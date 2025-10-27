@@ -3477,9 +3477,16 @@ async def confirm_import_cadets(
                     "grade": grade,
                     "role": "cadet",
                     "section_id": section_id,
+                    "subgroup_id": None,
+                    "photo_base64": None,
+                    "actif": True,
+                    "has_admin_privileges": False,
                     "hashed_password": None,
-                    "require_password_change": True,
-                    "created_at": datetime.now().isoformat()
+                    "must_change_password": True,
+                    "created_at": datetime.now().isoformat(),
+                    "invitation_token": None,
+                    "invitation_expires": None,
+                    "created_by": current_user.username
                 }
                 
                 await db.users.insert_one(new_user)
