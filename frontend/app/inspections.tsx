@@ -1148,12 +1148,16 @@ export default function Inspections() {
                             key={score}
                             style={[
                               styles.scoreButton,
-                              criteriaScores[criterion] === score && styles.scoreButtonSelected,
                               score === 0 && styles.scoreButton0,
                               score === 1 && styles.scoreButton1,
                               score === 2 && styles.scoreButton2,
                               score === 3 && styles.scoreButton3,
                               score === 4 && styles.scoreButton4,
+                              criteriaScores[criterion] === score && score === 0 && styles.scoreButton0Selected,
+                              criteriaScores[criterion] === score && score === 1 && styles.scoreButton1Selected,
+                              criteriaScores[criterion] === score && score === 2 && styles.scoreButton2Selected,
+                              criteriaScores[criterion] === score && score === 3 && styles.scoreButton3Selected,
+                              criteriaScores[criterion] === score && score === 4 && styles.scoreButton4Selected,
                             ]}
                             onPress={() => updateCriterionScore(criterion, score)}
                           >
