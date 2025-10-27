@@ -404,6 +404,15 @@ export default function Rapports() {
             📊 Statistiques
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'individual' && styles.activeTab]}
+          onPress={() => setActiveTab('individual')}
+        >
+          <Text style={[styles.tabText, activeTab === 'individual' && styles.activeTabText]}>
+            👤 Rapport Cadet
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
