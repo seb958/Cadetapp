@@ -4900,8 +4900,6 @@ logger = logging.getLogger(__name__)
 # TÉLÉCHARGEMENT DU PROJET
 # ============================================================================
 
-from fastapi.responses import FileResponse
-
 @api_router.get("/download-project")
 async def download_project():
     """
