@@ -231,10 +231,6 @@ export default function ImportCadets() {
             } finally {
               setConfirming(false);
             }
-          }
-        }
-      ]
-    );
   };
 
   if (loading) {
