@@ -41,6 +41,7 @@ export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
   
   // États pour le formulaire de changement de mot de passe
   const [oldPassword, setOldPassword] = useState('');
