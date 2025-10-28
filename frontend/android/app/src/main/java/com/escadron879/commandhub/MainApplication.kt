@@ -1,4 +1,4 @@
-package com.commandhub
+package com.escadron879.commandhub
 
 import android.app.Application
 import android.content.res.Configuration
