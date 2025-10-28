@@ -8,7 +8,7 @@
     "icon": "./public/icon-512.png",
     "scheme": "commandhub",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.escadron879.commandhub"
