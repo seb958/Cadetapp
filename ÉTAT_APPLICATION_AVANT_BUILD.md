@@ -188,7 +188,7 @@ L'application **CommandHub** est une solution complète de gestion d'escadron de
 - ✅ Import Excel
 - ✅ Permissions granulaires
 
-**Base URL testée :** `https://squadron-app-1.preview.emergentagent.com/api`
+**Base URL testée :** `https://react-native-fix-3.preview.emergentagent.com/api`
 
 **Comptes de test :**
 - Admin : `aadministrateur` / `admin123`
@@ -236,7 +236,7 @@ eas secret:create --scope project \
   --value "https://votre-backend-production.com"
 ```
 
-**⚠️ Actuellement configuré pour :** `https://squadron-app-1.preview.emergentagent.com`
+**⚠️ Actuellement configuré pour :** `https://react-native-fix-3.preview.emergentagent.com`
 
 ### Étape 3: Build APK
 

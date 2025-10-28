@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://squadron-app-1.preview.emergentagent.com/api"
+BASE_URL = "https://react-native-fix-3.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 
