@@ -26,7 +26,7 @@ Identifiants : Compte **seb958**
 ```bash
 eas secret:create --scope project \
   --name EXPO_PUBLIC_BACKEND_URL \
-  --value "https://commandhub-3.preview.emergentagent.com"
+  --value "https://squadron-app-1.preview.emergentagent.com"
 ```
 
 **Option B - Via Dashboard :**
@@ -108,7 +108,7 @@ Les utilisateurs recevront automatiquement la mise à jour au prochain lancement
 
 ## ✅ Vérifications Pré-Build
 
-- [x] Backend accessible : `https://commandhub-3.preview.emergentagent.com/api`
+- [x] Backend accessible : `https://squadron-app-1.preview.emergentagent.com/api`
 - [x] Services démarrés : `sudo supervisorctl status`
 - [x] Version 1.0.0 configurée
 - [x] EAS configuration complète

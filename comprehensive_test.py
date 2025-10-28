@@ -10,7 +10,7 @@ from datetime import datetime, date
 import sys
 
 # Configuration
-BASE_URL = "https://commandhub-3.preview.emergentagent.com/api"
+BASE_URL = "https://squadron-app-1.preview.emergentagent.com/api"
 ADMIN_USERNAME = "aadministrateur"
 ADMIN_PASSWORD = "admin123"
 

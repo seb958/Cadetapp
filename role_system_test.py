@@ -20,7 +20,7 @@ from datetime import datetime
 import os
 
 # Configuration
-BASE_URL = "https://commandhub-3.preview.emergentagent.com/api"
+BASE_URL = "https://squadron-app-1.preview.emergentagent.com/api"
 
 # Credentials de test
 ADMIN_CREDENTIALS = {
